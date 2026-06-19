@@ -1409,6 +1409,10 @@ let filterHighPri     = false;
 let kwHighlightOn     = false;
 let clusterViewOn     = false;
 let pyqConfidence     = JSON.parse(localStorage.getItem("pyqConfidence") || "{}");
+let pyqDailyStats     = JSON.parse(localStorage.getItem("pyqDailyStats") || "{}");
+// { "2026-06-19": { attempted:5, correct:3, wrong:2, skipped:0 } }
+let pyqMockSeen       = new Set(JSON.parse(localStorage.getItem("pyqMockSeen") || "[]"));
+// tracks which question IDs have been shown in mock sessions (non-repeating pool)
 let sessionConfidence = {}; // { qId: 'sure'|'5050'|'guess' } for current session
 let pyqBiasData       = JSON.parse(localStorage.getItem("pyqBiasData") || '{"picked":{"A":0,"B":0,"C":0,"D":0},"total":0}');
 let sessionPicks      = { A:0, B:0, C:0, D:0 }; // current session picks
@@ -1751,6 +1755,9 @@ function renderAnalytics(data) {
 }
 
 function loadHome() {
+  // Show local counts instantly before server responds
+  updateHomeMetricsFromLocal();
+
   // Load PYQ analytics charts
   loadAnalytics();
 
@@ -1777,9 +1784,26 @@ function loadHome() {
 }
 
 function updateHomeMetrics(prog) {
-  document.getElementById("hm-attempted").textContent = prog.questionsAttempted || 0;
+  // Use local attemptedQIds count — always accurate without server delay
+  document.getElementById("hm-attempted").textContent = attemptedQIds.size || prog.questionsAttempted || 0;
   document.getElementById("hm-accuracy").textContent  = (prog.accuracy || 0) + "%";
   document.getElementById("hm-projected").textContent = (prog.projected || 0) + "/150";
+}
+
+function updateHomeMetricsFromLocal() {
+  // Instant update from localStorage on page load
+  const today = new Date().toISOString().split('T')[0];
+  const todayStats = pyqDailyStats[today] || { attempted:0, correct:0 };
+  const el = document.getElementById("hm-attempted");
+  if (el) el.textContent = attemptedQIds.size;
+  // Update the "of X total" sub-label to show today's activity
+  const statGrid = document.getElementById("gcStatGrid");
+  if (statGrid) {
+    const firstSub = statGrid.querySelector('.gc-stat .gc-stat-sub');
+    if (firstSub) firstSub.textContent = todayStats.attempted > 0
+      ? `+${todayStats.attempted} today (${todayStats.correct} ✓)`
+      : "of 449 total";
+  }
 }
 
 function updateStreakUI(streak) {
@@ -2809,6 +2833,12 @@ function attemptQ(qId, chosen, correct, idx) {
   else                      topicAcc[q.subject][topicKey].w++;
   topicAcc[q.subject][topicKey].last = today;
   localStorage.setItem("pyqTopicAccuracy", JSON.stringify(topicAcc));
+  // ── Daily stats tracking ───────────────────────
+  if (!pyqDailyStats[today]) pyqDailyStats[today] = { attempted:0, correct:0, wrong:0, skipped:0 };
+  pyqDailyStats[today].attempted++;
+  if (result === 'correct') pyqDailyStats[today].correct++;
+  else if (result === 'wrong') pyqDailyStats[today].wrong++;
+  localStorage.setItem("pyqDailyStats", JSON.stringify(pyqDailyStats));
   // Spaced repetition: track wrong questions with date
   if (result === 'wrong') {
     const srData = JSON.parse(localStorage.getItem("pyqSpacedRepeat") || "{}");
@@ -2908,12 +2938,34 @@ function launchMockTest() {
     pool = pool.filter(q => q.difficulty === "Easy"); // start easy
   }
 
-  // Shuffle and cap
-  for (let i = pool.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [pool[i],pool[j]] = [pool[j],pool[i]];
+  // ── Non-repeating smart pool ─────────────────────────────────
+  // Split pool into unseen and seen (seen = already in pyqMockSeen)
+  let unseen = pool.filter(q => !pyqMockSeen.has(String(q.id)));
+  let seen   = pool.filter(q =>  pyqMockSeen.has(String(q.id)));
+
+  // If unseen pool is exhausted, reset and notify
+  if (unseen.length === 0) {
+    pyqMockSeen = new Set();
+    localStorage.setItem("pyqMockSeen", JSON.stringify([]));
+    unseen = [...pool];
+    seen   = [];
+    showToast("🔄 All questions covered! Starting fresh pool.");
   }
-  filteredQ = pool.slice(0, mockSettings.count);
+
+  // Shuffle unseen, then seen as fallback
+  const shuffle = arr => { for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; };
+  shuffle(unseen); shuffle(seen);
+
+  // Take from unseen first, fill remainder from seen if needed
+  const combined = [...unseen, ...seen];
+  filteredQ = combined.slice(0, mockSettings.count);
+
+  // Mark selected questions as seen
+  filteredQ.forEach(q => pyqMockSeen.add(String(q.id)));
+  localStorage.setItem("pyqMockSeen", JSON.stringify([...pyqMockSeen]));
+
+  const unseenCount = filteredQ.filter(q => !seen.find(s=>s.id===q.id)).length;
+  showToast(`🎲 ${unseenCount} new + ${filteredQ.length - unseenCount} repeat questions`);
   if (filteredQ.length === 0) {
     showToast("No questions match these settings — try different filters.");
     mockActive = false; openMockModal(); return;
@@ -3787,6 +3839,7 @@ function renderProgress(prog) {
   renderWeakTopicHeatmap();
   renderSpacedRepeatDue();
   renderSpeedAccuracyScatter(prog);
+  renderDailyActivityLog();
 }
 
 // ── WEAK TOPIC HEATMAP ──────────────────────────────────────────
@@ -3882,6 +3935,86 @@ function renderSpacedRepeatDue() {
     <button class="btn btn-primary" style="margin-top:10px;" onclick="launchRevisionSession()">
       <i class="ti ti-refresh"></i> Start revision session (${due.length} Q)
     </button>`;
+  el.appendChild(div);
+}
+
+// ── DAILY ACTIVITY LOG ─────────────────────────────────────────
+function renderDailyActivityLog() {
+  const el = document.getElementById("progressContent");
+  if (!el) return;
+
+  const stats = pyqDailyStats;
+  const dates = Object.keys(stats).sort().reverse(); // newest first
+
+  // Overall totals from localStorage
+  const totalAttempted = attemptedQIds.size;
+  const allDayTotals = dates.reduce((acc, d) => {
+    acc.correct += stats[d].correct || 0;
+    acc.wrong   += stats[d].wrong   || 0;
+    return acc;
+  }, { correct:0, wrong:0 });
+  const overallAcc = (allDayTotals.correct + allDayTotals.wrong) > 0
+    ? Math.round(allDayTotals.correct / (allDayTotals.correct + allDayTotals.wrong) * 100)
+    : 0;
+
+  // Today's stats
+  const today = new Date().toISOString().split('T')[0];
+  const todayS = stats[today] || { attempted:0, correct:0, wrong:0 };
+
+  const rowsHTML = dates.slice(0, 14).map(d => {
+    const s = stats[d];
+    const tried = (s.correct||0) + (s.wrong||0);
+    const acc = tried > 0 ? Math.round(s.correct / tried * 100) : 0;
+    const color = acc >= 80 ? 'var(--teal)' : acc >= 60 ? 'var(--amber)' : acc > 0 ? 'var(--red)' : 'var(--text3)';
+    const bar = tried > 0 ? `<div style="flex:1;background:var(--border);border-radius:4px;height:6px;overflow:hidden;">
+      <div style="width:${acc}%;height:100%;background:${color};border-radius:4px;"></div></div>` : '';
+    const dateObj = new Date(d + 'T00:00:00');
+    const label = d === today ? 'Today' : dateObj.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+    return \`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+      <div style="width:90px;font-size:12px;color:var(--text2);flex-shrink:0;">\${label}</div>
+      <div style="width:28px;text-align:right;font-size:13px;font-weight:500;color:var(--text);">\${s.attempted||0}</div>
+      <div style="font-size:11px;color:var(--text3);width:70px;flex-shrink:0;">\${s.correct||0}✓ \${s.wrong||0}✗</div>
+      \${bar}
+      <div style="width:34px;text-align:right;font-size:12px;font-weight:500;color:\${color};">\${tried>0?acc+'%':''}</div>
+    </div>\`;
+  }).join('');
+
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.style.marginTop = '12px';
+  div.innerHTML = \`
+    <div class="card-title"><i class="ti ti-calendar-stats" style="color:var(--blue);"></i> Daily activity log</div>
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+      <div class="metric" style="flex:1;min-width:100px;">
+        <div class="metric-lbl">Total attempted</div>
+        <div class="metric-val" style="color:var(--blue);">\${totalAttempted}</div>
+        <div class="metric-sub">unique questions</div>
+      </div>
+      <div class="metric" style="flex:1;min-width:100px;">
+        <div class="metric-lbl">Today</div>
+        <div class="metric-val" style="color:var(--teal);">\${todayS.attempted||0}</div>
+        <div class="metric-sub">\${todayS.correct||0} correct</div>
+      </div>
+      <div class="metric" style="flex:1;min-width:100px;">
+        <div class="metric-lbl">Overall accuracy</div>
+        <div class="metric-val" style="color:\${overallAcc>=80?'var(--teal)':overallAcc>=60?'var(--amber)':'var(--red)'};">\${overallAcc}%</div>
+        <div class="metric-sub">\${allDayTotals.correct}✓ \${allDayTotals.wrong}✗</div>
+      </div>
+      <div class="metric" style="flex:1;min-width:100px;">
+        <div class="metric-lbl">Active days</div>
+        <div class="metric-val">\${dates.length}</div>
+        <div class="metric-sub">days practiced</div>
+      </div>
+    </div>
+    \${dates.length === 0
+      ? '<div style="font-size:12px;color:var(--text3);">No activity yet. Start attempting questions!</div>'
+      : \`<div style="font-size:11px;color:var(--text3);font-weight:500;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;gap:8px;">
+          <span style="width:90px;">Date</span><span style="width:28px;text-align:right;">Qs</span>
+          <span style="width:70px;">Breakdown</span><span style="flex:1;"></span>
+          <span style="width:34px;text-align:right;">Acc</span></div>
+        \${rowsHTML}
+        \${dates.length > 14 ? \`<div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center;">Showing last 14 days of \${dates.length} total</div>\` : ''}\`}
+  \`;
   el.appendChild(div);
 }
 
