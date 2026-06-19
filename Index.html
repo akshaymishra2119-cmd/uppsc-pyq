@@ -1,0 +1,4096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghatna Chakra — UPPSC PYQ Portal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── RESET & BASE ─────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ffffff;--bg2:#f8f9fa;--bg3:#f1f3f4;
+  --text:#202124;--text2:#5f6368;--text3:#9aa0a6;
+  --border:#e0e0e0;--border2:#c0c0c0;
+  --teal:#1D9E75;--teal-light:#E1F5EE;--teal-dark:#085041;
+  --pink:#D4537E;--pink-light:#FBEAF0;--pink-dark:#4B1528;
+  --amber:#EF9F27;--amber-light:#FAEEDA;--amber-dark:#412402;
+  --blue:#378ADD;--blue-light:#E6F1FB;--blue-dark:#042C53;
+  --coral:#D85A30;--coral-light:#FAECE7;--coral-dark:#4A1B0C;
+  --purple:#7F77DD;--purple-light:#EEEDFE;--purple-dark:#26215C;
+  --red:#E24B4A;--red-light:#FCEBEB;--red-dark:#501313;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg3);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+
+/* ── TOPBAR ───────────────────────────────────── */
+.topbar{background:var(--bg);border-bottom:1px solid var(--border);
+  padding:10px 20px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;color:var(--text);}
+.logo i{color:var(--teal);font-size:22px;}
+.logo-badge{background:var(--teal-light);color:var(--teal-dark);font-size:10px;
+  padding:2px 8px;border-radius:99px;font-weight:500;}
+.user-area{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);}
+.streak-badge{display:flex;align-items:center;gap:4px;color:var(--coral);font-weight:500;}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--purple-light);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:var(--purple-dark);cursor:pointer;}
+#userName-display{font-size:13px;color:var(--text2);}
+
+/* ── NAV ──────────────────────────────────────── */
+.nav{background:#0d2b5e;border-bottom:1px solid rgba(201,168,76,0.2);
+  padding:0 20px;display:flex;gap:0;overflow-x:auto;}
+.nav-btn{padding:11px 16px;font-size:13px;border:none;background:transparent;
+  cursor:pointer;color:rgba(255,255,255,0.55);border-bottom:2px solid transparent;
+  white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
+.nav-btn:hover{color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.05);}
+.nav-btn.active{color:#c9a84c;border-bottom-color:#c9a84c;font-weight:600;}
+.nav-btn.admin-btn{margin-left:auto;color:rgba(255,180,180,0.7);}
+.nav-btn.admin-btn.active{color:#ffaaaa;border-bottom-color:#ffaaaa;}
+
+/* ── MAIN CONTENT ─────────────────────────────── */
+.main{max-width:1100px;margin:0 auto;padding:16px;}
+.tab{display:none;}
+.tab.active{display:block;}
+
+/* ── CARDS ────────────────────────────────────── */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:14px 16px;margin-bottom:12px;}
+.card-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:12px;
+  display:flex;align-items:center;gap:6px;}
+
+/* ── METRICS ──────────────────────────────────── */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+.metric{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;}
+.metric-lbl{font-size:11px;color:var(--text3);margin-bottom:4px;}
+.metric-val{font-size:24px;font-weight:500;color:var(--text);}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+
+/* ── TWO COL LAYOUT ───────────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:700px){.two-col,.three-col{grid-template-columns:1fr;}}
+.three-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;}
+
+/* ── BAR CHARTS ───────────────────────────────── */
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.bar-label{font-size:12px;color:var(--text2);width:100px;flex-shrink:0;}
+.bar-bg{flex:1;background:var(--bg3);border-radius:3px;height:18px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;
+  justify-content:flex-end;padding-right:5px;transition:width 0.6s ease;}
+.bar-pct{font-size:10px;font-weight:500;color:#fff;}
+.prog-row{margin-bottom:10px;}
+.prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px;}
+.prog-bg{background:var(--bg3);border-radius:3px;height:10px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width 0.6s ease;}
+
+/* ── BADGES ───────────────────────────────────── */
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500;margin:2px 2px 2px 0;}
+.badge-teal{background:var(--teal-light);color:var(--teal-dark);}
+.badge-pink{background:var(--pink-light);color:var(--pink-dark);}
+.badge-amber{background:var(--amber-light);color:var(--amber-dark);}
+.badge-blue{background:var(--blue-light);color:var(--blue-dark);}
+.badge-coral{background:var(--coral-light);color:var(--coral-dark);}
+.badge-purple{background:var(--purple-light);color:var(--purple-dark);}
+.badge-gray{background:var(--bg3);color:var(--text2);}
+.badge-red{background:var(--red-light);color:var(--red-dark);}
+
+/* ── BUTTONS ──────────────────────────────────── */
+.btn{padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border2);
+  background:var(--bg);color:var(--text2);font-size:13px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;}
+.btn:hover{background:var(--bg2);}
+.btn-primary{background:var(--teal);color:#fff;border-color:var(--teal);font-weight:500;}
+.btn-primary:hover{background:var(--teal-dark);}
+.btn-pink{background:var(--pink);color:#fff;border-color:var(--pink);}
+.btn-pink:hover{background:var(--pink-dark);}
+.btn-sm{padding:5px 12px;font-size:12px;}
+
+/* ── FORM ELEMENTS ────────────────────────────── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:11px;color:var(--text2);font-weight:500;}
+input[type=text],input[type=date],select,textarea{
+  font-size:13px;padding:8px 10px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg);color:var(--text);width:100%;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);}
+textarea{resize:vertical;min-height:70px;}
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.filter-bar select{width:auto;font-size:12px;padding:6px 8px;}
+
+/* ── QUESTION CARD ────────────────────────────── */
+.q-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px;margin-bottom:10px;}
+.q-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;align-items:center;}
+.q-num{font-size:12px;color:var(--text3);margin-right:4px;}
+.q-text{font-size:14px;color:var(--text);margin-bottom:14px;line-height:1.6;}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+@media(max-width:600px){.opts{grid-template-columns:1fr;}}
+.opt{padding:9px 12px;font-size:13px;border-radius:var(--radius);
+  border:1px solid var(--border);cursor:pointer;color:var(--text2);
+  background:var(--bg);text-align:left;line-height:1.4;transition:all 0.12s;}
+.opt:hover:not(:disabled){background:var(--bg2);border-color:var(--border2);}
+.opt.correct{background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);}
+.opt.wrong{background:var(--red-light);border-color:var(--red);color:var(--red-dark);}
+.opt.reveal{background:var(--blue-light);border-color:var(--blue);color:var(--blue-dark);}
+.opt:disabled{cursor:default;}
+.explanation{background:var(--bg2);border-radius:var(--radius);padding:10px 12px;
+  font-size:12px;color:var(--text2);line-height:1.6;margin-top:4px;}
+.explanation strong{color:var(--text);}
+.repeat-flag{color:var(--amber-dark);font-size:10px;font-weight:500;}
+
+/* ── TIMER ────────────────────────────────────── */
+.timer-bar{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 14px;margin-bottom:12px;display:flex;align-items:center;
+  justify-content:space-between;}
+.timer-val{font-size:16px;font-weight:500;color:var(--coral);}
+.timer-val.warning{color:var(--red);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.q-counter{font-size:13px;color:var(--text2);}
+.score-badge{font-size:13px;font-weight:500;color:var(--teal-dark);
+  background:var(--teal-light);padding:4px 10px;border-radius:99px;}
+
+/* ── CA ITEMS ─────────────────────────────────── */
+.ca-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:12px 14px;margin-bottom:8px;}
+.ca-item-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.ca-item-body{flex:1;}
+.ca-date{font-size:10px;color:var(--text3);margin-bottom:4px;}
+.ca-headline{font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.ca-detail{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:6px;}
+.ca-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ca-source{font-size:10px;color:var(--text3);}
+.ca-mcq{font-size:11px;color:var(--purple-dark);background:var(--purple-light);
+  padding:3px 8px;border-radius:99px;}
+.bookmark-btn{background:none;border:none;cursor:pointer;color:var(--text3);
+  font-size:20px;flex-shrink:0;padding:2px;}
+.bookmark-btn.active{color:var(--pink);}
+.date-divider{font-size:11px;font-weight:500;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.05em;margin:14px 0 8px;
+  padding-bottom:4px;border-bottom:1px solid var(--border);}
+.today-banner{background:linear-gradient(135deg,var(--pink-light),var(--purple-light));
+  border:1px solid var(--pink);border-radius:var(--radius-lg);padding:10px 14px;
+  margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.today-banner i{color:var(--pink);font-size:20px;}
+
+/* ── HOME CA PREVIEW ──────────────────────────── */
+.ca-preview{border-left:3px solid var(--pink);padding:6px 10px;margin-bottom:7px;
+  background:var(--bg2);border-radius:0 var(--radius) var(--radius) 0;}
+.ca-preview-head{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px;}
+.ca-preview-sub{font-size:11px;color:var(--text2);}
+
+/* ── LEADERBOARD ──────────────────────────────── */
+.lb-table{width:100%;font-size:13px;border-collapse:collapse;}
+.lb-table th{font-size:11px;color:var(--text3);font-weight:500;
+  padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.lb-table td{padding:10px 10px;border-bottom:1px solid var(--border3,#f0f0f0);}
+.lb-table tr.me{background:var(--teal-light);}
+.lb-rank{font-weight:600;color:var(--text3);width:30px;}
+.lb-name{font-weight:500;}
+
+/* ── STREAK DOTS ──────────────────────────────── */
+.streak-dots{display:flex;gap:4px;margin-top:6px;}
+.streak-dot{width:16px;height:16px;border-radius:3px;font-size:9px;
+  display:flex;align-items:center;justify-content:center;font-weight:500;}
+.streak-dot.done{background:var(--teal-light);color:var(--teal-dark);}
+.streak-dot.today{background:var(--amber-light);color:var(--amber-dark);}
+.streak-dot.miss{background:var(--bg3);color:var(--text3);}
+
+/* ── LOADING ──────────────────────────────────── */
+.loading{text-align:center;padding:40px;color:var(--text3);font-size:13px;}
+.loading i{font-size:28px;display:block;margin-bottom:8px;
+  animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── RESULT SCREEN ────────────────────────────── */
+.result-screen{text-align:center;padding:40px 20px;}
+.result-score{font-size:56px;font-weight:300;color:var(--teal);margin-bottom:4px;}
+.result-label{font-size:16px;color:var(--text2);margin-bottom:24px;}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  max-width:400px;margin:0 auto 24px;}
+
+/* ── ONBOARDING ───────────────────────────────── */
+.onboard{position:fixed;inset:0;background:rgba(0,0,0,0.5);
+  display:flex;align-items:center;justify-content:center;z-index:999;}
+.onboard-box{background:var(--bg);border-radius:var(--radius-lg);
+  padding:32px;max-width:400px;width:90%;text-align:center;}
+.onboard-box h2{font-size:20px;font-weight:500;margin-bottom:8px;}
+.onboard-box p{color:var(--text2);font-size:13px;margin-bottom:20px;}
+.onboard-box input{text-align:center;font-size:16px;margin-bottom:12px;}
+
+/* ── TOAST ────────────────────────────────────── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:#fff;
+  padding:10px 16px;border-radius:var(--radius);font-size:13px;z-index:999;
+  display:none;max-width:300px;}
+.toast.show{display:block;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* ── MOCK TEST MODAL ──────────────────────────── */
+.mock-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;
+  display:flex;align-items:center;justify-content:center;}
+.mock-setup{background:#fff;border-radius:16px;padding:32px;max-width:460px;
+  width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.25);}
+.mock-setup h2{font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.mock-setup p{font-size:13px;color:var(--text2);margin-bottom:22px;}
+.mock-field{margin-bottom:16px;}
+.mock-field label{display:block;font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+.mock-options{display:flex;gap:8px;flex-wrap:wrap;}
+.mock-opt{padding:7px 16px;border-radius:20px;border:1px solid var(--border);
+  background:var(--bg);font-size:13px;cursor:pointer;transition:all 0.15s;font-weight:500;}
+.mock-opt:hover{border-color:var(--teal);color:var(--teal);}
+.mock-opt.selected{background:#0f1c2e;color:#c9a84c;border-color:#0f1c2e;}
+.mock-setup-btns{display:flex;gap:10px;margin-top:24px;}
+
+/* ── MOCK TEST ACTIVE UI ─────────────────────── */
+.mock-timer-bar{background:#0f1c2e;color:#fff;padding:10px 20px;
+  display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:200;}
+.mock-timer-val{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;
+  color:#c9a84c;min-width:80px;}
+.mock-timer-val.danger{color:#E24B4A;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.mock-prog-wrap{flex:1;display:flex;flex-direction:column;gap:4px;}
+.mock-prog-label{font-size:12px;color:rgba(255,255,255,0.6);}
+.mock-prog-track{height:4px;background:rgba(255,255,255,0.15);border-radius:2px;overflow:hidden;}
+.mock-prog-fill{height:100%;background:#c9a84c;border-radius:2px;transition:width 0.3s;}
+.mock-nav{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;margin-bottom:8px;border-bottom:1px solid var(--border);}
+.mock-dots{display:flex;gap:4px;flex-wrap:wrap;max-width:300px;}
+.mock-dot{width:10px;height:10px;border-radius:50%;background:var(--border);}
+.mock-dot.answered{background:var(--teal);}
+.mock-dot.wrong{background:var(--red);}
+.mock-dot.current{background:#c9a84c;transform:scale(1.3);}
+
+/* ── SMART FILTER CHIPS ─────────────────────── */
+.smart-chips{display:flex;gap:8px;flex-wrap:wrap;padding:10px 0 6px;}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;
+  border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;
+  border:1px solid var(--border);background:var(--bg);color:var(--text2);
+  transition:all 0.15s;user-select:none;}
+.chip i{font-size:14px;}
+.chip:hover{border-color:var(--teal);color:var(--teal);}
+.chip.active{background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);font-weight:600;}
+.chip.chip-gold.active{background:#fdf6e3;border-color:#c9a84c;color:#7a6010;}
+.chip.chip-red.active{background:var(--red-light);border-color:var(--red);color:var(--red-dark);}
+.chip-mock-btn{margin-left:auto;background:#0f1c2e;color:#c9a84c;border-color:#0f1c2e;font-weight:600;}
+.chip-mock-btn:hover{background:#1e3a5f;color:#e8c96d;border-color:#1e3a5f;}
+
+/* ── BOOKMARK BUTTON ON Q-CARD ───────────────── */
+.q-card{position:relative;}
+.q-bk-btn{position:absolute;top:10px;right:10px;background:none;border:none;
+  cursor:pointer;font-size:18px;color:var(--text3);padding:4px;line-height:1;
+  border-radius:4px;transition:all 0.15s;}
+.q-bk-btn:hover{color:#c9a84c;background:rgba(201,168,76,0.1);}
+.q-bk-btn.bookmarked i::before{color:#c9a84c;}
+
+/* ── HEATMAP CALENDAR ─────────────────────────── */
+.heatmap-wrap{overflow-x:auto;padding-bottom:8px;}
+.heatmap-grid{display:flex;gap:3px;align-items:flex-end;}
+.heatmap-col{display:flex;flex-direction:column;gap:3px;}
+.hm-month{font-size:10px;color:var(--text3);margin-bottom:2px;white-space:nowrap;}
+.heatmap-cell{width:13px;height:13px;border-radius:2px;cursor:default;transition:transform 0.1s;
+  background:#f0f0f0;}
+.heatmap-cell:hover{transform:scale(1.3);}
+.heatmap-cell[data-lv="1"]{background:#d4edda;}
+.heatmap-cell[data-lv="2"]{background:#28a745;}
+.heatmap-cell[data-lv="3"]{background:#155724;}
+.heatmap-cell[data-lv="4"]{background:#0a3316;}
+.heatmap-legend{display:flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;color:var(--text3);}
+.heatmap-legend-cell{width:12px;height:12px;border-radius:2px;}
+
+/* ── SUBJECT STREAK BADGE ─────────────────────── */
+.streak-pip{display:inline-flex;align-items:center;gap:3px;font-size:10px;
+  color:var(--coral);font-weight:600;padding:1px 6px;
+  background:var(--coral-light);border-radius:99px;margin-left:6px;}
+
+/* ── QUIZ REVIEW SECTION ─────────────────────── */
+.review-section{max-width:760px;margin:0 auto;padding-bottom:32px;}
+.review-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px;}
+.review-filter-sep{font-size:11px;color:var(--text3);font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;margin:0 4px;}
+.review-filter-btn{padding:6px 14px;border-radius:20px;border:1px solid;
+  background:var(--bg);font-size:12px;font-weight:500;cursor:pointer;
+  transition:all 0.15s;display:inline-flex;align-items:center;gap:5px;}
+.review-filter-btn:hover{opacity:0.8;}
+.review-filter-btn.active{filter:brightness(0.9);font-weight:700;
+  background:var(--bg2);}
+.review-filter-count{background:rgba(0,0,0,0.08);border-radius:99px;
+  padding:1px 6px;font-size:11px;}
+.review-card{background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;}
+.review-card-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px;}
+.review-opts{display:flex;flex-direction:column;gap:6px;}
+.review-opt{padding:8px 12px;border-radius:6px;font-size:13px;
+  border:1px solid var(--border);line-height:1.4;}
+
+/* ── TOPIC HEATMAP ───────────────────────────── */
+.topic-heatmap-grid{display:flex;flex-wrap:wrap;gap:6px;}
+.topic-cell{border:1.5px solid;border-radius:8px;padding:7px 10px;
+  cursor:default;min-width:80px;text-align:center;}
+.tc-name{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;max-width:90px;}
+.tc-sub{font-size:9px;color:var(--text3);margin-top:1px;}
+.tc-acc{font-size:14px;font-weight:800;margin-top:3px;}
+
+/* ── SPACED REPEAT ───────────────────────────── */
+.sr-row{border-left:3px solid var(--red);padding:7px 10px;margin-bottom:7px;
+  background:var(--bg3);border-radius:0 6px 6px 0;}
+.sr-meta{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.sr-q{font-size:12px;color:var(--text2);}
+
+/* ── CONFIDENCE MATRIX ───────────────────────── */
+.conf-matrix{display:flex;flex-direction:column;gap:6px;}
+.conf-matrix-row{padding:8px 12px;border-radius:0 8px 8px 0;background:var(--bg3);}
+.cmr-label{font-size:12px;font-weight:700;margin-bottom:5px;}
+.cmr-counts{display:flex;gap:12px;font-size:12px;align-items:center;}
+.cmr-c{color:var(--teal);font-weight:600;}
+.cmr-w{color:var(--red);font-weight:600;}
+.cmr-s{color:var(--text3);}
+.cmr-acc{margin-left:auto;font-weight:700;font-size:13px;}
+.cmr-warn{font-size:11px;color:var(--amber);font-weight:600;margin-top:4px;}
+
+/* ── CONCEPT CLUSTER VIEW ───────────────────── */
+.cluster-wrap{display:flex;flex-direction:column;gap:10px;}
+.cluster-card{background:var(--bg1);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.cluster-header{display:flex;justify-content:space-between;align-items:flex-start;
+  padding:12px 16px;cursor:pointer;gap:10px;transition:background 0.15s;}
+.cluster-header:hover{background:var(--bg2);}
+.cluster-name{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:4px;}
+.cluster-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px;}
+.cluster-acc{font-size:11px;font-weight:600;}
+.cluster-chevron{font-size:18px;color:var(--text3);transition:transform 0.2s;flex-shrink:0;margin-top:2px;}
+.cluster-body{padding:10px 14px;border-top:1px solid var(--border);}
+
+/* ── SUBJECT BREAKDOWN ──────────────────────── */
+.sb-card{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.sb-header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;
+  background:var(--bg);transition:background 0.15s;}
+.sb-header:hover{background:var(--bg2);}
+.sb-header-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+.sb-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.sb-subject{font-size:13px;font-weight:700;color:var(--text);}
+.sb-subtotal{font-size:11px;color:var(--text3);margin-top:1px;}
+.sb-total-badge{font-size:13px;font-weight:800;padding:3px 10px;border-radius:99px;}
+.sb-chevron{font-size:16px;color:var(--text3);transition:transform 0.2s;flex-shrink:0;}
+.sb-body{padding:10px 14px;border-top:1px solid var(--border);background:var(--bg2);}
+.sb-topics{display:flex;flex-direction:column;gap:5px;}
+.sb-topic-row{display:grid;grid-template-columns:140px 1fr 70px;align-items:center;gap:8px;}
+.sb-topic-name{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-topic-bar-wrap{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.sb-topic-bar{height:100%;border-radius:4px;transition:width 0.4s;}
+.sb-topic-count{font-size:11px;color:var(--text3);text-align:right;white-space:nowrap;}
+.sb-acc{font-size:10px;font-weight:700;margin-left:4px;}
+@media(max-width:640px){
+  .sb-topic-row{grid-template-columns:100px 1fr 60px;}
+  .sb-topic-name{font-size:10px;}
+}
+
+/* ── SMART INSTANT REVIEW ───────────────────── */
+.sir-wrap{margin-top:14px;border-top:2px dashed var(--border);padding-top:12px;}
+.sir-header{font-size:11px;font-weight:700;color:var(--amber);margin-bottom:10px;
+  display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.5px;}
+.sir-card{background:var(--bg2);border-radius:10px;padding:10px 12px;margin-bottom:8px;
+  border:1px solid var(--border);}
+
+/* ── OPTION BIAS REPORT ─────────────────────── */
+.bias-row{display:grid;grid-template-columns:20px 1fr 170px;align-items:center;gap:8px;margin-bottom:8px;}
+.bias-lbl{font-weight:800;font-size:14px;}
+.bias-bars{display:flex;flex-direction:column;gap:3px;height:26px;justify-content:center;}
+.bias-seg{height:10px;border-radius:4px;min-width:3px;transition:width 0.4s;}
+.bias-nums{display:flex;flex-wrap:wrap;gap:4px;font-size:10px;align-items:center;}
+
+/* ── CONFIDENCE TAGGING ──────────────────────── */
+.conf-row{display:flex;align-items:center;gap:6px;padding:7px 0 6px;flex-wrap:wrap;}
+.conf-label{font-size:11px;color:var(--text3);font-weight:500;margin-right:2px;}
+.conf-btn{padding:4px 12px;border-radius:20px;border:1.5px solid var(--cc,var(--border));
+  background:transparent;color:var(--cc,var(--text2));font-size:11px;font-weight:600;
+  cursor:pointer;transition:all 0.15s;}
+.conf-btn:hover,.conf-btn.conf-active{background:var(--cc);color:#fff;}
+.conf-tag{font-size:11px;color:var(--text3);padding:4px 0;display:flex;align-items:center;gap:6px;}
+.conf-tag-val{font-weight:700;}
+.conf-tag-val[data-c="sure"]{color:var(--teal);}
+.conf-tag-val[data-c="5050"]{color:var(--amber);}
+.conf-tag-val[data-c="guess"]{color:var(--red);}
+.conf-danger{color:var(--red);font-weight:700;}
+.conf-lucky{color:var(--teal);font-weight:700;}
+
+/* ── KEYWORD HIGHLIGHT ───────────────────────── */
+mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
+  padding:1px 3px;font-weight:700;font-style:normal;}
+
+/* ── HP BADGE ────────────────────────────────── */
+.hp-badge{animation:hp-pulse 2s infinite;}
+@keyframes hp-pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+
+/* ── STATEMENT ANALYSIS ──────────────────────── */
+.stmt-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text2);margin-bottom:12px;}
+.stmt-dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle;}
+.stmt-grid{display:flex;flex-direction:column;gap:6px;}
+.stmt-row{display:flex;align-items:center;gap:8px;}
+.stmt-sub{width:88px;font-size:11px;color:var(--text2);flex-shrink:0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.stmt-bars{flex:1;display:flex;height:18px;border-radius:4px;overflow:hidden;background:var(--bg2);}
+.stmt-seg{height:100%;transition:width 0.5s;}
+.stmt-pct{width:34px;text-align:right;font-size:12px;font-weight:700;flex-shrink:0;}
+.stmt-counts{display:flex;gap:6px;font-size:10px;width:100px;flex-shrink:0;}
+
+/* ── WEIGHT TREND ────────────────────────────── */
+.wt-grid{display:flex;flex-direction:column;gap:6px;}
+.wt-row{display:flex;align-items:flex-end;gap:8px;}
+.wt-sub{width:88px;font-size:11px;color:var(--text2);flex-shrink:0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wt-bars{display:flex;gap:2px;align-items:flex-end;height:36px;flex-shrink:0;}
+.wt-year-bar{display:flex;flex-direction:column;align-items:center;width:18px;}
+.wt-fill{width:100%;border-radius:2px 2px 0 0;transition:height 0.5s;}
+.wt-ylbl{font-size:8px;color:var(--text3);margin-top:1px;}
+.wt-shares{display:flex;gap:6px;font-size:10px;color:var(--text3);flex:1;}
+.wt-shares span{width:34px;}
+.wt-trend{font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0;width:56px;text-align:right;}
+
+/* ── ANSWER PATTERN PYQ PANEL ───────────────── */
+.apyq-wrap{display:flex;flex-direction:column;gap:14px;}
+.apyq-total{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.apyq-total strong{font-size:16px;color:var(--text);}
+.apyq-cols{display:flex;gap:16px;flex-wrap:wrap;}
+.apyq-col{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
+.apyq-col-head{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;
+  letter-spacing:0.6px;margin-bottom:4px;}
+.apyq-divider{width:1px;background:var(--border);flex-shrink:0;}
+.apyq-row{display:flex;align-items:center;gap:7px;}
+.apyq-lbl{width:22px;font-size:12px;flex-shrink:0;text-align:right;}
+.apyq-track{flex:1;background:var(--bg3);border-radius:4px;height:16px;overflow:hidden;}
+.apyq-fill{height:100%;border-radius:4px;transition:width 0.6s ease;}
+.apyq-stat{width:56px;text-align:right;font-size:11px;flex-shrink:0;white-space:nowrap;}
+.apyq-stat strong{font-size:13px;color:var(--text);}
+.apyq-stat span{color:var(--text3);margin-left:2px;}
+.apyq-strat{background:var(--bg3);border-radius:8px;padding:10px 12px;
+  font-size:12px;color:var(--text2);line-height:1.6;
+  border-left:3px solid var(--amber,#EF9F27);display:flex;gap:8px;align-items:flex-start;}
+.apyq-strat strong{color:var(--text);}
+
+/* ── ANSWER DIST BARS ────────────────────────── */
+.ans-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.ans-bar-label{width:90px;font-size:12px;color:var(--text2);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ans-bar-track{flex:1;background:var(--bg3);border-radius:4px;height:20px;overflow:hidden;}
+.ans-bar-fill{height:100%;border-radius:4px;transition:width 0.7s ease;}
+.ans-bar-stat{width:70px;text-align:right;font-size:12px;flex-shrink:0;}
+.ans-bar-stat strong{color:var(--text);font-size:14px;}
+.ans-bar-stat span{color:var(--text3);margin-left:3px;}
+
+/* ── LETTER GRID ─────────────────────────────── */
+#ansLetterGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.ans-letter-card{background:var(--bg3);border-radius:12px;padding:14px 10px 10px;text-align:center;
+  border:1.5px solid var(--border);position:relative;transition:transform 0.15s;}
+.ans-letter-card.ans-letter-top{border-color:var(--gold,#c9a84c);box-shadow:0 0 14px rgba(201,168,76,0.18);}
+.ans-letter-badge{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 6px;font-size:18px;font-weight:800;}
+.ans-letter-num{font-size:24px;font-weight:800;line-height:1.1;}
+.ans-letter-pct{font-size:11px;color:var(--text3);margin-top:2px;}
+.ans-mini-bar-track{background:var(--bg2);border-radius:4px;height:5px;margin-top:8px;overflow:hidden;}
+.ans-mini-bar-fill{height:100%;border-radius:4px;transition:width 0.6s ease;}
+.ans-top-tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  background:var(--gold,#c9a84c);color:#0f1c2e;font-size:9px;font-weight:700;
+  border-radius:20px;padding:2px 8px;white-space:nowrap;letter-spacing:0.3px;}
+.ans-insight-box{margin-top:12px;padding:10px 14px;border-radius:8px;
+  border-left:3px solid var(--blue);background:var(--bg3);font-size:12.5px;
+  color:var(--text2);line-height:1.6;}
+.ans-insight-box strong{color:var(--text);}
+
+/* ── STRATEGY CARDS ──────────────────────────── */
+#ansStrategyGrid{display:flex;flex-direction:column;gap:14px;}
+.strat-card{background:var(--bg3);border-radius:12px;padding:16px;
+  border:1px solid var(--border);}
+.strat-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.strat-icon{width:38px;height:38px;background:var(--bg2);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.strat-title{flex:1;font-weight:700;font-size:14px;color:var(--text);}
+.strat-rate{text-align:right;font-size:22px;font-weight:800;line-height:1.1;flex-shrink:0;}
+.strat-rate span{font-size:10px;font-weight:400;color:var(--text3);display:block;}
+.strat-appears{font-size:12px;color:var(--text2);margin-bottom:8px;}
+.strat-split-track{display:flex;height:24px;border-radius:6px;overflow:hidden;
+  background:var(--bg2);margin-bottom:6px;}
+.strat-split-correct{display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;transition:width 0.6s ease;}
+.strat-split-trap{display:flex;align-items:center;justify-content:center;
+  background:#E24B4A66;font-size:11px;font-weight:700;color:var(--red);transition:width 0.6s ease;}
+.strat-split-labels{display:flex;justify-content:space-between;font-size:11px;margin-bottom:10px;}
+.strat-year-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.strat-year-pill{background:var(--bg2);border-radius:8px;padding:5px 10px;font-size:11px;
+  display:flex;flex-direction:column;gap:1px;text-align:center;flex:1;min-width:70px;}
+.strat-advice{font-size:12px;color:var(--text2);background:var(--bg2);
+  border-radius:6px;padding:8px 10px;line-height:1.5;}
+.strat-advice .ti{color:var(--amber,#EF9F27);margin-right:4px;}
+
+/* ── REVIEW FILTER BAR ───────────────────────── */
+.review-filter-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:4px;}
+.rfb-group{display:flex;flex-wrap:wrap;gap:6px;}
+.rfb-divider{width:1px;height:28px;background:var(--border);flex-shrink:0;}
+.rfb-types .review-filter-btn{font-size:11px;padding:4px 10px;}
+.review-filter-btn{
+  padding:6px 12px;border-radius:20px;border:1.5px solid var(--rfb-color,var(--border));
+  background:var(--bg);color:var(--rfb-color,var(--text2));
+  font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.review-filter-btn:hover{background:var(--bg3);}
+.review-filter-btn.active{
+  background:var(--rfb-color,var(--text2));color:#fff;font-weight:700;}
+.review-filter-count{
+  background:rgba(0,0,0,0.15);border-radius:99px;
+  padding:1px 6px;font-size:10px;}
+.review-filter-btn.active .review-filter-count{background:rgba(255,255,255,0.25);}
+
+/* ── A/B/C/D COMPARISON ──────────────────────── */
+.abcd-legend{display:flex;gap:14px;font-size:11px;color:var(--text3);margin-bottom:12px;}
+.abcd-leg-dot{display:inline-block;width:10px;height:10px;border-radius:3px;
+  background:var(--purple);margin-right:4px;vertical-align:middle;}
+.abcd-compare-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.abcd-ltr{width:18px;font-size:16px;font-weight:800;flex-shrink:0;text-align:center;}
+.abcd-bars{flex:1;display:flex;flex-direction:column;gap:3px;}
+.abcd-bar-wrap{display:flex;align-items:center;gap:6px;height:14px;}
+.abcd-bar-fill{height:100%;border-radius:4px;min-width:2px;transition:width 0.5s ease;}
+.abcd-user{opacity:1;}
+.abcd-bar-num{font-size:11px;font-weight:600;color:var(--text2);min-width:18px;}
+.abcd-diff{width:32px;text-align:right;font-size:12px;font-weight:700;flex-shrink:0;}
+
+/* ── TYPE PERFORMANCE CARDS ──────────────────── */
+#typePerfGrid{display:flex;flex-direction:column;gap:8px;}
+.type-perf-card{
+  background:var(--bg3);border-radius:10px;padding:12px 14px;
+  border:1px solid var(--border);cursor:pointer;transition:transform 0.1s,box-shadow 0.1s;}
+.type-perf-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.12);}
+.type-perf-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.type-perf-name{flex:1;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;}
+.type-perf-count{font-size:12px;color:var(--text3);font-weight:500;}
+.type-perf-acc{font-size:13px;font-weight:700;}
+.type-perf-bar{
+  display:flex;height:8px;border-radius:6px;overflow:hidden;
+  background:var(--bg2);margin-bottom:6px;}
+.type-perf-seg{height:100%;transition:width 0.5s ease;}
+.tps-wrong{background:#E24B4A88;}
+.tps-skip{background:var(--bg2);}
+.type-perf-row{display:flex;align-items:center;gap:10px;font-size:11px;}
+.tpr-correct{color:var(--teal);font-weight:600;}
+.tpr-wrong{color:var(--red);font-weight:600;}
+.tpr-skip{color:var(--text3);}
+.tpr-hint{margin-left:auto;color:var(--text3);font-size:10px;opacity:0.7;}
+
+/* ── NEGATIVE MARKING BAR ───────────────────── */
+.neg-mark-bar{display:flex;height:28px;border-radius:8px;overflow:hidden;
+  margin:10px auto;max-width:480px;background:var(--bg3);}
+.nm-seg{display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;transition:width 0.6s ease;}
+.nm-correct{background:var(--teal);}
+.nm-wrong{background:var(--red);}
+.nm-skip{background:var(--bg3);}
+.nm-labels{display:flex;justify-content:center;gap:16px;font-size:11px;
+  flex-wrap:wrap;margin-bottom:6px;}
+
+/* ── SCORECARD SPEED ─────────────────────────── */
+.scorecard-speed{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0;}
+.speed-pill{text-align:center;background:var(--bg3);border-radius:10px;padding:10px 16px;min-width:90px;}
+.speed-pill .sp-val{font-size:20px;font-weight:700;color:var(--text);}
+.speed-pill .sp-lbl{font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* ── ADMIN ────────────────────────────────────── */
+.admin-notice{background:var(--pink-light);border:1px solid var(--pink);
+  border-radius:var(--radius);padding:8px 12px;font-size:12px;color:var(--pink-dark);
+  display:flex;align-items:center;gap:6px;margin-bottom:14px;}
+</style>
+</head>
+<body>
+
+<!-- hidden dummy for legacy refs -->
+<div id="onboard" style="display:none;"></div>
+<input type="text" id="nameInput" style="display:none;">
+
+<!-- ══ GHATNA CHAKRA BANNER ══════════════════════════════════ -->
+<style>
+/* ── GHATNA CHAKRA BANNER ─────────────────────── */
+.gc-banner{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#1a3a6b 0%,#0d2b5e 60%,#102347 100%);
+  border-bottom:3px solid #c9a84c;
+}
+.gc-banner-stripe{
+  position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,#c9a84c,#e8c96d,#c9a84c);
+}
+.gc-banner-dots{
+  position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,0.04) 1px,transparent 1px);
+  background-size:24px 24px;pointer-events:none;
+}
+.gc-banner-glow{
+  position:absolute;right:-80px;top:-80px;
+  width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,0.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.gc-banner-inner{
+  position:relative;display:flex;align-items:center;
+  gap:28px;max-width:1200px;margin:0 auto;padding:22px 32px 20px;
+}
+.gc-logo-wrap{
+  flex-shrink:0;
+  width:72px;height:72px;border-radius:50%;
+  background:linear-gradient(135deg,#c9a84c,#e8c96d);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(201,168,76,0.35);
+}
+.gc-logo-wrap svg{ filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
+.gc-chakra-spin{ animation:gcSpin 20s linear infinite; transform-origin:50% 50%; }
+@keyframes gcSpin{ to{ transform:rotate(360deg); } }
+.gc-divider{
+  width:1px;height:60px;
+  background:linear-gradient(to bottom,transparent,rgba(201,168,76,0.5),transparent);
+  flex-shrink:0;
+}
+.gc-title-block{ flex:1;min-width:0; }
+.gc-brand{
+  display:flex;align-items:baseline;gap:10px;
+}
+.gc-title{
+  font-size:clamp(24px,3.5vw,42px);font-weight:800;
+  color:#ffffff;letter-spacing:-0.3px;line-height:1;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+.gc-title span{ color:#c9a84c; }
+.gc-edition{
+  font-size:11px;font-weight:600;color:#c9a84c;
+  background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);
+  border-radius:4px;padding:2px 8px;letter-spacing:0.5px;text-transform:uppercase;
+  white-space:nowrap;
+}
+.gc-tagline{
+  font-size:12px;color:rgba(255,255,255,0.55);
+  margin-top:5px;letter-spacing:0.3px;font-weight:400;
+}
+.gc-stats-row{
+  display:flex;gap:0;margin-top:14px;
+  border:1px solid rgba(201,168,76,0.2);border-radius:8px;overflow:hidden;
+  width:fit-content;
+}
+.gc-stat-pill{
+  padding:7px 16px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);
+  border-right:1px solid rgba(201,168,76,0.15);
+  background:rgba(255,255,255,0.03);white-space:nowrap;
+}
+.gc-stat-pill:last-child{ border-right:none; }
+.gc-stat-pill strong{ color:#c9a84c;font-size:14px; }
+.gc-right-block{
+  flex-shrink:0;text-align:right;
+  display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+}
+.gc-badge-uppsc{
+  font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:#0d2b5e;background:linear-gradient(135deg,#c9a84c,#e8c96d);
+  border-radius:4px;padding:4px 12px;
+}
+.gc-streak-badge{
+  font-size:12px;color:rgba(255,255,255,0.6);
+  display:none;align-items:center;gap:6px;
+}
+#streakBadge{ display:none; }
+
+/* Countdown */
+.gc-countdown{
+  flex-shrink:0;text-align:center;
+  border:1px solid rgba(201,168,76,0.35);border-radius:10px;
+  padding:10px 16px;background:rgba(201,168,76,0.07);
+  min-width:80px;
+}
+.gc-cd-num{
+  font-size:36px;font-weight:800;line-height:1;
+  color:#c9a84c;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums;
+}
+.gc-cd-lbl{
+  font-size:10px;font-weight:600;color:rgba(255,255,255,0.5);
+  text-transform:uppercase;letter-spacing:1px;margin-top:2px;
+}
+.gc-cd-exam{
+  font-size:10px;color:rgba(255,255,255,0.4);margin-top:6px;line-height:1.4;
+}
+.gc-cd-exam span{ color:rgba(255,255,255,0.25); }
+</style>
+
+<div class="gc-banner">
+  <div class="gc-banner-stripe"></div>
+  <div class="gc-banner-dots"></div>
+  <div class="gc-banner-glow"></div>
+  <div class="gc-banner-inner">
+
+    <!-- Countdown Block -->
+    <div class="gc-countdown" id="gcCountdown">
+      <div class="gc-cd-num" id="gcDaysLeft">—</div>
+      <div class="gc-cd-lbl">days left</div>
+      <div class="gc-cd-exam">UPPSC 2026<br><span>6 Dec 2026</span></div>
+    </div>
+
+    <!-- Chakra Logo -->
+    <div class="gc-logo-wrap">
+      <svg viewBox="0 0 60 60" width="44" height="44">
+        <g class="gc-chakra-spin">
+          <circle cx="30" cy="30" r="26" fill="none" stroke="#0f1c2e" stroke-width="1.5" opacity="0.4"/>
+          <circle cx="30" cy="30" r="18" fill="none" stroke="#0f1c2e" stroke-width="1"/>
+          <!-- 8 spokes -->
+          <line x1="30" y1="4"  x2="30" y2="14" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
+          <line x1="30" y1="46" x2="30" y2="56" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
+          <line x1="4"  y1="30" x2="14" y2="30" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
+          <line x1="46" y1="30" x2="56" y2="30" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
+          <line x1="10" y1="10" x2="17" y2="17" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
+          <line x1="43" y1="43" x2="50" y2="50" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
+          <line x1="50" y1="10" x2="43" y2="17" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
+          <line x1="10" y1="50" x2="17" y2="43" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
+          <!-- Hub -->
+          <circle cx="30" cy="30" r="6" fill="#0f1c2e"/>
+          <circle cx="30" cy="30" r="3" fill="#c9a84c"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="gc-divider"></div>
+
+    <!-- Title Block -->
+    <div class="gc-title-block">
+      <div class="gc-brand">
+        <h1 class="gc-title">Ghatna <span>Chakra</span></h1>
+        <span class="gc-edition">2023 – 2025</span>
+      </div>
+      <p class="gc-tagline">UPPSC Previous Year Questions Analysis Portal &nbsp;·&nbsp; Uttar Pradesh PSC</p>
+      <div class="gc-stats-row">
+        <div class="gc-stat-pill"><strong>450</strong> Questions</div>
+        <div class="gc-stat-pill"><strong>3</strong> Years</div>
+        <div class="gc-stat-pill"><strong>9</strong> Subjects</div>
+        <div class="gc-stat-pill"><strong>28</strong> Repeating Topics</div>
+        <div class="gc-stat-pill"><strong>~11%</strong> UP Special</div>
+      </div>
+    </div>
+
+    <!-- Right Block -->
+    <div class="gc-right-block">
+      <span class="gc-badge-uppsc">UPPSC PCS</span>
+      <span id="streakBadge" class="gc-streak-badge">
+        <i class="ti ti-flame" style="color:#EF9F27;"></i>
+        <span id="streakNum">0</span> day streak
+      </span>
+    </div>
+
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" onclick="showTab('home',this)">
+    <i class="ti ti-home" aria-hidden="true"></i> Home
+  </button>
+  <button class="nav-btn" onclick="showTab('pyq',this)">
+    <i class="ti ti-books" aria-hidden="true"></i> PYQ Practice
+  </button>
+  <button class="nav-btn" onclick="showTab('ca',this)">
+    <i class="ti ti-news" aria-hidden="true"></i> Current Affairs
+  </button>
+  <button class="nav-btn" onclick="showTab('progress',this)">
+    <i class="ti ti-chart-bar" aria-hidden="true"></i> Progress
+  </button>
+  <button class="nav-btn" onclick="showTab('leaderboard',this)">
+    <i class="ti ti-trophy" aria-hidden="true"></i> Leaderboard
+  </button>
+  <button class="nav-btn admin-btn" id="adminNavBtn" style="display:none;" onclick="showTab('admin',this)">
+    <i class="ti ti-settings" aria-hidden="true"></i> Admin
+  </button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══ HOME TAB ══════════════════════════════════════════════ -->
+<div class="tab active" id="tab-home">
+
+  <!-- ── 4 STAT CARDS ───────────────────────────────────────── -->
+  <div class="gc-stat-grid" id="gcStatGrid">
+    <div class="gc-stat"><div class="gc-stat-val" id="hm-attempted">—</div><div class="gc-stat-lbl">Questions attempted</div><div class="gc-stat-sub">of 450 total</div></div>
+    <div class="gc-stat"><div class="gc-stat-val" style="color:var(--teal);" id="hm-accuracy">—</div><div class="gc-stat-lbl">Accuracy</div><div class="gc-stat-sub">target: 88%</div></div>
+    <div class="gc-stat"><div class="gc-stat-val" style="color:var(--coral);" id="hm-projected">—</div><div class="gc-stat-lbl">Projected score</div><div class="gc-stat-sub">need: 110/150</div></div>
+    <div class="gc-stat"><div class="gc-stat-val" style="color:var(--pink);" id="hm-ca">0</div><div class="gc-stat-lbl">Today's CA</div><div class="gc-stat-sub">items added</div></div>
+  </div>
+
+  <!-- ── PYQ ANALYTICS HEADER STATS ────────────────────────── -->
+  <div class="gc-analysis-stats" id="gcAnalysisStats">
+    <div class="gc-astat"><div class="gc-astat-val">450</div><div class="gc-astat-lbl">Total questions analysed</div><div class="gc-astat-sub">150 per year (2023–25)</div></div>
+    <div class="gc-astat"><div class="gc-astat-val" id="gcRepeating">—</div><div class="gc-astat-lbl">Repeating themes found</div><div class="gc-astat-sub">topics/concepts repeated 2+ yrs</div></div>
+    <div class="gc-astat"><div class="gc-astat-val" id="gcTopSubject">—</div><div class="gc-astat-lbl">Highest weight subject</div><div class="gc-astat-sub" id="gcTopSubjectSub">~22–25 Qs per paper</div></div>
+    <div class="gc-astat"><div class="gc-astat-val">15–18</div><div class="gc-astat-lbl">UP-specific questions</div><div class="gc-astat-sub">per paper (~11%)</div></div>
+  </div>
+
+  <!-- ── SUBJECT TABLE ─────────────────────────────────────── -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title"><i class="ti ti-table" style="color:var(--blue);"></i> Subject-wise distribution (2023–2025)</div>
+    <div style="overflow-x:auto;margin-top:10px;">
+      <table class="gc-table" id="gcSubjectTable">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>2023</th><th>%</th>
+            <th>2024</th><th>%</th>
+            <th>2025</th><th>%</th>
+            <th>3-yr avg</th>
+            <th>Trend</th>
+          </tr>
+        </thead>
+        <tbody id="gcTableBody"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Loading…</td></tr></tbody>
+        <tfoot id="gcTableFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── GROUPED BAR CHART ──────────────────────────────────── -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--teal);"></i> Subject-wise question distribution (2023–2025)</div>
+    <canvas id="chartYearSubject" style="margin-top:12px;" height="90"></canvas>
+  </div>
+
+  <!-- ── LINE CHART: TOPIC TREND ────────────────────────────── -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title"><i class="ti ti-trending-up" style="color:var(--coral);"></i> Topic trend across 3 years — what's rising, steady, or fading</div>
+    <canvas id="chartTrend" style="margin-top:12px;" height="90"></canvas>
+  </div>
+
+  <!-- ── STATEMENT-TYPE DETECTOR ──────────────────────────── -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title">
+      <i class="ti ti-file-text" style="color:var(--coral);"></i>
+      Statement-type question analysis
+      <span style="font-size:11px;color:var(--text3);margin-left:auto;">"Which statements are correct?" pattern</span>
+    </div>
+    <div id="stmtAnalysisGrid"></div>
+  </div>
+
+  <!-- ── YEAR WEIGHT TREND ──────────────────────────────────── -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title">
+      <i class="ti ti-trending-up" style="color:var(--teal);"></i>
+      Subject weight trend — rising vs fading (2023→2025)
+      <span style="font-size:11px;color:var(--text3);margin-left:auto;">% share of paper per year</span>
+    </div>
+    <div id="weightTrendGrid"></div>
+  </div>
+
+  <!-- ── SUBJECT BREAKDOWN ────────────────────────────────── -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title">
+      <i class="ti ti-hierarchy" style="color:var(--teal);"></i>
+      Subject → Topic breakdown
+      <span style="font-size:11px;color:var(--text3);margin-left:auto;">Click a subject to expand</span>
+    </div>
+    <div id="subjectBreakdownGrid"></div>
+  </div>
+
+  <!-- ── ANSWER DISTRIBUTION ──────────────────────────────── -->
+  <div id="answerDistSection" style="margin-bottom:16px;">
+
+    <!-- Card 1: A/B/C/D letter distribution -->
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-title">
+        <i class="ti ti-circle-letter-a" style="color:var(--blue);"></i>
+        Correct answer key distribution — A / B / C / D
+        <span style="font-size:11px;color:var(--text3);margin-left:auto;">all 449 questions</span>
+      </div>
+      <div class="ans-letter-grid" id="ansLetterGrid"></div>
+      <div id="ansLetterYearTable" style="margin-top:14px;overflow-x:auto;"></div>
+      <div id="ansLetterInsight" class="ans-insight-box" style="border-left-color:var(--blue);"></div>
+    </div>
+
+    <!-- Card 2: Special Option Strategy -->
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-target" style="color:var(--purple);"></i>
+        Special answer strategy — appears as option vs actually correct
+        <span style="font-size:11px;color:var(--text3);margin-left:auto;">Both · Combo · None · All</span>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:16px;">
+        For each special option type: how many questions had it as <em>any option</em>,
+        how many had it as the <em>correct answer</em>, and how many were <em>traps</em>.
+        The strike rate tells you how reliable it is to pick that type.
+      </p>
+      <div id="ansStrategyGrid"></div>
+      <div id="ansStrategyInsight" class="ans-insight-box" style="border-left-color:var(--purple);margin-top:14px;"></div>
+    </div>
+
+  </div>
+
+  <!-- ── CA + LEADERBOARD ───────────────────────────────────── -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-news" style="color:var(--pink);"></i> Today's current affairs
+        <span id="todayDate" style="font-size:11px;color:var(--text3);margin-left:auto;"></span>
+      </div>
+      <div id="homeCAfeed"><div class="loading"><i class="ti ti-loader"></i>Loading...</div></div>
+      <button class="btn btn-sm" style="margin-top:8px;color:var(--pink);border-color:var(--pink);" onclick="showTab('ca',document.querySelectorAll('.nav-btn')[2])">
+        View all CA <i class="ti ti-arrow-right"></i>
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-trophy" style="color:var(--amber);"></i> Leaderboard top 5</div>
+      <div id="homeLB"><div class="loading"><i class="ti ti-loader"></i></div></div>
+    </div>
+  </div>
+
+  <!-- hidden legacy elements -->
+  <div id="homeMetrics" style="display:none;"></div>
+  <div id="homeSubjectBars" style="display:none;"></div>
+  <div id="streakDots" style="display:none;"></div>
+  <div id="streakMsg" style="display:none;"></div>
+</div>
+
+<style>
+/* ── ANALYTICS STAT GRID ──────────────────────── */
+.gc-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.gc-stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px;text-align:center;}
+.gc-stat-val{font-size:28px;font-weight:700;line-height:1;}
+.gc-stat-lbl{font-size:12px;color:var(--text2);margin-top:4px;}
+.gc-stat-sub{font-size:11px;color:var(--text3);}
+
+/* ── ANALYSIS HEADER STATS ────────────────────── */
+.gc-analysis-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.gc-astat{background:linear-gradient(135deg,var(--blue-light),var(--bg));
+  border:1px solid var(--blue)33;border-radius:var(--radius-lg);padding:16px;}
+.gc-astat-val{font-size:24px;font-weight:800;color:var(--blue-dark);}
+.gc-astat-lbl{font-size:12px;font-weight:600;color:var(--text);margin-top:4px;}
+.gc-astat-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+
+/* ── SUBJECT TABLE ────────────────────────────── */
+.gc-table{width:100%;border-collapse:collapse;font-size:13px;}
+.gc-table th{background:var(--bg3);padding:8px 12px;text-align:left;
+  font-weight:600;color:var(--text2);border-bottom:2px solid var(--border);white-space:nowrap;}
+.gc-table td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.gc-table tbody tr:hover{background:var(--bg2);}
+.gc-table tfoot td{font-weight:700;background:var(--bg3);border-top:2px solid var(--border);}
+.trend-rising{color:#1D9E75;font-weight:600;}
+.trend-falling{color:#D85A30;font-weight:600;}
+.trend-stable{color:#9aa0a6;font-weight:600;}
+@media(max-width:700px){
+  .gc-stat-grid,.gc-analysis-stats{grid-template-columns:repeat(2,1fr);}
+}
+
+/* ══════════════════════════════════════════════
+   MOBILE RESPONSIVE — < 640px
+══════════════════════════════════════════════ */
+@media(max-width:640px){
+
+  /* Banner — stack vertically on mobile */
+  .gc-banner-inner{
+    flex-direction:column;align-items:flex-start;
+    padding:14px 16px 16px;gap:12px;
+  }
+  .gc-countdown{min-width:unset;width:100%;
+    display:flex;align-items:center;gap:14px;
+    padding:8px 14px;text-align:left;
+  }
+  .gc-cd-num{font-size:28px;}
+  .gc-cd-lbl{margin-top:0;}
+  .gc-divider{display:none;}
+  .gc-logo-wrap{width:52px;height:52px;}
+  .gc-title{font-size:26px !important;}
+  .gc-brand{gap:8px;flex-wrap:wrap;}
+  .gc-stats-row{width:100%;justify-content:flex-start;}
+  .gc-stat-pill{padding:5px 10px;font-size:11px;}
+  .gc-right-block{align-items:flex-start;width:100%;}
+  .gc-banner-glow{display:none;}
+
+  /* Topbar */
+  .topbar{padding:8px 12px;}
+  .logo{font-size:14px;}
+  .logo i{font-size:18px;}
+  #userName-display{display:none;}
+  .streak-badge span:last-child{display:none;}
+
+  /* Nav — scrollable pill tabs */
+  .nav{padding:0 8px;gap:0;-webkit-overflow-scrolling:touch;}
+  .nav-btn{padding:9px 11px;font-size:12px;gap:4px;}
+  .nav-btn i{font-size:14px;}
+
+  /* Main padding */
+  .main{padding:10px 8px;}
+
+  /* Cards */
+  .card{padding:10px 12px;}
+
+  /* Metrics — 2 per row */
+  .metric-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .metric{padding:10px 12px;}
+  .metric-val{font-size:20px;}
+
+  /* Question cards */
+  .q-card{padding:12px;}
+  .q-text{font-size:13px;margin-bottom:10px;}
+  .opts{grid-template-columns:1fr;gap:6px;}
+  .opt-btn,.opt{font-size:12px;padding:8px 10px;}
+
+  /* Timer bar */
+  .timer-bar{padding:6px 10px;flex-wrap:wrap;gap:4px;}
+  .timer-val{font-size:14px;}
+
+  /* Filter bar */
+  .filter-bar{gap:5px;}
+  .filter-bar select{font-size:11px;padding:5px 6px;}
+
+  /* Chips */
+  .chip{font-size:11px;padding:4px 10px;}
+
+  /* Forms */
+  .form-grid{grid-template-columns:1fr;}
+
+  /* Two/three col */
+  .two-col,.three-col{grid-template-columns:1fr;}
+
+  /* Bar labels */
+  .bar-label{width:70px;font-size:11px;}
+
+  /* Mock modal */
+  .mock-modal-box,.modal-box{
+    width:96vw !important;max-width:96vw !important;
+    padding:14px !important;border-radius:12px !important;
+    max-height:90vh;overflow-y:auto;
+  }
+
+  /* Scorecard */
+  .scorecard{padding:12px !important;}
+  .score-big{font-size:36px !important;}
+
+  /* Heatmap */
+  .heatmap-cell{width:10px !important;height:10px !important;}
+
+  /* Cluster view */
+  .cluster-header{padding:10px 12px;}
+  .cluster-name{font-size:13px;}
+  .bias-row{grid-template-columns:16px 1fr 110px;}
+  .bias-nums{font-size:9px;}
+
+  /* Smart instant review */
+  .sir-card{padding:8px 10px;}
+
+  /* Buttons */
+  .btn{padding:6px 12px;font-size:12px;}
+  .btn-primary{font-size:12px;}
+
+  /* Confidence row */
+  .conf-row{gap:4px;}
+  .conf-btn{padding:3px 8px;font-size:10px;}
+
+  /* Subject badges */
+  .badge{font-size:9px;padding:2px 6px;}
+
+  /* Scrollable chips row */
+  [class*="chip-row"],[id*="filterChips"]{
+    flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:4px;
+  }
+}
+
+/* Extra small — phones < 400px */
+@media(max-width:400px){
+  .nav-btn{padding:8px 8px;font-size:11px;}
+  .metric-val{font-size:18px;}
+  .q-text{font-size:12px;}
+}
+</style>
+
+<!-- ══ PYQ PRACTICE TAB ══════════════════════════════════════ -->
+<div class="tab" id="tab-pyq">
+
+  <!-- ── Filter bar ───────────────────────────────── -->
+  <div class="filter-bar" id="filterBar">
+    <select id="f-subject" onchange="applyFilters()">
+      <option value="all">All subjects</option>
+      <option>Polity</option><option>Modern History</option><option>Ancient History</option>
+      <option>Geography</option><option>Economy</option><option>Science</option>
+      <option>Environment</option><option>Current Affairs</option><option>UP Special</option>
+    </select>
+    <select id="f-year" onchange="applyFilters()">
+      <option value="all">All years</option>
+      <option>2023</option><option>2024</option><option>2025</option>
+    </select>
+    <select id="f-diff" onchange="applyFilters()">
+      <option value="all">All difficulty</option>
+      <option>Easy</option><option>Medium</option><option>Hard</option>
+    </select>
+  </div>
+
+  <!-- ── Smart Filter Chips ──────────────────────── -->
+  <div class="smart-chips" id="smartChips">
+    <span class="chip chip-amber" id="chip-repeat" onclick="toggleChip('repeat')">
+      <i class="ti ti-repeat"></i> Repeating Topics
+    </span>
+    <span class="chip chip-red" id="chip-hipri" onclick="toggleChip('hipri')" title="Questions that appeared in all 3 years">
+      <i class="ti ti-star-filled"></i> High Priority
+    </span>
+    <span class="chip chip-red" id="chip-notdone" onclick="toggleChip('notdone')">
+      <i class="ti ti-circle-dashed"></i> Not Attempted
+    </span>
+    <span class="chip chip-gold" id="chip-bookmarked" onclick="toggleChip('bookmarked')">
+      <i class="ti ti-bookmark"></i> Bookmarked
+    </span>
+    <span class="chip" id="chip-anspat" onclick="toggleAnsPanel()" title="See A/B/C/D and Both/Combo breakdown for filtered questions">
+      <i class="ti ti-chart-donut"></i> Answer Pattern
+    </span>
+    <span class="chip chip-red" id="chip-kwhl" onclick="toggleKeywordHighlight()" title="Highlight danger words: NOT, EXCEPT, INCORRECT…">
+      <i class="ti ti-highlight"></i> Highlight Keywords
+    </span>
+    <span class="chip" id="chip-cluster" onclick="toggleClusterView()" title="Group questions by concept">
+      <i class="ti ti-layout-grid"></i> Cluster View
+    </span>
+    <span class="chip chip-mock-btn" onclick="openMockModal()">
+      <i class="ti ti-clock-play"></i> Start Mock Test
+    </span>
+  </div>
+
+  <!-- ── Answer Pattern Panel ──────────────────────── -->
+  <div id="ansPatternPanel" style="display:none;">
+    <div class="card" style="margin-bottom:10px;border-left:3px solid #c9a84c;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="card-title" style="margin-bottom:0;">
+          <i class="ti ti-chart-donut" style="color:#c9a84c;"></i> Answer Pattern for current filter
+        </div>
+        <button class="btn btn-sm" onclick="toggleAnsPanel()" style="font-size:11px;">Hide</button>
+      </div>
+      <div id="ansPatternContent" style="display:flex;gap:20px;flex-wrap:wrap;font-size:13px;"></div>
+    </div>
+  </div>
+
+  <!-- ── Mock timer bar (hidden until test starts) ── -->
+  <div id="mockTimerBar" style="display:none;" class="mock-timer-bar">
+    <div class="mock-timer-val" id="mockTimerVal">60:00</div>
+    <div class="mock-prog-wrap">
+      <div class="mock-prog-label" id="mockProgLabel">Q 0 of 0</div>
+      <div id="adaptiveDiffBadge" style="display:none;font-size:10px;font-weight:700;
+        border-radius:4px;padding:2px 6px;background:var(--amber);color:#fff;"></div>
+      <div class="mock-prog-track"><div class="mock-prog-fill" id="mockProgFill" style="width:0%"></div></div>
+    </div>
+    <button class="btn btn-sm" style="background:var(--red);color:#fff;border:none;" onclick="endMockTest()">
+      <i class="ti ti-flag"></i> Submit
+    </button>
+  </div>
+
+  <!-- ── Result count ──────────────────────────────── -->
+  <div id="qResultCount" style="font-size:13px;color:var(--text2);padding:8px 0 4px;"></div>
+
+  <!-- ── Questions container ───────────────────────── -->
+  <div id="qContainer"><div class="loading"><i class="ti ti-loader"></i>Loading questions...</div></div>
+
+  <!-- legacy stubs -->
+  <div id="timerBar" style="display:none;"></div>
+  <div id="qNav"     style="display:none;"></div>
+  <span id="qCounter"></span><span id="liveScore"></span><div id="timerDisp"></div>
+</div>
+
+<!-- ══ MOCK TEST SETUP MODAL ═════════════════════════════════ -->
+<div id="mockModal" class="mock-overlay" style="display:none;" onclick="if(event.target===this)closeMockModal()">
+  <div class="mock-setup">
+    <h2>🏁 Start Mock Test</h2>
+    <p>Choose your settings and simulate exam conditions with a countdown timer.</p>
+
+    <div class="mock-field">
+      <label>Number of Questions</label>
+      <div class="mock-options" id="mt-count-opts">
+        <span class="mock-opt selected" data-val="30"  onclick="selectMockOpt('count',this)">30</span>
+        <span class="mock-opt"          data-val="50"  onclick="selectMockOpt('count',this)">50</span>
+        <span class="mock-opt"          data-val="100" onclick="selectMockOpt('count',this)">100</span>
+        <span class="mock-opt"          data-val="150" onclick="selectMockOpt('count',this)">150 (Full)</span>
+      </div>
+    </div>
+
+    <div class="mock-field">
+      <label>Subject</label>
+      <div class="mock-options" id="mt-sub-opts">
+        <span class="mock-opt selected" data-val="all"            onclick="selectMockOpt('sub',this)">All</span>
+        <span class="mock-opt"          data-val="Polity"         onclick="selectMockOpt('sub',this)">Polity</span>
+        <span class="mock-opt"          data-val="Modern History" onclick="selectMockOpt('sub',this)">Mod. History</span>
+        <span class="mock-opt"          data-val="Geography"      onclick="selectMockOpt('sub',this)">Geography</span>
+        <span class="mock-opt"          data-val="Economy"        onclick="selectMockOpt('sub',this)">Economy</span>
+        <span class="mock-opt"          data-val="Science"        onclick="selectMockOpt('sub',this)">Science</span>
+        <span class="mock-opt"          data-val="Environment"    onclick="selectMockOpt('sub',this)">Environment</span>
+      </div>
+    </div>
+
+    <div class="mock-field">
+      <label>Topic <span style="font-size:10px;color:var(--text3);">(optional — within selected subject)</span></label>
+      <div id="mt-topic-wrap">
+        <select id="mt-topic-select" style="width:100%;padding:7px 10px;border-radius:8px;
+          border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;"
+          onchange="mockSettings.topic=this.value">
+          <option value="all">All topics</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mock-field">
+      <label>Time Limit</label>
+      <div class="mock-options" id="mt-time-opts">
+        <span class="mock-opt"          data-val="30"  onclick="selectMockOpt('time',this)">30 min</span>
+        <span class="mock-opt selected" data-val="60"  onclick="selectMockOpt('time',this)">60 min</span>
+        <span class="mock-opt"          data-val="90"  onclick="selectMockOpt('time',this)">90 min</span>
+        <span class="mock-opt"          data-val="120" onclick="selectMockOpt('time',this)">120 min</span>
+      </div>
+    </div>
+
+    <div class="mock-field">
+      <label>Mode</label>
+      <div class="mock-options" id="mt-mode-opts">
+        <span class="mock-opt selected" data-val="normal"   onclick="selectMockOpt('mode',this)">Normal</span>
+        <span class="mock-opt"          data-val="adaptive" onclick="selectMockOpt('mode',this)">
+          <i class="ti ti-adjustments"></i> Adaptive
+        </span>
+        <span class="mock-opt"          data-val="highpri"  onclick="selectMockOpt('mode',this)">
+          <i class="ti ti-star-filled"></i> High Priority Only
+        </span>
+      </div>
+    </div>
+
+    <div class="mock-setup-btns">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="launchMockTest()">
+        <i class="ti ti-player-play"></i> Start Test
+      </button>
+      <button class="btn" onclick="closeMockModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CURRENT AFFAIRS TAB ═══════════════════════════════════ -->
+<div class="tab" id="tab-ca">
+  <div class="today-banner">
+    <i class="ti ti-news" aria-hidden="true"></i>
+    <div>
+      <div style="font-weight:500;font-size:13px;">Today's Current Affairs — <span id="caTodayDate"></span></div>
+      <div style="font-size:12px;color:var(--pink-dark);">Highlighted by admin • <span id="caTodayCount">—</span> items today</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <select id="ca-cat" onchange="loadCA()">
+      <option value="all">All categories</option>
+      <option>Polity</option><option>International</option><option>Economy</option>
+      <option>Science</option><option>UP Special</option><option>Awards</option>
+      <option>Environment</option><option>Defence</option><option>Sports</option>
+    </select>
+    <input type="text" id="ca-search" placeholder="Search CA..." style="width:200px;font-size:12px;"
+      oninput="debounceCA()">
+    <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);cursor:pointer;">
+      <input type="checkbox" id="ca-bookmarked" onchange="loadCA()"> Bookmarked only
+    </label>
+  </div>
+
+  <div id="caFeed"><div class="loading"><i class="ti ti-loader"></i>Loading current affairs...</div></div>
+</div>
+
+<!-- ══ PROGRESS TAB ══════════════════════════════════════════ -->
+<div class="tab" id="tab-progress">
+  <!-- Heatmap card (always visible) -->
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-title"><i class="ti ti-calendar" style="color:var(--blue);"></i> Practice calendar — last 60 days</div>
+    <div class="heatmap-wrap"><div class="heatmap-grid" id="heatmapGrid"></div></div>
+    <div class="heatmap-legend">
+      Less&nbsp;
+      <div class="heatmap-legend-cell" style="background:#f0f0f0;"></div>
+      <div class="heatmap-legend-cell" data-lv="1" style="background:#d4edda;"></div>
+      <div class="heatmap-legend-cell" data-lv="2" style="background:#28a745;"></div>
+      <div class="heatmap-legend-cell" data-lv="3" style="background:#155724;"></div>
+      <div class="heatmap-legend-cell" data-lv="4" style="background:#0a3316;"></div>
+      &nbsp;More
+    </div>
+  </div>
+  <div id="progressContent"><div class="loading"><i class="ti ti-loader"></i>Loading your progress...</div></div>
+</div>
+
+<!-- ══ LEADERBOARD TAB ═══════════════════════════════════════ -->
+<div class="tab" id="tab-leaderboard">
+  <div id="lbContent"><div class="loading"><i class="ti ti-loader"></i>Loading leaderboard...</div></div>
+</div>
+
+<!-- ══ ADMIN TAB ══════════════════════════════════════════════ -->
+<div class="tab" id="tab-admin">
+  <div class="admin-notice">
+    <i class="ti ti-lock" aria-hidden="true"></i>
+    Admin panel — only visible to you. Add today's Current Affairs here.
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-news" aria-hidden="true" style="color:var(--pink);"></i> Add current affair</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" id="ca-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select id="ca-cat-input">
+          <option>Polity</option><option>International</option><option>Economy</option>
+          <option>Science</option><option>UP Special</option><option>Awards</option>
+          <option>Environment</option><option>Defence</option><option>Sports</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px;">
+      <label class="form-label">Headline (bold title users see)</label>
+      <input type="text" id="ca-headline" placeholder="e.g. India-Japan LUPEX mission timeline confirmed">
+    </div>
+    <div class="form-group" style="margin-bottom:10px;">
+      <label class="form-label">Detail (2-3 sentences — why it matters for UPPSC)</label>
+      <textarea id="ca-detail" placeholder="Explain the news and its UPPSC relevance..."></textarea>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">UPPSC Relevance</label>
+        <select id="ca-relevance"><option>High</option><option>Medium</option><option>Low</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Source</label>
+        <input type="text" id="ca-source" placeholder="PIB / The Hindu / ISRO...">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px;">
+      <label class="form-label">Tags (comma-separated)</label>
+      <input type="text" id="ca-tags" placeholder="Space, ISRO, Science">
+    </div>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label class="form-label">MCQ (optional — write a quick question based on this CA)</label>
+      <input type="text" id="ca-mcq" placeholder="e.g. Which agency develops lander for LUPEX? → JAXA">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="submitCA()">
+        <i class="ti ti-plus" aria-hidden="true"></i> Add to portal
+      </button>
+      <button class="btn" onclick="clearCAForm()">Clear</button>
+    </div>
+    <div id="ca-status" style="margin-top:8px;font-size:12px;display:none;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-database" aria-hidden="true" style="color:var(--teal);"></i> Portal stats</div>
+    <div id="adminStats" class="three-col" style="margin-bottom:0;"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let userName     = "";
+let isAdmin      = false;
+let allQuestions = [];
+let filteredQ    = [];
+let currentIdx   = 0;
+let answers      = {};  // { qId: "correct"|"wrong"|"skipped" }
+let timers       = {};  // { qId: seconds }
+let startTimes   = {};  // { qId: Date }
+let quizTimer    = null;
+let quizSeconds  = 0;
+let quizMode     = false;
+let caBookmarks  = JSON.parse(localStorage.getItem("caBookmarks")||"[]");
+let caDebounce   = null;
+let progressData = null;
+let userStreak   = 0;
+
+// ── SMART FILTER STATE ────────────────────────
+let pyqBookmarks      = JSON.parse(localStorage.getItem("pyqBookmarks") || "[]");
+let attemptedQIds     = new Set(JSON.parse(localStorage.getItem("pyqAttempted") || "[]"));
+let filterRepeating   = false;
+let filterNotDone     = false;
+let filterBookmarked  = false;
+let filterHighPri     = false;
+let kwHighlightOn     = false;
+let clusterViewOn     = false;
+let pyqConfidence     = JSON.parse(localStorage.getItem("pyqConfidence") || "{}");
+let sessionConfidence = {}; // { qId: 'sure'|'5050'|'guess' } for current session
+let pyqBiasData       = JSON.parse(localStorage.getItem("pyqBiasData") || '{"picked":{"A":0,"B":0,"C":0,"D":0},"total":0}');
+let sessionPicks      = { A:0, B:0, C:0, D:0 }; // current session picks
+
+const DANGER_WORDS = /\b(NOT|INCORRECT|EXCEPT|ONLY|ALWAYS|NEVER|ALL|NONE|BOTH|CORRECTLY|INCORRECTLY|WRONG|FALSE|UNTRUE|MUST|CANNOT|EVERY|NO)\b/g;
+
+function highlightDangerWords(text) {
+  if (!kwHighlightOn) return text;
+  return text.replace(DANGER_WORDS, w => `<mark class="kw-danger">${w}</mark>`);
+}
+
+function setConfidence(qId, level) {
+  sessionConfidence[qId] = level;
+  pyqConfidence[qId]     = level;
+  localStorage.setItem("pyqConfidence", JSON.stringify(pyqConfidence));
+  // Update UI without full re-render
+  const row = document.getElementById('conf-'+qId);
+  if (row) row.querySelectorAll('.conf-btn').forEach(b => {
+    b.classList.toggle('conf-active', b.textContent.toLowerCase().includes(
+      level==='sure'?'sure':level==='5050'?'50':' guess'));
+  });
+}
+
+function toggleKeywordHighlight() {
+  kwHighlightOn = !kwHighlightOn;
+  document.getElementById('chip-kwhl').classList.toggle('active', kwHighlightOn);
+  renderQuestions();
+}
+
+function toggleClusterView() {
+  clusterViewOn = !clusterViewOn;
+  document.getElementById('chip-cluster').classList.toggle('active', clusterViewOn);
+  if (clusterViewOn) renderClusterView();
+  else renderQuestions();
+}
+
+function renderClusterView() {
+  const container = document.getElementById("questionsContainer");
+  if (!container) return;
+
+  // Group filtered questions by subTopic
+  const groups = {};
+  filteredQ.forEach(q => {
+    const key = q.subTopic || q.topic || 'General';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(q);
+  });
+
+  const topicAcc = JSON.parse(localStorage.getItem("pyqTopicAccuracy") || "{}");
+
+  const html = Object.entries(groups).sort((a,b) => b[1].length - a[1].length).map(([cluster, qs]) => {
+    const years = [...new Set(qs.map(q => q.year))].sort();
+    const subject = qs[0].subject;
+    const types = {};
+    qs.forEach(q => { const t = classifyAnswerType(q); types[t] = (types[t]||0)+1; });
+    const typeStr = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,3)
+      .map(([t,c]) => `${t}(${c})`).join(' · ');
+    const subAcc = topicAcc[subject];
+    const acc = subAcc && subAcc[cluster];
+    const accStr = acc ? (() => {
+      const total = acc.c + acc.w;
+      const pct = total ? Math.round(acc.c/total*100) : 0;
+      return `<span class="cluster-acc" style="color:${pct>=60?'var(--teal)':pct>=40?'var(--amber)':'var(--red)'};">
+        ${pct}% accuracy (${total} done)</span>`;
+    })() : '<span class="cluster-acc" style="color:var(--text3);">Not attempted</span>';
+
+    const qCards = qs.map((q, idx) => {
+      const shown = answers[q.id] !== undefined && answers[q.id] !== "skipped";
+      const opts = ['A','B','C','D'].filter(l => q['opt'+l]).map(l => {
+        const isChosen = answers[q.id+'_chosen'] === l;
+        const isCorrect = l === q.answer;
+        let cls = 'opt-btn';
+        if (shown) cls += isCorrect ? ' opt-correct' : isChosen ? ' opt-wrong' : ' opt-disabled';
+        return `<button class="${cls}" onclick="attemptQ('${q.id}','${l}','${q.answer}',${idx})" style="font-size:12px;padding:6px 10px;text-align:left;">
+          <strong>${l}.</strong> ${q['opt'+l]}
+        </button>`;
+      }).join('');
+      const exp = shown ? `<div class="explanation" style="font-size:12px;">
+        <strong>${q.answer}.</strong> ${q.answerText} — ${q.explanation||''}
+      </div>` : '';
+      const isBk = pyqBookmarks.has(String(q.id));
+      return `<div class="q-card" id="qcard-${q.id}" style="margin-bottom:8px;">
+        <button class="q-bk-btn ${isBk?'bookmarked':''}" onclick="toggleQBookmark('${q.id}')" title="Bookmark">
+          <i class="ti ti-bookmark${isBk?'-filled':''}"></i>
+        </button>
+        <div class="q-meta" style="margin-bottom:4px;">
+          <span class="badge" style="background:var(--bg3);color:var(--text2);">${q.year}</span>
+          <span class="badge ${q.difficulty==='Hard'?'badge-red':q.difficulty==='Medium'?'badge-amber':'badge-green'}">${q.difficulty}</span>
+        </div>
+        <div class="q-text" style="font-size:13px;">${highlightDangerWords(q.question)}</div>
+        <div class="opts" style="gap:4px;">${opts}</div>
+        ${exp}
+      </div>`;
+    }).join('');
+
+    return `<div class="cluster-card" id="cluster-${cluster.replace(/\s+/g,'_')}">
+      <div class="cluster-header" onclick="toggleCluster(this)">
+        <div>
+          <div class="cluster-name">${cluster}</div>
+          <div class="cluster-meta">
+            ${subjectBadge(subject)}
+            <span style="font-size:11px;color:var(--text3);">${qs.length} questions · ${years.join(', ')}</span>
+            ${accStr}
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">${typeStr}</div>
+        </div>
+        <i class="ti ti-chevron-down cluster-chevron"></i>
+      </div>
+      <div class="cluster-body">${qCards}</div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `<div class="cluster-wrap">${html}</div>`;
+}
+
+function attemptSIR(qId, chosen, correct) {
+  // Inline answer reveal for Smart Instant Review cards — no full re-render
+  const card = document.getElementById('qcard-'+qId);
+  if (!card || card.dataset.sirDone) return;
+  card.dataset.sirDone = '1';
+  const isRight = chosen === correct;
+  card.querySelectorAll('.opt-btn').forEach(b => {
+    const letter = b.querySelector('strong').textContent.replace('.','');
+    b.disabled = true;
+    if (letter === correct) b.classList.add('opt-correct');
+    else if (letter === chosen && !isRight) b.classList.add('opt-wrong');
+    else b.classList.add('opt-disabled');
+  });
+  const q = allQuestions.find(q => String(q.id) === String(qId));
+  const expDiv = document.getElementById('sir-exp-'+qId);
+  if (expDiv && q) {
+    expDiv.innerHTML = `<div class="explanation" style="font-size:12px;margin-top:8px;">
+      ${isRight ? '✅ Correct!' : '❌ Wrong.'} <strong>${q.answer}.</strong> ${q.answerText||''}
+      ${q.explanation ? '<br>' + q.explanation : ''}
+    </div>`;
+  }
+}
+
+function toggleCluster(header) {
+  const card = header.closest('.cluster-card');
+  const body = card.querySelector('.cluster-body');
+  const icon = card.querySelector('.cluster-chevron');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  icon.style.transform = open ? 'rotate(-90deg)' : 'rotate(0deg)';
+}
+
+// ── MOCK TEST STATE ───────────────────────────
+let mockActive        = false;
+let mockTimer         = null;
+let mockSecsLeft      = 0;
+let mockTotalSecs     = 0;
+let mockQIdx          = 0;
+let mockQStartTime    = null;
+let mockQTimes        = {};  // { qId: seconds }
+let mockSettings      = { count: 30, sub: "all", time: 60, topic: "all", mode: "normal" };
+let mockAdaptiveDiff  = "Easy"; // tracks current difficulty in adaptive mode
+
+// ── HEATMAP STATE ─────────────────────────────
+let pyqHeatmap = JSON.parse(localStorage.getItem("pyqHeatmap") || "{}");
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+window.onload = function() {
+  // No name required — auto-start
+  userName = localStorage.getItem("uppscUserName") || "Student";
+  localStorage.setItem("uppscUserName", userName);
+  // Set today's date in admin form
+  const today = new Date().toISOString().split("T")[0];
+  const dateEl = document.getElementById("ca-date");
+  if (dateEl) dateEl.value = today;
+  // Live countdown to UPPSC 2026 (6 Dec 2026)
+  function updateCountdown() {
+    const exam = new Date('2026-12-06T00:00:00');
+    const now  = new Date();
+    const diff = Math.ceil((exam - now) / (1000 * 60 * 60 * 24));
+    const el   = document.getElementById('gcDaysLeft');
+    if (el) el.textContent = diff > 0 ? diff : '0';
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 60000); // refresh every minute
+  initPortal();
+};
+
+function startPortal() { initPortal(); }
+function changeName() {}
+
+function initPortal() {
+  // Update UI (elements may not exist in new banner layout)
+  const udEl = document.getElementById("userName-display");
+  if (udEl) udEl.textContent = userName;
+  const av = document.getElementById("avatarEl");
+  if (av) av.textContent = userName.substring(0,2).toUpperCase();
+
+  // Today's date
+  const today = new Date();
+  const opts   = { day:"numeric", month:"short", year:"numeric" };
+  const tdEl = document.getElementById("todayDate");
+  if (tdEl) tdEl.textContent = today.toLocaleDateString("en-IN", opts);
+  const ctEl = document.getElementById("caTodayDate");
+  if (ctEl) ctEl.textContent = today.toLocaleDateString("en-IN", opts);
+
+  // Check admin
+  google.script.run
+    .withSuccessHandler(r => {
+      isAdmin = r.isAdmin;
+      if (isAdmin) document.getElementById("adminNavBtn").style.display = "flex";
+    })
+    .checkAdmin();
+
+  // Load home data
+  loadHome();
+  loadQuestions();
+}
+
+// ══════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════════
+function showTab(id, btn) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + id).classList.add("active");
+  if (btn) btn.classList.add("active");
+
+  if (id === "ca")          loadCA();
+  if (id === "progress")    loadProgress();
+  if (id === "leaderboard") loadLeaderboard();
+  if (id === "admin")       loadAdminStats();
+}
+
+// ══════════════════════════════════════════════════════════════
+// HOME
+// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// PYQ ANALYTICS
+// ══════════════════════════════════════════════════════════════
+let _analyticsLoaded = false;
+const SUB_COLORS = ['#1D9E75','#378ADD','#D4537E','#EF9F27','#7F77DD','#D85A30','#E24B4A','#085041','#4B1528'];
+const YEARS = ['2023','2024','2025'];
+const YR_COLORS = ['#1D9E75','#7F77DD','#EF9F27'];
+
+function loadAnalytics() {
+  if (_analyticsLoaded) return;
+  google.script.run
+    .withSuccessHandler(renderAnalytics)
+    .withFailureHandler(e => console.error('Analytics:', e))
+    .getAnalytics();
+}
+
+function renderAnalytics(data) {
+  _analyticsLoaded = true;
+
+  // ── Header stats ─────────────────────────────────────────
+  document.getElementById('gcRepeating').textContent = data.repeatingCount;
+  const topSub = Object.entries(data.subjectCounts).sort((a,b)=>b[1]-a[1])[0];
+  if (topSub) {
+    document.getElementById('gcTopSubject').textContent = topSub[0];
+    document.getElementById('gcTopSubjectSub').textContent = `~${topSub[1]} Qs over 3 years`;
+  }
+
+  // ── Subject table ─────────────────────────────────────────
+  const subjects = Object.keys(data.subjectCounts).sort();
+  const tbody = document.getElementById('gcTableBody');
+  const tfoot = document.getElementById('gcTableFoot');
+  const totals = {2023:0, 2024:0, 2025:0};
+
+  tbody.innerHTML = subjects.map(sub => {
+    const c23 = (data.yearSubject['2023']||{})[sub]||0;
+    const c24 = (data.yearSubject['2024']||{})[sub]||0;
+    const c25 = (data.yearSubject['2025']||{})[sub]||0;
+    totals[2023]+=c23; totals[2024]+=c24; totals[2025]+=c25;
+    const avg = ((c23+c24+c25)/3).toFixed(1);
+    const trend = c25>c23 ? '<span class="trend-rising">▲ Rising</span>'
+                : c25<c23 ? '<span class="trend-falling">▼ Falling</span>'
+                : '<span class="trend-stable">— Stable</span>';
+    const p23=totals[2023]?Math.round(c23/150*100)+'%':'—';
+    const p24=totals[2024]?Math.round(c24/150*100)+'%':'—';
+    const p25=totals[2025]?Math.round(c25/150*100)+'%':'—';
+    return `<tr>
+      <td><strong>${sub}</strong></td>
+      <td>${c23}</td><td style="color:var(--text3)">${Math.round(c23/150*100)}%</td>
+      <td>${c24}</td><td style="color:var(--text3)">${Math.round(c24/150*100)}%</td>
+      <td>${c25}</td><td style="color:var(--text3)">${Math.round(c25/150*100)}%</td>
+      <td><strong>${avg}</strong></td>
+      <td>${trend}</td>
+    </tr>`;
+  }).join('');
+
+  const t23=totals[2023]||150, t24=totals[2024]||150, t25=totals[2025]||150;
+  tfoot.innerHTML = `<tr>
+    <td>Total</td>
+    <td>${t23}</td><td>100%</td>
+    <td>${t24}</td><td>100%</td>
+    <td>${t25}</td><td>100%</td>
+    <td>${((t23+t24+t25)/3).toFixed(0)}</td><td></td>
+  </tr>`;
+
+  // ── Grouped bar chart (subject × year) ───────────────────
+  const sortedYears = YEARS.filter(y => data.yearSubject[y]);
+  const datasets = subjects.map((sub,i) => ({
+    label: sub,
+    data: sortedYears.map(yr => (data.yearSubject[yr]||{})[sub]||0),
+    backgroundColor: SUB_COLORS[i%SUB_COLORS.length]+'bb',
+    borderColor:     SUB_COLORS[i%SUB_COLORS.length],
+    borderWidth:1, borderRadius:3
+  }));
+  new Chart(document.getElementById('chartYearSubject'), {
+    type:'bar',
+    data:{ labels: subjects, datasets:[
+      { label:'2023', data: subjects.map(s=>(data.yearSubject['2023']||{})[s]||0), backgroundColor:'#1D9E75bb', borderColor:'#1D9E75', borderWidth:1, borderRadius:3 },
+      { label:'2024', data: subjects.map(s=>(data.yearSubject['2024']||{})[s]||0), backgroundColor:'#7F77DDbb', borderColor:'#7F77DD', borderWidth:1, borderRadius:3 },
+      { label:'2025', data: subjects.map(s=>(data.yearSubject['2025']||{})[s]||0), backgroundColor:'#EF9F27bb', borderColor:'#EF9F27', borderWidth:1, borderRadius:3 },
+    ]},
+    options:{
+      plugins:{ legend:{ position:'top', labels:{ font:{size:12}, boxWidth:14 } } },
+      scales:{ x:{ ticks:{font:{size:11}} }, y:{ beginAtZero:true } },
+      responsive:true
+    }
+  });
+
+  // ── Line chart: topic trend ───────────────────────────────
+  const trendSubjects = subjects.slice(0,6); // top subjects
+  const trendDatasets = trendSubjects.map((sub,i) => ({
+    label: sub,
+    data: YEARS.map(yr => (data.yearSubject[yr]||{})[sub]||0),
+    borderColor: SUB_COLORS[i%SUB_COLORS.length],
+    backgroundColor: SUB_COLORS[i%SUB_COLORS.length]+'22',
+    tension:0.4, pointRadius:5, pointHoverRadius:7, fill:false, borderWidth:2
+  }));
+  new Chart(document.getElementById('chartTrend'), {
+    type:'line',
+    data:{ labels: YEARS, datasets: trendDatasets },
+    options:{
+      plugins:{ legend:{ position:'bottom', labels:{ font:{size:11}, boxWidth:12 } } },
+      scales:{ y:{ beginAtZero:true } },
+      responsive:true
+    }
+  });
+}
+
+function loadHome() {
+  // Load PYQ analytics charts
+  loadAnalytics();
+
+  // Load progress for metrics
+  google.script.run
+    .withSuccessHandler(prog => {
+      progressData = prog;
+      updateHomeMetrics(prog);
+      updateStreakUI(prog.streak);
+      renderSubjectBars(prog.subjects);
+    })
+    .withFailureHandler(showError)
+    .getUserProgress(userName);
+
+  // Load CA for today's feed
+  google.script.run
+    .withSuccessHandler(caItems => renderHomeCA(caItems))
+    .getCurrentAffairs({ limit: 10 });
+
+  // Load leaderboard
+  google.script.run
+    .withSuccessHandler(lb => renderHomeLB(lb))
+    .getLeaderboard();
+}
+
+function updateHomeMetrics(prog) {
+  document.getElementById("hm-attempted").textContent = prog.questionsAttempted || 0;
+  document.getElementById("hm-accuracy").textContent  = (prog.accuracy || 0) + "%";
+  document.getElementById("hm-projected").textContent = (prog.projected || 0) + "/150";
+}
+
+function updateStreakUI(streak) {
+  userStreak = streak || 0;
+  const badge = document.getElementById("streakBadge");
+  const num   = document.getElementById("streakNum");
+  if (badge && userStreak > 0) {
+    badge.style.display = "flex";
+    if (num) num.textContent = userStreak;
+  }
+  const dotsEl = document.getElementById("streakDots");
+  if (dotsEl) {
+    const days  = ["M","T","W","T","F","S","S"];
+    const today = new Date().getDay();
+    dotsEl.innerHTML = days.map((d,i) => {
+      const cls = i === today ? "streak-dot today" : (i < today ? "streak-dot done" : "streak-dot miss");
+      return `<div class="${cls}">${d}</div>`;
+    }).join("");
+  }
+  const msgEl = document.getElementById("streakMsg");
+  if (msgEl) msgEl.textContent = userStreak > 0 ? `${userStreak} day streak — keep going!` : "Start your streak today!";
+  // Render heatmap
+  renderHeatmap();
+}
+
+// ══════════════════════════════════════════════════════════════
+// HEATMAP CALENDAR
+// ══════════════════════════════════════════════════════════════
+function renderHeatmap() {
+  const grid  = document.getElementById("heatmapGrid");
+  if (!grid) return;
+  const DAYS  = 63; // 9 weeks
+  const today = new Date();
+  // Build date → count map from localStorage
+  const data  = pyqHeatmap;
+
+  // Figure out which day of week today is (0=Sun..6=Sat)
+  const todayDow = today.getDay(); // 0=Sun
+  // We want full weeks. End on the last day of this week (Saturday)
+  const daysToEnd = 6 - todayDow; // how many more days to end of week
+  const endDate = new Date(today);
+  endDate.setDate(today.getDate() + daysToEnd);
+
+  // Build 63 cells backwards from endDate
+  const cells = [];
+  for (let i = DAYS-1; i >= 0; i--) {
+    const d = new Date(endDate);
+    d.setDate(endDate.getDate() - i);
+    const key   = d.toISOString().split("T")[0];
+    const count = data[key] || 0;
+    const lv    = count === 0 ? 0 : count <= 3 ? 1 : count <= 7 ? 2 : count <= 14 ? 3 : 4;
+    const isToday = key === today.toISOString().split("T")[0];
+    cells.push({ key, count, lv, isToday, dow: d.getDay() });
+  }
+
+  // Group into columns of 7 (Sun..Sat)
+  const cols  = [];
+  for (let c = 0; c < cells.length/7; c++) {
+    cols.push(cells.slice(c*7, c*7+7));
+  }
+
+  grid.innerHTML = cols.map((col, ci) => {
+    // Month label on first cell of each column if month changes
+    const firstDate = col[0].key;
+    const month = new Date(firstDate).toLocaleDateString("en-IN",{month:"short"});
+    const prevColFirst = ci > 0 ? new Date(cols[ci-1][0].key) : null;
+    const showMonth = ci === 0 || (prevColFirst && new Date(firstDate).getMonth() !== prevColFirst.getMonth());
+
+    return `<div class="heatmap-col">
+      <div class="hm-month">${showMonth ? month : ""}</div>
+      ${col.map(cell => `<div class="heatmap-cell" data-lv="${cell.lv}"
+        style="${cell.isToday ? "outline:2px solid #c9a84c;outline-offset:1px;" : ""}"
+        title="${cell.key}: ${cell.count} question${cell.count!==1?"s":""}"></div>`).join("")}
+    </div>`;
+  }).join("");
+}
+
+// ══════════════════════════════════════════════════════════════
+// SUBJECT STREAK (computed from heatmap data per subject)
+// ══════════════════════════════════════════════════════════════
+function getSubjectStreakPip(sub, subjData) {
+  if (!subjData || subjData.total < 1) return "";
+  // Compute streak from localStorage subjectDates
+  const subDates = JSON.parse(localStorage.getItem("subjectDates") || "{}");
+  const dates     = (subDates[sub] || []).sort().reverse();
+  let streak = 0;
+  const today     = new Date().toDateString();
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  if (dates.length && (new Date(dates[0]).toDateString() === today || new Date(dates[0]).toDateString() === yesterday)) {
+    streak = 1;
+    for (let i=1;i<dates.length;i++) {
+      const diff = (new Date(dates[i-1])-new Date(dates[i]))/86400000;
+      if (diff <= 1.5) streak++; else break;
+    }
+  }
+  return streak >= 2 ? `<span class="streak-pip"><i class="ti ti-flame"></i> ${streak}d</span>` : "";
+}
+
+function renderSubjectBars(subjects) {
+  const colors = {
+    "Polity":"var(--teal)","Modern History":"var(--purple)","Ancient History":"#AFA9EC",
+    "Geography":"var(--blue)","Economy":"var(--amber)","Science":"#639922",
+    "Environment":"var(--teal)","Current Affairs":"var(--pink)","UP Special":"var(--coral)"
+  };
+  const el = document.getElementById("homeSubjectBars");
+  if (!subjects || Object.keys(subjects).length === 0) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px;">
+      No data yet. Start practicing!</div>`;
+    return;
+  }
+  el.innerHTML = Object.entries(subjects).map(([sub, data]) => {
+    const acc = data.correct + data.wrong > 0
+      ? Math.round(data.correct / (data.correct + data.wrong) * 100) : 0;
+    const color = colors[sub] || "var(--blue)";
+    return `<div class="bar-row">
+      <span class="bar-label">${sub.replace(" History","").replace(" Affairs","")}</span>
+      <div class="bar-bg">
+        <div class="bar-fill" style="width:${acc}%;background:${color};">
+          <span class="bar-pct">${acc}%</span>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderHomeCA(items) {
+  const el = document.getElementById("homeCAfeed");
+  const todayStr = new Date().toDateString();
+
+  const todayItems = items.filter(item => {
+    const d = new Date(item.date);
+    return d.toDateString() === todayStr;
+  });
+
+  document.getElementById("hm-ca").textContent = todayItems.length;
+  document.getElementById("caTodayCount").textContent = todayItems.length;
+
+  if (todayItems.length === 0) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px;">
+      No CA added today yet. Check back later.</div>`;
+    return;
+  }
+
+  const catColors = getCatColors();
+  el.innerHTML = todayItems.slice(0,3).map(item => `
+    <div class="ca-preview">
+      <span class="badge" style="background:${catColors[item.category]||"var(--bg3)"};
+        color:${catColors[item.category+"T"]||"var(--text2)"};">${item.category}</span>
+      <div class="ca-preview-head">${item.headline}</div>
+      <div class="ca-preview-sub">${(item.detail||"").substring(0,80)}...</div>
+    </div>
+  `).join("");
+}
+
+function renderHomeLB(lb) {
+  const el = document.getElementById("homeLB");
+  if (!lb || lb.length === 0) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text3);">No entries yet. Be the first!</div>`;
+    return;
+  }
+  const medals = ["🥇","🥈","🥉","4","5"];
+  el.innerHTML = lb.slice(0,5).map((u,i) => {
+    const isMe = u.name === userName;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;
+      border-bottom:1px solid var(--border3,#f5f5f5);
+      ${isMe?"background:var(--teal-light);border-radius:4px;padding:7px 6px;":""}">
+      <span style="width:24px;font-size:13px;">${medals[i]||i+1}</span>
+      <span style="flex:1;font-size:13px;${isMe?"font-weight:500;color:var(--teal-dark);":""}">
+        ${u.name}${isMe?" (you)":""}
+      </span>
+      <span style="font-size:13px;font-weight:500;color:var(--teal-dark);">${u.score}/150</span>
+    </div>`;
+  }).join("");
+}
+
+// ══════════════════════════════════════════════════════════════
+// PYQ PRACTICE
+// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// ANSWER DISTRIBUTION
+// ══════════════════════════════════════════════════════════════
+
+function classifyAnswerType(q) {
+  const optKey = 'opt' + (q.answer || 'A');
+  const text   = ((q[optKey] || q.answerText || '')).toLowerCase().trim();
+  if (/none of (the )?above|none of these/i.test(text))     return 'None of the above';
+  if (/all of (the )?above|all of these/i.test(text))       return 'All of the above';
+  if (/both (a|b|c|d|1|2|3|i{1,3})/i.test(text))           return 'Both';
+  if (/neither/i.test(text))                                return 'Neither';
+  if (/only [a-d1-3i]+ and [a-d1-3i]+/i.test(text))        return 'Combo (Only)';
+  if (/\d+ and \d+|\bi and ii\b|\bii and iii\b/i.test(text)) return 'Combo';
+  return 'Direct';
+}
+
+function computeAnswerDist(questions) {
+  const YEARS   = ['2023', '2024', '2025'];
+  const letters = { A:0, B:0, C:0, D:0 };
+  const byYear  = {};
+  YEARS.forEach(y => { byYear[y] = { A:0, B:0, C:0, D:0 }; });
+
+  questions.forEach(q => {
+    const a  = (q.answer || '').trim();
+    const yr = String(q.year);
+    if (letters[a] !== undefined) letters[a]++;
+    if (byYear[yr] && byYear[yr][a] !== undefined) byYear[yr][a]++;
+  });
+  return { letters, byYear, total: questions.length };
+}
+
+// ── For each special type: how many questions have it as ANY option
+// vs how many have it as the CORRECT answer
+function computeSpecialOptionStats(questions) {
+  const SPECIAL = [
+    { key: 'Both',             label: 'Both (1&2 / A&B)',   icon: 'ti-circles-relation', color: '#7F77DD',
+      regex: /both\s+(1|2|3|a|b|c|d|i{1,3})/i },
+    { key: 'All of the above', label: 'All of the above',   icon: 'ti-list-check',       color: '#1D9E75',
+      regex: /all of (the )?above|all of these/i },
+    { key: 'None of the above',label: 'None of the above',  icon: 'ti-ban',              color: '#E24B4A',
+      regex: /none of (the )?above|none of these/i },
+    { key: 'Combo',            label: 'Combo (1 and 2…)',   icon: 'ti-git-merge',        color: '#EF9F27',
+      regex: /\d+ and \d+|\bi and ii\b|\bii and iii\b/i },
+  ];
+
+  return SPECIAL.map(spec => {
+    let appears = 0, correct = 0, trap = 0;
+    questions.forEach(q => {
+      const allOpts = ['A','B','C','D'].map(l => (q['opt'+l]||'')).join('|||');
+      if (!spec.regex.test(allOpts)) return;
+      appears++;
+      const correctText = q['opt'+(q.answer||'A')] || '';
+      if (spec.regex.test(correctText)) correct++;
+      else trap++;
+    });
+    const strikeRate = appears > 0 ? Math.round(correct/appears*100) : 0;
+    return { ...spec, appears, correct, trap, strikeRate };
+  }).filter(s => s.appears > 0);
+}
+
+// ── STATEMENT-TYPE DETECTOR ────────────────────────────────────
+function renderStatementAnalysis(questions) {
+  const el = document.getElementById('stmtAnalysisGrid');
+  if (!el) return;
+
+  const STMT_RE = /which of the following statements? (is|are) (correct|incorrect|true|false)/i;
+  const MATCH_RE = /which (of the following )?(is|are) (correctly|not) matched/i;
+  const ARRANGE_RE = /arrange|chronological|correct order|ascending|descending/i;
+  const CAUSE_RE = /reason|cause|because|effect|consequence/i;
+
+  const subjects = [...new Set(questions.map(q => q.subject))].sort();
+
+  const rows = subjects.map(sub => {
+    const sq = questions.filter(q => q.subject === sub);
+    const stmt   = sq.filter(q => STMT_RE.test(q.question)).length;
+    const match  = sq.filter(q => MATCH_RE.test(q.question)).length;
+    const arr    = sq.filter(q => ARRANGE_RE.test(q.question)).length;
+    const cause  = sq.filter(q => CAUSE_RE.test(q.question)).length;
+    const direct = sq.length - stmt - match - arr - cause;
+    const stmtPct = sq.length > 0 ? Math.round(stmt/sq.length*100) : 0;
+    const col = stmtPct >= 50 ? 'var(--red)' : stmtPct >= 30 ? 'var(--amber)' : 'var(--teal)';
+    return { sub, total: sq.length, stmt, match, arr, cause, direct, stmtPct, col };
+  }).sort((a,b) => b.stmtPct - a.stmtPct);
+
+  const topStmt = rows[0];
+  const avgStmt = Math.round(rows.reduce((s,r)=>s+r.stmtPct,0)/rows.length);
+
+  const barsHTML = rows.map(r => `
+    <div class="stmt-row">
+      <div class="stmt-sub">${r.sub}</div>
+      <div class="stmt-bars">
+        <div class="stmt-seg" style="width:${r.stmt/r.total*100}%;background:var(--coral)aa;" title="Statement: ${r.stmt}"></div>
+        <div class="stmt-seg" style="width:${r.match/r.total*100}%;background:var(--purple)aa;" title="Match: ${r.match}"></div>
+        <div class="stmt-seg" style="width:${r.arr/r.total*100}%;background:var(--amber)aa;" title="Order: ${r.arr}"></div>
+        <div class="stmt-seg" style="width:${r.cause/r.total*100}%;background:var(--blue)aa;" title="Cause/Effect: ${r.cause}"></div>
+        <div class="stmt-seg" style="flex:1;background:var(--bg3);" title="Direct: ${r.direct}"></div>
+      </div>
+      <div class="stmt-pct" style="color:${r.col};">${r.stmtPct}%</div>
+      <div class="stmt-counts">
+        <span style="color:var(--coral);">S:${r.stmt}</span>
+        <span style="color:var(--purple);">M:${r.match}</span>
+        <span style="color:var(--amber);">O:${r.arr}</span>
+        <span style="color:var(--blue);">C:${r.cause}</span>
+      </div>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="stmt-legend">
+      <span><span class="stmt-dot" style="background:var(--coral);"></span>Statement Q</span>
+      <span><span class="stmt-dot" style="background:var(--purple);"></span>Match/Map</span>
+      <span><span class="stmt-dot" style="background:var(--amber);"></span>Order/Arrange</span>
+      <span><span class="stmt-dot" style="background:var(--blue);"></span>Cause/Effect</span>
+    </div>
+    <div class="stmt-grid">${barsHTML}</div>
+    <div class="apyq-strat" style="margin-top:12px;">
+      <i class="ti ti-bulb" style="color:var(--amber);flex-shrink:0;"></i>
+      <div><strong>${topStmt.sub}</strong> has the most statement-type questions (${topStmt.stmtPct}%).
+      On average ${avgStmt}% of UPPSC questions need you to evaluate multiple statements — master this format for big gains.
+      Focus: eliminate obviously wrong statements to narrow choices fast.</div>
+    </div>`;
+}
+
+// ── YEAR WEIGHT TREND ──────────────────────────────────────────
+function renderWeightTrend(questions) {
+  const el = document.getElementById('weightTrendGrid');
+  if (!el) return;
+
+  const YEARS   = ['2023','2024','2025'];
+  const subjects = [...new Set(questions.map(q => q.subject))].sort();
+  const totByYear = {};
+  YEARS.forEach(y => { totByYear[y] = questions.filter(q=>String(q.year)===y).length || 1; });
+
+  const subData = subjects.map(sub => {
+    const share = {};
+    YEARS.forEach(y => {
+      const cnt = questions.filter(q=>q.subject===sub && String(q.year)===y).length;
+      share[y]  = +(cnt / totByYear[y] * 100).toFixed(1);
+    });
+    const trend = share['2025'] - share['2023'];
+    return { sub, share, trend };
+  }).sort((a,b) => b.trend - a.trend);
+
+  const maxShare = Math.max(...subData.flatMap(s => Object.values(s.share)));
+
+  const rowsHTML = subData.map(s => {
+    const trendCol  = s.trend > 1 ? 'var(--teal)' : s.trend < -1 ? 'var(--red)' : 'var(--text3)';
+    const trendIcon = s.trend > 1 ? 'ti-trending-up' : s.trend < -1 ? 'ti-trending-down' : 'ti-minus';
+    const trendStr  = s.trend > 0 ? `+${s.trend.toFixed(1)}%` : `${s.trend.toFixed(1)}%`;
+    return `<div class="wt-row">
+      <div class="wt-sub">${s.sub}</div>
+      <div class="wt-bars">
+        ${YEARS.map((y,i) => {
+          const w = maxShare > 0 ? (s.share[y]/maxShare*100).toFixed(0) : 0;
+          const opacity = 0.5 + i*0.17;
+          return `<div class="wt-year-bar" title="${y}: ${s.share[y]}%">
+            <div class="wt-fill" style="height:${w}%;background:var(--teal);opacity:${opacity};"></div>
+            <div class="wt-ylbl">${y.slice(2)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="wt-shares">${YEARS.map(y=>`<span>${s.share[y]}%</span>`).join('')}</div>
+      <div class="wt-trend" style="color:${trendCol};">
+        <i class="ti ${trendIcon}"></i> ${trendStr}
+      </div>
+    </div>`;
+  }).join('');
+
+  const rising  = subData.filter(s=>s.trend>1).map(s=>s.sub).slice(0,3);
+  const falling = subData.filter(s=>s.trend<-1).map(s=>s.sub).slice(0,3);
+
+  el.innerHTML = `
+    <div class="wt-grid">${rowsHTML}</div>
+    <div class="apyq-strat" style="margin-top:12px;">
+      <i class="ti ti-bulb" style="color:var(--amber);flex-shrink:0;"></i>
+      <div>
+        ${rising.length  ? `📈 <strong>Rising:</strong> ${rising.join(', ')} — allocate more prep time here.` : ''}
+        ${falling.length ? `<br>📉 <strong>Declining:</strong> ${falling.join(', ')} — don't over-invest.` : ''}
+      </div>
+    </div>`;
+}
+
+// ── SUBJECT → TOPIC BREAKDOWN ──────────────────────────────────
+function renderSubjectBreakdown(questions) {
+  const el = document.getElementById('subjectBreakdownGrid');
+  if (!el) return;
+
+  const COLORS = {
+    'Polity':'var(--blue)','Geography':'var(--teal)','Modern History':'var(--amber)',
+    'Economy':'var(--coral)','Science':'var(--purple)','Environment':'var(--teal)',
+    'Current Affairs':'var(--pink)','Ancient History':'var(--amber)',
+    'UP Special':'var(--red)'
+  };
+
+  // Build tree
+  const tree = {};
+  questions.forEach(q => {
+    const sub   = q.subject || 'Unknown';
+    const topic = q.subTopic || q.topic || 'General';
+    if (!tree[sub]) tree[sub] = {};
+    tree[sub][topic] = (tree[sub][topic] || 0) + 1;
+  });
+
+  const topicAcc = JSON.parse(localStorage.getItem('pyqTopicAccuracy') || '{}');
+
+  const cards = Object.entries(tree)
+    .sort((a,b) => Object.values(b[1]).reduce((x,y)=>x+y,0) - Object.values(a[1]).reduce((x,y)=>x+y,0))
+    .map(([sub, topics]) => {
+      const total = Object.values(topics).reduce((a,b)=>a+b,0);
+      const color = COLORS[sub] || 'var(--purple)';
+      const maxCount = Math.max(...Object.values(topics));
+
+      const topicRows = Object.entries(topics)
+        .sort((a,b) => b[1]-a[1])
+        .map(([topic, count]) => {
+          const pct = Math.round(count/maxCount*100);
+          const acc = topicAcc[sub] && topicAcc[sub][topic];
+          const accStr = acc ? (() => {
+            const tot = acc.c + acc.w;
+            const ap  = tot ? Math.round(acc.c/tot*100) : 0;
+            return `<span class="sb-acc" style="color:${ap>=60?'var(--teal)':ap>=40?'var(--amber)':'var(--red)'};">${ap}%✓</span>`;
+          })() : '';
+          return `<div class="sb-topic-row">
+            <div class="sb-topic-name">${topic}</div>
+            <div class="sb-topic-bar-wrap">
+              <div class="sb-topic-bar" style="width:${pct}%;background:${color};opacity:0.7;"></div>
+            </div>
+            <div class="sb-topic-count">${count}q ${accStr}</div>
+          </div>`;
+        }).join('');
+
+      return `<div class="sb-card">
+        <div class="sb-header" onclick="toggleSB(this)">
+          <div class="sb-header-left">
+            <div class="sb-color-dot" style="background:${color};"></div>
+            <div>
+              <div class="sb-subject">${sub}</div>
+              <div class="sb-subtotal">${total} questions · ${Object.keys(topics).length} topics</div>
+            </div>
+          </div>
+          <div class="sb-total-badge" style="background:${color}22;color:${color};">${total}</div>
+          <i class="ti ti-chevron-down sb-chevron"></i>
+        </div>
+        <div class="sb-body" style="display:none;">
+          <div class="sb-topics">${topicRows}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  el.innerHTML = cards;
+}
+
+function toggleSB(header) {
+  const card   = header.closest('.sb-card');
+  const body   = card.querySelector('.sb-body');
+  const icon   = card.querySelector('.sb-chevron');
+  const open   = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  icon.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function renderAnswerDistHome(questions) {
+  const d     = computeAnswerDist(questions);
+  const LCOLS = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
+  const YEARS = ['2023','2024','2025'];
+
+  // ── Card 1: Letter bubbles + bars ─────────────────────────
+  const maxL  = Math.max(...Object.values(d.letters));
+  const topL  = Object.entries(d.letters).sort((a,b)=>b[1]-a[1])[0];
+  const botL  = Object.entries(d.letters).sort((a,b)=>a[1]-b[1])[0];
+  const anom  = d.byYear['2024'] ? d.byYear['2024'].A : 0;
+
+  const gridHTML = ['A','B','C','D'].map(l => {
+    const cnt = d.letters[l];
+    const pct = d.total > 0 ? (cnt/d.total*100).toFixed(1) : 0;
+    const barW = maxL > 0 ? (cnt/maxL*100).toFixed(1) : 0;
+    const isTop = l === topL[0];
+    return `<div class="ans-letter-card ${isTop?'ans-letter-top':''}">
+      <div class="ans-letter-badge" style="background:${LCOLS[l]}22;color:${LCOLS[l]};">${l}</div>
+      <div class="ans-letter-num" style="color:${LCOLS[l]};">${cnt}</div>
+      <div class="ans-letter-pct">${pct}%</div>
+      <div class="ans-mini-bar-track">
+        <div class="ans-mini-bar-fill" style="width:${barW}%;background:${LCOLS[l]};"></div>
+      </div>
+      ${isTop ? '<div class="ans-top-tag">Most common</div>' : ''}
+    </div>`;
+  }).join('');
+
+  const yearTblHTML = `<div style="font-size:11px;font-weight:600;color:var(--text3);
+    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Year-wise breakdown</div>
+  <table class="gc-table" style="font-size:12px;">
+    <thead><tr><th>Year</th>
+      <th style="color:${LCOLS.A}">A</th><th style="color:${LCOLS.B}">B</th>
+      <th style="color:${LCOLS.C}">C</th><th style="color:${LCOLS.D}">D</th><th>Total</th>
+    </tr></thead>
+    <tbody>${YEARS.map(y => {
+      const yl  = d.byYear[y] || {A:0,B:0,C:0,D:0};
+      const tot = yl.A+yl.B+yl.C+yl.D;
+      const mx  = Math.max(yl.A,yl.B,yl.C,yl.D);
+      return `<tr><td><strong>${y}</strong></td>
+        ${['A','B','C','D'].map(l =>
+          `<td ${yl[l]===mx?`style="font-weight:800;color:${LCOLS[l]};"`:''}>
+            ${yl[l]}</td>`).join('')}
+        <td style="color:var(--text3);">${tot}</td></tr>`;
+    }).join('')}</tbody>
+  </table>`;
+
+  const insightHTML = `<i class="ti ti-bulb"></i>
+    <strong>${topL[0]}</strong> is the most common correct answer (${(topL[1]/d.total*100).toFixed(0)}%).
+    <strong>${botL[0]}</strong> is least common — only ${(botL[1]/d.total*100).toFixed(0)}%.
+    ${anom>=45?`<br>⚠️ <strong>2024 anomaly:</strong> A was correct in ${anom} out of 149 questions (unusually high — could be data pattern or actual paper trend).`:''}`;
+
+  const gEl  = document.getElementById('ansLetterGrid');
+  const tEl  = document.getElementById('ansLetterYearTable');
+  const iEl  = document.getElementById('ansLetterInsight');
+  if (gEl) gEl.innerHTML = gridHTML;
+  if (tEl) tEl.innerHTML = yearTblHTML;
+  if (iEl) iEl.innerHTML = insightHTML;
+
+  // ── Card 2: Special option strategy ───────────────────────
+  const special = computeSpecialOptionStats(questions);
+  const stratHTML = special.map(s => {
+    const correctPct = s.appears > 0 ? (s.correct/s.appears*100).toFixed(0) : 0;
+    const trapPct    = s.appears > 0 ? (s.trap   /s.appears*100).toFixed(0) : 0;
+    const rateColor  = s.strikeRate>=70 ? 'var(--teal)' : s.strikeRate>=40 ? 'var(--amber)' : 'var(--red)';
+    const advice     = s.strikeRate>=70
+      ? `High strike rate — when you see this option, lean towards picking it.`
+      : s.strikeRate>=40
+      ? `Moderate — evaluate carefully before picking.`
+      : `Low strike rate — treat as a trap; this option misleads more than it helps.`;
+
+    return `<div class="strat-card">
+      <div class="strat-header">
+        <div class="strat-icon"><i class="ti ${s.icon}" style="color:${s.color};"></i></div>
+        <div class="strat-title">${s.label}</div>
+        <div class="strat-rate" style="color:${rateColor};">${s.strikeRate}%<br><span>strike rate</span></div>
+      </div>
+
+      <!-- appears count -->
+      <div class="strat-appears">
+        Appears as an option in <strong>${s.appears}</strong> questions
+        <span style="color:var(--text3);">(${(s.appears/d.total*100).toFixed(0)}% of paper)</span>
+      </div>
+
+      <!-- correct vs trap bar -->
+      <div class="strat-split-track" title="${s.correct} correct, ${s.trap} traps">
+        <div class="strat-split-correct" style="width:${correctPct}%;background:${rateColor};">
+          ${correctPct>15?`✓ ${s.correct}`:''}
+        </div>
+        <div class="strat-split-trap" style="width:${trapPct}%;">
+          ${trapPct>15?`✗ ${s.trap}`:''}
+        </div>
+      </div>
+      <div class="strat-split-labels">
+        <span style="color:${rateColor};"><strong>${s.correct}</strong> correct (${correctPct}%)</span>
+        <span style="color:var(--red);"><strong>${s.trap}</strong> traps (${trapPct}%)</span>
+      </div>
+
+      <!-- year breakdown mini -->
+      <div class="strat-year-row">
+        ${YEARS.map(y => {
+          const yqs     = questions.filter(q => String(q.year)===y);
+          const yApp    = yqs.filter(q => {
+            const allOpts = ['A','B','C','D'].map(l=>(q['opt'+l]||'')).join('|||');
+            return s.regex.test(allOpts);
+          }).length;
+          const yCorr   = yqs.filter(q => {
+            const ct = q['opt'+(q.answer||'A')]||'';
+            return s.regex.test(ct);
+          }).length;
+          return `<div class="strat-year-pill">
+            <span style="color:var(--text3);">${y}</span>
+            <span style="font-weight:700;">${yApp} seen</span>
+            <span style="color:${rateColor};">✓ ${yCorr}</span>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="strat-advice"><i class="ti ti-bulb"></i> ${advice}</div>
+    </div>`;
+  }).join('');
+
+  const sgEl = document.getElementById('ansStrategyGrid');
+  const siEl = document.getElementById('ansStrategyInsight');
+  if (sgEl) sgEl.innerHTML = stratHTML || `<div style="color:var(--text3);font-size:13px;padding:12px 0;">
+    No special option types detected in this dataset.</div>`;
+
+  // Overall insight
+  const topStrat = special.sort((a,b)=>b.strikeRate-a.strikeRate)[0];
+  if (siEl && topStrat) {
+    siEl.innerHTML = `<i class="ti ti-bulb"></i>
+      <strong>Key takeaway:</strong> "${topStrat.label}" has the highest strike rate (${topStrat.strikeRate}%) —
+      it appears in ${topStrat.appears} questions and is correct ${topStrat.correct} times.
+      Overall, combination-type options are the correct answer in
+      <strong>${special.reduce((a,s)=>a+s.correct,0)}</strong> of
+      ${special.reduce((a,s)=>a+s.appears,0)} appearances.`;
+  }
+}
+
+function renderAnswerPatternPYQ(questions) {
+  const el = document.getElementById('ansPatternContent');
+  if (!el || questions.length === 0) return;
+
+  const total = questions.length;
+  const LCOLS = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
+  const TYPE_COL = {
+    'Direct':'#378ADD', 'Both':'#7F77DD', 'Combo':'#EF9F27',
+    'Combo (Only)':'#D85A30', 'Neither':'#E24B4A',
+    'None of the above':'#E24B4A', 'All of the above':'#1D9E75'
+  };
+  const TYPE_TIP = {
+    'Direct':        'Standard single-answer question.',
+    'Both':          '⚡ When "Both" appears as an option — it IS the answer here. Pick it with confidence.',
+    'Combo':         'Combination answer — use elimination on wrong options.',
+    'Combo (Only)':  'Only A and B / Only 1 and 2 — careful elimination needed.',
+    'Neither':       'Rare type — read all options before deciding.',
+    'None of the above': 'Verify each option is wrong before choosing this.',
+    'All of the above':  'All options must be correct — verify each.',
+  };
+
+  // Letter distribution
+  const letters = { A:0, B:0, C:0, D:0 };
+  // Type distribution
+  const types = {};
+  questions.forEach(q => {
+    const a = (q.answer||'').trim();
+    if (letters[a] !== undefined) letters[a]++;
+    const t = classifyAnswerType(q);
+    types[t] = (types[t]||0) + 1;
+  });
+
+  const maxL = Math.max(...Object.values(letters), 1);
+  const letterHTML = ['A','B','C','D'].map(l => {
+    const cnt = letters[l];
+    const pct = (cnt/total*100).toFixed(0);
+    const barW = (cnt/maxL*100).toFixed(0);
+    return `<div class="apyq-row">
+      <div class="apyq-lbl" style="color:${LCOLS[l]};font-weight:800;">${l}</div>
+      <div class="apyq-track">
+        <div class="apyq-fill" style="width:${barW}%;background:${LCOLS[l]};"></div>
+      </div>
+      <div class="apyq-stat"><strong>${cnt}</strong> <span>${pct}%</span></div>
+    </div>`;
+  }).join('');
+
+  const sortedTypes = Object.entries(types).sort((a,b)=>b[1]-a[1]);
+  const maxT = Math.max(...sortedTypes.map(e=>e[1]), 1);
+  const typeHTML = sortedTypes.map(([typ,cnt]) => {
+    const pct  = (cnt/total*100).toFixed(0);
+    const barW = (cnt/maxT*100).toFixed(0);
+    const col  = TYPE_COL[typ] || '#aaa';
+    const tip  = TYPE_TIP[typ] || '';
+    const isBold = typ !== 'Direct';
+    return `<div class="apyq-row" style="${isBold?'background:var(--bg3);border-radius:6px;padding:4px 6px;':''}" title="${tip}">
+      <div class="apyq-lbl" style="color:${col};font-size:11px;width:80px;">${typ}</div>
+      <div class="apyq-track">
+        <div class="apyq-fill" style="width:${barW}%;background:${col}cc;"></div>
+      </div>
+      <div class="apyq-stat"><strong>${cnt}</strong> <span>${pct}%</span></div>
+    </div>`;
+  }).join('');
+
+  // Strategy tip: most interesting non-Direct type
+  const nonDirect = sortedTypes.filter(([t]) => t !== 'Direct');
+  const topNonDirect = nonDirect[0];
+  const directCnt = types['Direct'] || 0;
+  const comboCnt  = total - directCnt;
+  const comboPct  = (comboCnt/total*100).toFixed(0);
+
+  let stratTip = '';
+  if (topNonDirect) {
+    const [topTyp, topCnt] = topNonDirect;
+    const topPct = (topCnt/total*100).toFixed(0);
+    stratTip = `<strong>${topTyp}</strong> is the answer in <strong>${topCnt}</strong> of ${total} questions
+      (${topPct}%). ${TYPE_TIP[topTyp]||''}
+      <br>${comboPct}% of questions here have combination-type answers — don't always default to single option.`;
+  } else {
+    stratTip = `All ${total} questions have direct single answers. Focus on factual recall.`;
+  }
+
+  el.innerHTML = `
+    <div class="apyq-wrap">
+      <div class="apyq-total">
+        <i class="ti ti-files" style="color:var(--gold,#c9a84c);"></i>
+        <strong>${total}</strong> questions in current filter
+      </div>
+
+      <div class="apyq-cols">
+        <!-- Letter dist -->
+        <div class="apyq-col">
+          <div class="apyq-col-head">Correct answer key</div>
+          ${letterHTML}
+        </div>
+
+        <div class="apyq-divider"></div>
+
+        <!-- Type dist -->
+        <div class="apyq-col" style="flex:1.4;">
+          <div class="apyq-col-head">Answer type breakdown</div>
+          ${typeHTML}
+        </div>
+      </div>
+
+      <div class="apyq-strat">
+        <i class="ti ti-bulb" style="color:var(--amber);flex-shrink:0;"></i>
+        <div>${stratTip}</div>
+      </div>
+    </div>`;
+}
+
+let _ansPanelVisible = false;
+function toggleAnsPanel() {
+  const panel = document.getElementById('ansPatternPanel');
+  const chip  = document.getElementById('chip-anspat');
+  _ansPanelVisible = !_ansPanelVisible;
+  panel.style.display = _ansPanelVisible ? 'block' : 'none';
+  if (chip) chip.classList.toggle('active', _ansPanelVisible);
+  if (_ansPanelVisible) renderAnswerPatternPYQ(filteredQ);
+}
+
+function loadQuestions() {
+  google.script.run
+    .withSuccessHandler(data => {
+      if (data.error) { showError(data.error); return; }
+      allQuestions = data;
+      filteredQ    = [...data];
+      renderQuestions();
+      renderAnswerDistHome(allQuestions);
+      renderStatementAnalysis(allQuestions);
+      renderWeightTrend(allQuestions);
+      renderSubjectBreakdown(allQuestions);
+    })
+    .withFailureHandler(showError)
+    .getQuestions({ shuffle: false, limit: 500 });
+}
+
+function applyFilters() {
+  if (mockActive) return; // don't re-filter during mock test
+  const subject = document.getElementById("f-subject").value;
+  const year    = document.getElementById("f-year").value;
+  const diff    = document.getElementById("f-diff").value;
+
+  filteredQ = allQuestions.filter(q => {
+    if (subject !== "all" && q.subject !== subject) return false;
+    if (year    !== "all" && String(q.year) !== year) return false;
+    if (diff    !== "all" && q.difficulty !== diff) return false;
+    if (filterRepeating  && !(q.repeatsIn||"").includes(",")) return false;
+    if (filterHighPri    && (q.repeatsIn||"").split(",").filter(Boolean).length < 2) return false;
+    if (filterNotDone    && attemptedQIds.has(String(q.id))) return false;
+    if (filterBookmarked && !pyqBookmarks.includes(String(q.id))) return false;
+    return true;
+  });
+
+  currentIdx = 0;
+  renderQuestions();
+  if (_ansPanelVisible) renderAnswerPatternPYQ(filteredQ);
+}
+
+function startSession() { applyFilters(); }
+
+// ── SMART FILTER CHIP TOGGLE ─────────────────────────────
+function toggleChip(type) {
+  if (type === "hipri") {
+    filterHighPri = !filterHighPri;
+    document.getElementById("chip-hipri").classList.toggle("active", filterHighPri);
+  } else if (type === "repeat") {
+    filterRepeating = !filterRepeating;
+    document.getElementById("chip-repeat").classList.toggle("active", filterRepeating);
+  } else if (type === "notdone") {
+    filterNotDone = !filterNotDone;
+    document.getElementById("chip-notdone").classList.toggle("active", filterNotDone);
+  } else if (type === "bookmarked") {
+    filterBookmarked = !filterBookmarked;
+    document.getElementById("chip-bookmarked").classList.toggle("active", filterBookmarked);
+  }
+  applyFilters();
+}
+
+// ── QUESTION BOOKMARKS ────────────────────────────────────
+function toggleQBookmark(qId) {
+  const id  = String(qId);
+  const idx = pyqBookmarks.indexOf(id);
+  if (idx === -1) { pyqBookmarks.push(id); showToast("⭐ Bookmarked!"); }
+  else            { pyqBookmarks.splice(idx, 1); showToast("Bookmark removed"); }
+  localStorage.setItem("pyqBookmarks", JSON.stringify(pyqBookmarks));
+  // Update just the star button without full re-render
+  const btn = document.querySelector(`[data-bk="${qId}"]`);
+  if (btn) {
+    const isNowBk = pyqBookmarks.includes(id);
+    btn.classList.toggle("bookmarked", isNowBk);
+    btn.innerHTML = `<i class="ti ti-bookmark${isNowBk?"-filled":""}"></i>`;
+  }
+  if (filterBookmarked) applyFilters(); // refresh list if bookmark filter is on
+}
+
+// ── TRACK ATTEMPT IN HEATMAP ──────────────────────────────
+function trackAttemptHeatmap() {
+  const today = new Date().toISOString().split("T")[0];
+  pyqHeatmap[today] = (pyqHeatmap[today] || 0) + 1;
+  localStorage.setItem("pyqHeatmap", JSON.stringify(pyqHeatmap));
+}
+
+function renderQuestions() {
+  const el        = document.getElementById("qContainer");
+  const countEl   = document.getElementById("qResultCount");
+
+  if (filteredQ.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);">
+      No questions match these filters. Try adjusting.</div>`;
+    if (countEl) countEl.textContent = "";
+    return;
+  }
+
+  if (countEl) countEl.textContent = `Showing ${filteredQ.length} question${filteredQ.length!==1?'s':''}`;
+
+  el.innerHTML = filteredQ.map((q, idx) => {
+    const ans      = answers[q.id];
+    const shown    = ans !== undefined;
+    const diffCls  = q.difficulty==="Easy" ? "badge-teal" : q.difficulty==="Medium" ? "badge-amber" : "badge-red";
+    const repeatsIn = (q.repeatsIn||"");
+    const isHighPri = repeatsIn.split(",").filter(Boolean).length >= 2;
+    const repeatFlag = repeatsIn.includes(",")
+      ? `<span class="badge ${isHighPri?'badge-red hp-badge':'badge-amber'}">
+          ${isHighPri?'<i class="ti ti-star-filled"></i> HIGH PRIORITY':'<i class="ti ti-repeat"></i>'}
+          ${repeatsIn}
+         </span>` : "";
+    const isBk = pyqBookmarks.includes(String(q.id));
+
+    const opts = ["A","B","C","D"].map((letter,i) => {
+      const text = [q.optA,q.optB,q.optC,q.optD][i];
+      let cls = "opt";
+      if (shown) {
+        if (letter === q.answer) cls += " reveal";
+        if (ans === "correct" && letter === q.answer) cls += " correct";
+        if (ans === "wrong" && answers[q.id+"_chosen"] === letter) cls += " wrong";
+      }
+      return `<button class="${cls}" ${shown?"disabled":""} onclick="attemptQ('${q.id}','${letter}','${q.answer}',${idx})">
+        <strong>${letter}.</strong> ${text}
+      </button>`;
+    }).join("");
+
+    // Smart instant review — 2 related questions shown after wrong
+    const smartReview = (shown && answers[q.id] === 'wrong') ? (() => {
+      const related = allQuestions.filter(r =>
+        r.id !== q.id &&
+        (r.subTopic && r.subTopic === q.subTopic || r.topic === q.topic) &&
+        !answers[r.id]
+      ).slice(0, 2);
+      if (!related.length) return '';
+      const rCards = related.map((r,ri) => {
+        const rOpts = ['A','B','C','D'].filter(l => r['opt'+l]).map(l =>
+          `<button class="opt-btn" onclick="attemptSIR('${r.id}','${l}','${r.answer}')" style="text-align:left;font-size:12px;padding:6px 10px;">
+            <strong>${l}.</strong> ${r['opt'+l]}
+          </button>`
+        ).join('');
+        return `<div class="sir-card" id="qcard-${r.id}">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">
+            ${r.year} · ${r.subject} · ${r.subTopic||r.topic||''}
+          </div>
+          <div class="q-text" style="font-size:13px;margin:0 0 8px;">${r.question}</div>
+          <div class="opts" style="gap:4px;">${rOpts}</div>
+          <div id="sir-exp-${r.id}"></div>
+        </div>`;
+      }).join('');
+      return `<div class="sir-wrap">
+        <div class="sir-header"><i class="ti ti-refresh-dot"></i> Practice 2 related questions</div>
+        ${rCards}
+      </div>`;
+    })() : '';
+
+    const explanation = shown ? `
+      <div class="explanation">
+        <strong>Correct answer:</strong> ${q.answer}. ${q.answerText}<br><br>
+        <strong>Explanation:</strong> ${q.explanation || "No explanation available."}
+      </div>
+      ${smartReview}` : "";
+
+    const skipBtn = !shown ? `<button class="btn btn-sm" style="margin-top:8px;" onclick="skipQ('${q.id}',${idx})">
+      <i class="ti ti-forward-skip"></i> Skip
+    </button>` : "";
+
+    // Confidence UI
+    const conf = sessionConfidence[q.id];
+    const confUI = !shown ? `
+      <div class="conf-row" id="conf-${q.id}">
+        <span class="conf-label">How sure are you?</span>
+        ${[['sure','✓ Sure','var(--teal)'],['5050','~ 50-50','var(--amber)'],['guess','? Guess','var(--red)']].map(([c,lbl,col]) =>
+          `<button class="conf-btn ${conf===c?'conf-active':''}" style="--cc:${col};"
+            onclick="setConfidence('${q.id}','${c}')">${lbl}</button>`
+        ).join('')}
+      </div>` : conf ? `<div class="conf-tag">
+        You marked: <span class="conf-tag-val" data-c="${conf}">${
+          conf==='sure'?'✓ Sure':conf==='5050'?'~ 50-50':'? Guess'}</span>
+        ${answers[q.id]==='wrong'&&conf==='sure'?'<span class="conf-danger"> ⚠ Overconfident!</span>':
+          answers[q.id]==='correct'&&conf==='guess'?'<span class="conf-lucky"> 🍀 Lucky guess!</span>':''}
+      </div>` : '';
+
+    return `<div class="q-card" id="qcard-${q.id}" style="margin-bottom:12px;">
+      <button class="q-bk-btn ${isBk?"bookmarked":""}" data-bk="${q.id}" onclick="toggleQBookmark('${q.id}')" title="${isBk?"Remove bookmark":"Bookmark this question"}">
+        <i class="ti ti-bookmark${isBk?"-filled":""}"></i>
+      </button>
+      <div class="q-meta">
+        <span class="q-num">Q${idx+1}.</span>
+        ${subjectBadge(q.subject)}
+        <span class="badge ${diffCls}">${q.difficulty}</span>
+        <span class="badge" style="background:var(--bg3);color:var(--text2);">${q.year}</span>
+        ${repeatFlag}
+        <span style="margin-left:auto;font-size:11px;color:var(--text3);margin-right:28px;">${q.subTopic||""}</span>
+      </div>
+      ${confUI}
+      <div class="q-text">${highlightDangerWords(q.question)}</div>
+      <div class="opts">${opts}</div>
+      ${explanation}
+      ${skipBtn}
+    </div>`;
+  }).join("");
+}
+
+function renderOneQ(idx) {
+  const q   = filteredQ[idx];
+  const el  = document.getElementById("qContainer");
+  const ans = answers[q.id];
+  const shown = ans !== undefined;
+
+  const catBadge = subjectBadge(q.subject);
+  const diffBadge = q.difficulty === "Easy"
+    ? `<span class="badge badge-teal">Easy</span>`
+    : q.difficulty === "Medium"
+    ? `<span class="badge badge-amber">Medium</span>`
+    : `<span class="badge badge-red">Hard</span>`;
+  const zoneBadge = `<span class="badge ${q.zone==="A"?"badge-teal":q.zone==="B"?"badge-amber":"badge-red"}">Zone ${q.zone}</span>`;
+  const repeatFlag = (q.repeatsIn||"").includes(",")
+    ? `<span class="badge badge-amber"><i class="ti ti-repeat" aria-hidden="true"></i> Repeats ${q.repeatsIn}</span>` : "";
+
+  const opts = ["A","B","C","D"].map((letter, i) => {
+    const text = [q.optA, q.optB, q.optC, q.optD][i];
+    let cls = "opt";
+    if (shown) {
+      if (letter === q.answer) cls += " reveal";
+      if (ans === "correct" && letter === q.answer) cls += " correct";
+      if (ans === "wrong" && answers[q.id + "_chosen"] === letter) cls += " wrong";
+    }
+    return `<button class="${cls}" ${shown?"disabled":""} onclick="attemptQ('${q.id}','${letter}','${q.answer}')">
+      <strong>${letter}.</strong> ${text}
+    </button>`;
+  }).join("");
+
+  const explanation = shown ? `
+    <div class="explanation">
+      <strong>Correct answer:</strong> ${q.answer}. ${q.answerText}<br><br>
+      <strong>Explanation:</strong> ${q.explanation || "No explanation available."}
+    </div>` : "";
+
+  const skipBtn = !shown ? `<button class="btn btn-sm" onclick="skipQ('${q.id}')">
+    <i class="ti ti-forward-skip" aria-hidden="true"></i> Skip
+  </button>` : "";
+
+  el.innerHTML = `
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-num">Q${idx+1}.</span>
+        ${catBadge}
+        <span class="badge badge-gray">UPPSC ${q.year}</span>
+        ${diffBadge}
+        ${zoneBadge}
+        ${repeatFlag}
+      </div>
+      <div class="q-text">${highlightDangerWords(q.question)}</div>
+      <div class="opts">${opts}</div>
+      ${explanation}
+      <div style="margin-top:8px;">${skipBtn}</div>
+    </div>`;
+
+  // Track start time
+  if (!startTimes[q.id]) startTimes[q.id] = new Date();
+  updateNavInfo(idx);
+}
+
+function attemptQ(qId, chosen, correct, idx) {
+  if (answers[qId] !== undefined) return;
+  if (mockActive) { mockAttemptQ(qId, chosen, correct); return; }
+  const result = chosen === correct ? "correct" : "wrong";
+  answers[qId] = result;
+  answers[qId + "_chosen"] = chosen;
+  const timeTaken = startTimes[qId] ? Math.round((new Date()-startTimes[qId])/1000) : 0;
+  const q = filteredQ.find(q => q.id === qId);
+  google.script.run.saveProgress({ userName, qId, subject:q.subject, year:q.year, result, timeTaken });
+  // Track in heatmap + attempted set + subject dates
+  trackAttemptHeatmap();
+  attemptedQIds.add(String(qId));
+  localStorage.setItem("pyqAttempted", JSON.stringify([...attemptedQIds]));
+  // Track subject date for streak
+  const subDates = JSON.parse(localStorage.getItem("subjectDates") || "{}");
+  const today = new Date().toISOString().split("T")[0];
+  if (!subDates[q.subject]) subDates[q.subject] = [];
+  if (!subDates[q.subject].includes(today)) subDates[q.subject].push(today);
+  localStorage.setItem("subjectDates", JSON.stringify(subDates));
+  // ── Option bias tracking ───────────────────────
+  if (chosen && sessionPicks[chosen] !== undefined) sessionPicks[chosen]++;
+  if (chosen && pyqBiasData.picked[chosen] !== undefined) {
+    pyqBiasData.picked[chosen]++;
+    pyqBiasData.total++;
+    localStorage.setItem("pyqBiasData", JSON.stringify(pyqBiasData));
+  }
+  // ── Topic-level accuracy tracking ──────────────
+  const topicKey = q.subTopic || q.topic || 'General';
+  const topicAcc = JSON.parse(localStorage.getItem("pyqTopicAccuracy") || "{}");
+  if (!topicAcc[q.subject]) topicAcc[q.subject] = {};
+  if (!topicAcc[q.subject][topicKey]) topicAcc[q.subject][topicKey] = { c:0, w:0, s:0, last:'' };
+  if (result === 'correct') topicAcc[q.subject][topicKey].c++;
+  else                      topicAcc[q.subject][topicKey].w++;
+  topicAcc[q.subject][topicKey].last = today;
+  localStorage.setItem("pyqTopicAccuracy", JSON.stringify(topicAcc));
+  // Spaced repetition: track wrong questions with date
+  if (result === 'wrong') {
+    const srData = JSON.parse(localStorage.getItem("pyqSpacedRepeat") || "{}");
+    srData[qId] = { date: today, subject: q.subject, topic: topicKey, interval: 3 };
+    localStorage.setItem("pyqSpacedRepeat", JSON.stringify(srData));
+  }
+  renderQuestions();
+  setTimeout(() => { const el = document.getElementById('qcard-'+qId); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 50);
+}
+
+function skipQ(qId, idx) {
+  if (mockActive) { mockSkipQ(qId); return; }
+  answers[qId] = "skipped";
+  const q = filteredQ.find(q => q.id === qId);
+  google.script.run.saveProgress({ userName, qId, subject:q.subject, year:q.year, result:"skipped", timeTaken:0 });
+  renderQuestions();
+}
+
+function prevQ() {}
+function nextQ() {
+  // no-op in list mode
+}
+
+function updateNavButtons() {
+  document.getElementById("prevBtn").disabled = currentIdx === 0;
+  const isLast = currentIdx === filteredQ.length - 1;
+  document.getElementById("nextBtn").textContent = isLast && quizMode ? "Finish Quiz" : "Next";
+  if (isLast && quizMode) {
+    document.getElementById("nextBtn").innerHTML = `Finish <i class="ti ti-flag" aria-hidden="true"></i>`;
+  } else {
+    document.getElementById("nextBtn").innerHTML = `Next <i class="ti ti-arrow-right" aria-hidden="true"></i>`;
+  }
+}
+
+function updateNavInfo(idx) {
+  document.getElementById("qNavInfo").textContent =
+    `${idx+1} of ${filteredQ.length} questions`;
+  if (quizMode) {
+    document.getElementById("qCounter").textContent = `Q ${idx+1} of ${filteredQ.length}`;
+  }
+}
+
+function updateLiveScore() {
+  const correct = Object.values(answers).filter(v => v === "correct").length;
+  document.getElementById("liveScore").textContent = `✓ ${correct} correct`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MOCK TEST
+// ══════════════════════════════════════════════════════════════
+function openMockModal() {
+  document.getElementById("mockModal").style.display = "flex";
+  // Populate topic dropdown from current subject
+  populateMockTopics();
+}
+function closeMockModal() { document.getElementById("mockModal").style.display = "none"; }
+
+function populateMockTopics() {
+  const sel = document.getElementById("mt-topic-select");
+  if (!sel || !allQuestions.length) return;
+  const sub = mockSettings.sub;
+  const pool = sub === "all" ? allQuestions : allQuestions.filter(q => q.subject === sub);
+  const topics = [...new Set(pool.map(q => q.subTopic||q.topic||'').filter(Boolean))].sort();
+  sel.innerHTML = `<option value="all">All topics</option>` +
+    topics.map(t => `<option value="${t}">${t}</option>`).join('');
+  sel.value = mockSettings.topic || "all";
+}
+
+function selectMockOpt(type, el) {
+  const container = el.parentElement;
+  container.querySelectorAll(".mock-opt").forEach(o => o.classList.remove("selected"));
+  el.classList.add("selected");
+  if      (type === "count") mockSettings.count = parseInt(el.dataset.val) || 30;
+  else if (type === "sub")   { mockSettings.sub = el.dataset.val; populateMockTopics(); }
+  else if (type === "time")  mockSettings.time  = parseInt(el.dataset.val) || 60;
+  else if (type === "mode")  mockSettings.mode  = el.dataset.val;
+}
+
+function launchMockTest() {
+  closeMockModal();
+  mockActive = true;
+  answers    = {};
+  mockQTimes = {};
+  mockQIdx   = 0;
+
+  // Build question pool
+  let pool = [...allQuestions];
+  if (mockSettings.sub   !== "all") pool = pool.filter(q => q.subject === mockSettings.sub);
+  if (mockSettings.topic !== "all") pool = pool.filter(q =>
+    (q.subTopic||q.topic||'') === mockSettings.topic);
+
+  // Mode-specific filtering
+  if (mockSettings.mode === "highpri") {
+    pool = pool.filter(q => (q.repeatsIn||"").split(",").filter(Boolean).length >= 2);
+  } else if (mockSettings.mode === "adaptive") {
+    mockAdaptiveDiff = "Easy";
+    pool = pool.filter(q => q.difficulty === "Easy"); // start easy
+  }
+
+  // Shuffle and cap
+  for (let i = pool.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [pool[i],pool[j]] = [pool[j],pool[i]];
+  }
+  filteredQ = pool.slice(0, mockSettings.count);
+  if (filteredQ.length === 0) {
+    showToast("No questions match these settings — try different filters.");
+    mockActive = false; openMockModal(); return;
+  }
+
+  // Hide filter bar, show timer bar
+  document.getElementById("filterBar").style.display    = "none";
+  document.getElementById("smartChips").style.display   = "none";
+  document.getElementById("mockTimerBar").style.display = "flex";
+  document.getElementById("qResultCount").textContent   = "";
+
+  // Start countdown
+  mockTotalSecs = mockSettings.time * 60;
+  mockSecsLeft  = mockTotalSecs;
+  if (mockTimer) clearInterval(mockTimer);
+  mockTimer = setInterval(() => {
+    mockSecsLeft--;
+    updateMockTimerDisplay();
+    if (mockSecsLeft <= 0) endMockTest();
+  }, 1000);
+  updateMockTimerDisplay();
+
+  // Render first Q
+  renderMockQ(0);
+}
+
+function updateMockTimerDisplay() {
+  const m   = String(Math.floor(mockSecsLeft/60)).padStart(2,"0");
+  const s   = String(mockSecsLeft%60).padStart(2,"0");
+  const el  = document.getElementById("mockTimerVal");
+  if (el) {
+    el.textContent = `${m}:${s}`;
+    el.classList.toggle("danger", mockSecsLeft <= 60);
+  }
+  const pct = ((mockTotalSecs - mockSecsLeft) / mockTotalSecs * 100).toFixed(1);
+  const fill = document.getElementById("mockProgFill");
+  if (fill) fill.style.width = pct + "%";
+  const lbl = document.getElementById("mockProgLabel");
+  if (lbl) lbl.textContent = `Q ${mockQIdx+1} of ${filteredQ.length}`;
+  const adb = document.getElementById("adaptiveDiffBadge");
+  if (adb) {
+    if (mockSettings.mode === "adaptive") {
+      adb.style.display = "inline-block";
+      adb.textContent   = `🔥 ${mockAdaptiveDiff}`;
+      adb.style.background = mockAdaptiveDiff==="Hard"?"var(--red)":mockAdaptiveDiff==="Medium"?"var(--amber)":"var(--teal)";
+    } else { adb.style.display = "none"; }
+  }
+}
+
+function renderMockQ(idx) {
+  mockQIdx = idx;
+  mockQStartTime = new Date();
+  const q    = filteredQ[idx];
+  const ans  = answers[q.id];
+  const shown = ans !== undefined;
+  const diffCls = q.difficulty==="Easy" ? "badge-teal" : q.difficulty==="Medium" ? "badge-amber" : "badge-red";
+  const repeatFlag = (q.repeatsIn||"").includes(",")
+    ? `<span class="badge badge-amber"><i class="ti ti-repeat"></i> ${q.repeatsIn}</span>` : "";
+
+  const opts = ["A","B","C","D"].map((letter,i) => {
+    const text = [q.optA,q.optB,q.optC,q.optD][i];
+    let cls = "opt";
+    if (shown) {
+      if (letter === q.answer) cls += " reveal";
+      if (ans === "correct" && letter === q.answer) cls += " correct";
+      if (ans === "wrong" && answers[q.id+"_chosen"] === letter) cls += " wrong";
+    }
+    return `<button class="${cls}" ${shown?"disabled":""} onclick="mockAttemptQ('${q.id}','${letter}','${q.answer}')">
+      <strong>${letter}.</strong> ${text}</button>`;
+  }).join("");
+
+  const explanation = shown ? `
+    <div class="explanation">
+      <strong>Correct answer:</strong> ${q.answer}. ${q.answerText||""}<br><br>
+      <strong>Explanation:</strong> ${q.explanation || "No explanation available."}
+    </div>` : "";
+
+  // Progress dots
+  const dots = filteredQ.map((qd, di) => {
+    const a = answers[qd.id];
+    let cls = "mock-dot";
+    if (di === idx) cls += " current";
+    else if (a === "correct") cls += " answered";
+    else if (a === "wrong")   cls += " wrong";
+    return `<div class="${cls}" title="Q${di+1}"></div>`;
+  }).join("");
+
+  const isLast = idx === filteredQ.length - 1;
+  const navBtns = `
+    <div class="mock-nav">
+      <div class="mock-dots">${dots}</div>
+      <div style="display:flex;gap:8px;">
+        ${!shown ? `<button class="btn btn-sm" onclick="mockSkipQ('${q.id}')">
+          <i class="ti ti-forward-skip"></i> Skip</button>` : ""}
+        ${shown && !isLast ? `<button class="btn btn-primary" onclick="renderMockQ(${idx+1})">
+          Next <i class="ti ti-arrow-right"></i></button>` : ""}
+        ${shown && isLast ? `<button class="btn btn-primary" onclick="endMockTest()" style="background:var(--teal);">
+          <i class="ti ti-flag"></i> Finish</button>` : ""}
+      </div>
+    </div>`;
+
+  document.getElementById("qContainer").innerHTML = `
+    <div class="q-card" id="qcard-${q.id}">
+      <div class="q-meta">
+        <span class="q-num">Q${idx+1}.</span>
+        ${subjectBadge(q.subject)}
+        <span class="badge ${diffCls}">${q.difficulty}</span>
+        <span class="badge" style="background:var(--bg3);color:var(--text2);">${q.year}</span>
+        ${repeatFlag}
+      </div>
+      ${navBtns}
+      <div class="q-text">${highlightDangerWords(q.question)}</div>
+      <div class="opts">${opts}</div>
+      ${explanation}
+    </div>`;
+
+  updateMockTimerDisplay();
+}
+
+function mockAttemptQ(qId, chosen, correct) {
+  if (answers[qId] !== undefined) return;
+  const result    = chosen === correct ? "correct" : "wrong";
+  answers[qId]    = result;
+  answers[qId+"_chosen"] = chosen;
+  const timeTaken = mockQStartTime ? Math.round((new Date()-mockQStartTime)/1000) : 0;
+  mockQTimes[qId] = timeTaken;
+  const q = filteredQ.find(q => q.id === qId);
+  google.script.run.saveProgress({ userName, qId, subject:q.subject, year:q.year, result, timeTaken });
+  trackAttemptHeatmap();
+  attemptedQIds.add(String(qId));
+  localStorage.setItem("pyqAttempted", JSON.stringify([...attemptedQIds]));
+  const subDates2 = JSON.parse(localStorage.getItem("subjectDates") || "{}");
+  const today2    = new Date().toISOString().split("T")[0];
+  if (!subDates2[q.subject]) subDates2[q.subject] = [];
+  if (!subDates2[q.subject].includes(today2)) subDates2[q.subject].push(today2);
+  localStorage.setItem("subjectDates", JSON.stringify(subDates2));
+  // Topic accuracy tracking in mock too
+  const topicKey2 = q.subTopic || q.topic || 'General';
+  const topicAcc2 = JSON.parse(localStorage.getItem("pyqTopicAccuracy") || "{}");
+  if (!topicAcc2[q.subject]) topicAcc2[q.subject] = {};
+  if (!topicAcc2[q.subject][topicKey2]) topicAcc2[q.subject][topicKey2] = {c:0,w:0,s:0,last:''};
+  if (result==='correct') topicAcc2[q.subject][topicKey2].c++;
+  else                    topicAcc2[q.subject][topicKey2].w++;
+  topicAcc2[q.subject][topicKey2].last = new Date().toISOString().split("T")[0];
+  localStorage.setItem("pyqTopicAccuracy", JSON.stringify(topicAcc2));
+  // Spaced repetition for mock wrongs
+  if (result === 'wrong') {
+    const srData2 = JSON.parse(localStorage.getItem("pyqSpacedRepeat") || "{}");
+    srData2[qId] = { date: new Date().toISOString().split("T")[0], subject:q.subject, topic:topicKey2, interval:3 };
+    localStorage.setItem("pyqSpacedRepeat", JSON.stringify(srData2));
+  }
+  // Adaptive mode: upgrade difficulty after 3 consecutive correct
+  if (mockSettings.mode === "adaptive") {
+    const recentResults = Object.values(answers).slice(-3);
+    if (recentResults.length === 3 && recentResults.every(r => r === "correct")) {
+      const nextDiff = mockAdaptiveDiff === "Easy" ? "Medium" : mockAdaptiveDiff === "Medium" ? "Hard" : "Hard";
+      if (nextDiff !== mockAdaptiveDiff) {
+        mockAdaptiveDiff = nextDiff;
+        showToast(`🔥 Difficulty upgraded to ${nextDiff}!`);
+      }
+    }
+  }
+  renderMockQ(mockQIdx);
+}
+
+function mockSkipQ(qId) {
+  answers[qId] = "skipped";
+  const q = filteredQ.find(q => q.id === qId);
+  google.script.run.saveProgress({ userName, qId, subject:q.subject, year:q.year, result:"skipped", timeTaken:0 });
+  if (mockQIdx < filteredQ.length - 1) renderMockQ(mockQIdx + 1);
+  else endMockTest();
+}
+
+function endMockTest() {
+  if (mockTimer) clearInterval(mockTimer);
+  mockActive = false;
+  document.getElementById("mockTimerBar").style.display = "none";
+  document.getElementById("filterBar").style.display    = "flex";
+  document.getElementById("smartChips").style.display   = "flex";
+
+  const correct = Object.values(answers).filter(v => v==="correct").length;
+  const wrong   = Object.values(answers).filter(v => v==="wrong").length;
+  const skipped = Object.values(answers).filter(v => v==="skipped").length;
+  const total   = filteredQ.length;
+  const attempted = correct + wrong;
+  const acc     = attempted > 0 ? Math.round(correct/attempted*100) : 0;
+  const score   = Math.max(0, Math.round(correct - wrong*0.33));
+  const timeTakenSecs = mockTotalSecs - mockSecsLeft;
+  const avgSecs = attempted > 0 ? Math.round(timeTakenSecs/attempted) : 0;
+  const avgMin  = Math.floor(avgSecs/60);
+  const avgSec  = avgSecs%60;
+  const avgStr  = avgMin > 0 ? `${avgMin}m ${avgSec}s` : `${avgSec}s`;
+  const timeTakenStr = (() => { const m=Math.floor(timeTakenSecs/60); const s=timeTakenSecs%60; return `${m}m ${s}s`; })();
+
+  // Subject breakdown
+  const subBreak = {};
+  filteredQ.forEach(q => {
+    if (!subBreak[q.subject]) subBreak[q.subject] = {c:0,w:0,t:0};
+    subBreak[q.subject].t++;
+    if (answers[q.id]==="correct") subBreak[q.subject].c++;
+    if (answers[q.id]==="wrong")   subBreak[q.subject].w++;
+  });
+  const subRows = Object.entries(subBreak).map(([sub,d]) => {
+    const a = d.c+d.w>0 ? Math.round(d.c/(d.c+d.w)*100) : 0;
+    const cls = a>=80?"var(--teal)":a>=60?"var(--amber)":"var(--red)";
+    return `<tr><td>${sub}</td><td>${d.c}</td><td>${d.w}</td>
+      <td style="font-weight:600;color:${cls};">${a}%</td></tr>`;
+  }).join("");
+
+  // A/B/C/D comparison: paper key vs what user marked
+  const userPicks = { A:0, B:0, C:0, D:0 };
+  const paperKey  = { A:0, B:0, C:0, D:0 };
+  filteredQ.forEach(q => {
+    const pk = (q.answer || '').trim();
+    if (paperKey[pk]  !== undefined) paperKey[pk]++;
+    const chosen = answers[q.id + '_chosen'];
+    if (chosen && userPicks[chosen] !== undefined) userPicks[chosen]++;
+  });
+  const LCOLS = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
+  const maxPaper = Math.max(...Object.values(paperKey));
+  const maxUser  = Math.max(...Object.values(userPicks));
+  const picksHTML = ['A','B','C','D'].map(l => {
+    const pk = paperKey[l], up = userPicks[l];
+    const pkW = maxPaper > 0 ? (pk/maxPaper*100).toFixed(0) : 0;
+    const upW = maxUser  > 0 ? (up/maxUser *100).toFixed(0) : 0;
+    const diff = up - pk;
+    const diffStr = diff > 0 ? `+${diff}` : `${diff}`;
+    const diffCol = diff === 0 ? 'var(--text3)' : diff > 0 ? 'var(--amber)' : 'var(--teal)';
+    return `<div class="abcd-compare-row">
+      <div class="abcd-ltr" style="color:${LCOLS[l]};">${l}</div>
+      <div class="abcd-bars">
+        <div class="abcd-bar-wrap">
+          <div class="abcd-bar-fill" style="width:${pkW}%;background:${LCOLS[l]}99;"></div>
+          <span class="abcd-bar-num">${pk}</span>
+        </div>
+        <div class="abcd-bar-wrap">
+          <div class="abcd-bar-fill abcd-user" style="width:${upW}%;background:${LCOLS[l]};"></div>
+          <span class="abcd-bar-num">${up}</span>
+        </div>
+      </div>
+      <div class="abcd-diff" style="color:${diffCol};">${diff===0?'=':(diff>0?'▲':'▼')+Math.abs(diff)}</div>
+    </div>`;
+  }).join('');
+
+  // Build per-type performance stats
+  const typeStats = {};
+  filteredQ.forEach(q => {
+    const t = classifyAnswerType(q);
+    if (!typeStats[t]) typeStats[t] = { total:0, correct:0, wrong:0, skipped:0 };
+    typeStats[t].total++;
+    const ans = answers[q.id];
+    if (ans === 'correct')    typeStats[t].correct++;
+    else if (ans === 'wrong') typeStats[t].wrong++;
+    else                      typeStats[t].skipped++;
+  });
+
+  const TYPE_META = {
+    'Direct':       { color:'#378ADD', icon:'ti-arrow-right' },
+    'Both':         { color:'#7F77DD', icon:'ti-circles-relation' },
+    'Combo':        { color:'#EF9F27', icon:'ti-git-merge' },
+    'Combo (Only)': { color:'#D85A30', icon:'ti-filter' },
+    'Neither':      { color:'#E24B4A', icon:'ti-ban' },
+  };
+
+  const typeAnalysisHTML = Object.entries(typeStats)
+    .sort((a,b) => b[1].total - a[1].total)
+    .map(([typ, s]) => {
+      const meta    = TYPE_META[typ] || { color:'#aaa', icon:'ti-circle' };
+      const acc     = (s.correct+s.wrong) > 0 ? Math.round(s.correct/(s.correct+s.wrong)*100) : 0;
+      const accCol  = acc>=70 ? 'var(--teal)' : acc>=40 ? 'var(--amber)' : 'var(--red)';
+      const corrW   = s.total > 0 ? (s.correct/s.total*100).toFixed(1) : 0;
+      const wrongW  = s.total > 0 ? (s.wrong  /s.total*100).toFixed(1) : 0;
+      const skipW   = s.total > 0 ? (s.skipped/s.total*100).toFixed(1) : 0;
+      return `
+      <div class="type-perf-card" onclick="renderReview('${typ}')"
+           style="border-left:3px solid ${meta.color};" title="Click to filter by ${typ}">
+        <div class="type-perf-header">
+          <span class="type-perf-name">
+            <i class="ti ${meta.icon}" style="color:${meta.color};"></i>
+            ${typ}
+          </span>
+          <span class="type-perf-count">${s.total} Q</span>
+          <span class="type-perf-acc" style="color:${accCol};">${acc}% acc</span>
+        </div>
+        <div class="type-perf-bar">
+          <div class="type-perf-seg tps-correct" style="width:${corrW}%;background:${meta.color}aa;"
+               title="Correct: ${s.correct}"></div>
+          <div class="type-perf-seg tps-wrong"   style="width:${wrongW}%;" title="Wrong: ${s.wrong}"></div>
+          <div class="type-perf-seg tps-skip"    style="width:${skipW}%;"  title="Skipped: ${s.skipped}"></div>
+        </div>
+        <div class="type-perf-row">
+          <span class="tpr-correct">✓ ${s.correct}</span>
+          <span class="tpr-wrong">✗ ${s.wrong}</span>
+          <span class="tpr-skip">— ${s.skipped}</span>
+          <span class="tpr-hint">click to review →</span>
+        </div>
+      </div>`;
+    }).join('');
+
+  // Result filter chips (clean row)
+  const typeCounts = { all: total, correct, wrong, skipped };
+  filteredQ.forEach(q => {
+    const t = classifyAnswerType(q);
+    typeCounts[t] = (typeCounts[t] || 0) + 1;
+  });
+  const makeFilterBtn = (key, label, color, icon='') => {
+    const n = typeCounts[key] || 0;
+    return `<button class="review-filter-btn" data-filter="${key}"
+      onclick="renderReview('${key}')"
+      style="--rfb-color:${color};">
+      ${icon?`<i class="ti ${icon}"></i> `:''}${label}
+      <span class="review-filter-count">${n}</span>
+    </button>`;
+  };
+
+  const filterBtns = `
+    <div class="review-filter-bar">
+      <div class="rfb-group">
+        ${makeFilterBtn('all',     'All',     'var(--text2)',  'ti-list')}
+        ${makeFilterBtn('correct', 'Correct', 'var(--teal)',   'ti-check')}
+        ${makeFilterBtn('wrong',   'Wrong',   'var(--red)',    'ti-x')}
+        ${makeFilterBtn('skipped', 'Skipped', 'var(--text3)',  'ti-minus')}
+      </div>
+      <div class="rfb-divider"></div>
+      <div class="rfb-group rfb-types">
+        ${Object.entries(typeStats).sort((a,b)=>b[1].total-a[1].total)
+          .map(([t]) => makeFilterBtn(t, t, (TYPE_META[t]||{color:'#aaa'}).color)).join('')}
+      </div>
+    </div>`;
+
+  document.getElementById("qContainer").innerHTML = `
+    <div class="result-screen">
+      <div class="result-score" style="color:${score>=110?"var(--teal)":"var(--coral)"};">${score}</div>
+      <div class="result-label">Net score (–0.33 penalty) · ${total} questions</div>
+
+      <!-- Negative marking breakdown -->
+      <div class="neg-mark-bar">
+        <div class="nm-seg nm-correct" style="width:${(correct/total*100).toFixed(0)}%;" title="+${correct} marks">+${correct}</div>
+        <div class="nm-seg nm-wrong"   style="width:${(wrong/total*100).toFixed(0)}%;" title="-${(wrong*0.33).toFixed(2)} marks">−${(wrong*0.33).toFixed(1)}</div>
+        <div class="nm-seg nm-skip"    style="flex:1;" title="${skipped} skipped"></div>
+      </div>
+      <div class="nm-labels">
+        <span style="color:var(--teal);">+${correct} correct marks</span>
+        <span style="color:var(--red);">−${(wrong*0.33).toFixed(2)} lost to wrong answers</span>
+        <span style="color:var(--text3);">${skipped} skipped (safe)</span>
+      </div>
+
+      <div class="scorecard-speed">
+        <div class="speed-pill"><div class="sp-val" style="color:var(--teal);">${correct}</div><div class="sp-lbl">Correct</div></div>
+        <div class="speed-pill"><div class="sp-val" style="color:var(--red);">${wrong}</div><div class="sp-lbl">Wrong</div></div>
+        <div class="speed-pill"><div class="sp-val">${skipped}</div><div class="sp-lbl">Skipped</div></div>
+        <div class="speed-pill"><div class="sp-val">${acc}%</div><div class="sp-lbl">Accuracy</div></div>
+        <div class="speed-pill"><div class="sp-val" style="color:var(--blue);">${avgStr}</div><div class="sp-lbl">Avg / Q</div></div>
+        <div class="speed-pill"><div class="sp-val" style="color:var(--red);">−${(wrong*0.33).toFixed(1)}</div><div class="sp-lbl">Marks lost</div></div>
+        <div class="speed-pill"><div class="sp-val">${timeTakenStr}</div><div class="sp-lbl">Total time</div></div>
+      </div>
+
+      ${score>=110
+        ? `<div style="background:var(--teal-light);color:var(--teal-dark);padding:12px 20px;border-radius:var(--radius-lg);margin:0 auto 16px;max-width:340px;font-weight:500;text-align:center;">
+            🏆 Target achieved! Score ${score} ≥ 110</div>`
+        : `<div style="background:var(--amber-light);color:var(--amber-dark);padding:12px 20px;border-radius:var(--radius-lg);margin:0 auto 16px;max-width:340px;text-align:center;">
+            Need ${110-score} more marks to reach the 110 target</div>`}
+
+      <!-- ── OPTION BIAS REPORT ──────────────────── -->
+      ${(()=>{
+        const LCOLS = {A:'#378ADD',B:'#1D9E75',C:'#7F77DD',D:'#EF9F27'};
+        const sessionTotal = Object.values(sessionPicks).reduce((a,b)=>a+b,0);
+        if (sessionTotal < 5) return '';
+        const biasRows = ['A','B','C','D'].map(l => {
+          const picked = sessionPicks[l];
+          const pickedPct = sessionTotal>0 ? (picked/sessionTotal*100).toFixed(0) : 0;
+          const correctPct = total>0 ? (paperKey[l]/total*100).toFixed(0) : 0;
+          const diff = pickedPct - correctPct;
+          const biased = Math.abs(diff) >= 10;
+          return `<div class="bias-row">
+            <div class="bias-lbl" style="color:${LCOLS[l]};">${l}</div>
+            <div class="bias-bars">
+              <div title="Paper: ${correctPct}%" class="bias-seg" style="width:${correctPct}%;background:${LCOLS[l]}55;"></div>
+              <div title="You picked: ${pickedPct}%" class="bias-seg bias-user" style="width:${pickedPct}%;background:${LCOLS[l]};"></div>
+            </div>
+            <div class="bias-nums">
+              <span style="color:var(--text3);">Paper ${correctPct}%</span>
+              <span style="color:${LCOLS[l]};font-weight:700;">You ${pickedPct}%</span>
+              ${biased?`<span style="color:${diff>0?'var(--red)':'var(--teal)'};font-weight:700;">${diff>0?'▲ over-pick':'▼ under-pick'}</span>`:''}
+            </div>
+          </div>`;
+        }).join('');
+        const lifetime = pyqBiasData.total > 20 ? (() => {
+          const lb = pyqBiasData.picked;
+          const lt = pyqBiasData.total;
+          const biased = ['A','B','C','D'].filter(l => Math.abs(lb[l]/lt*100 - 25) > 8);
+          return biased.length ? `<div style="font-size:11px;color:var(--amber);margin-top:8px;">
+            📊 All-time bias: you over-pick <strong>${biased.join(', ')}</strong> — watch out!</div>` : '';
+        })() : '';
+        return `<div class="card" style="max-width:520px;margin:0 auto 14px;text-align:left;">
+          <div class="card-title" style="margin-bottom:10px;">
+            <i class="ti ti-arrows-exchange" style="color:var(--coral);"></i> Your option bias this session
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">
+            Faded bar = paper's correct answer distribution · Solid bar = what you actually picked
+          </div>
+          ${biasRows}${lifetime}
+        </div>`;
+      })()}
+
+      <!-- A/B/C/D comparison — always shown -->
+      <div class="card" style="max-width:520px;margin:0 auto 20px;text-align:left;">
+        <div class="card-title" style="margin-bottom:12px;">
+          <i class="ti ti-arrows-diff" style="color:var(--purple);"></i>
+          Answer key vs your picks
+        </div>
+        <div class="abcd-legend">
+          <span><span class="abcd-leg-dot" style="opacity:0.5;"></span> Paper key</span>
+          <span><span class="abcd-leg-dot"></span> You marked</span>
+        </div>
+        ${picksHTML}
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6;">
+          ▲ over-chose &nbsp;·&nbsp; ▼ under-chose &nbsp;·&nbsp; = matched paper
+        </div>
+      </div>
+
+      ${subRows ? `<div class="card" style="max-width:520px;margin:0 auto 20px;text-align:left;">
+        <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--blue);"></i> Subject breakdown</div>
+        <table class="gc-table"><thead><tr><th>Subject</th><th>Correct</th><th>Wrong</th><th>Accuracy</th></tr></thead>
+        <tbody>${subRows}</tbody></table></div>` : ""}
+
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;">
+        <button class="btn btn-primary" onclick="launchMockTestAgain()">
+          <i class="ti ti-refresh"></i> Try Again
+        </button>
+        <button class="btn" onclick="exitMockToList()">
+          <i class="ti ti-list"></i> Back to practice
+        </button>
+        <button class="btn" onclick="showTab('progress',document.querySelectorAll('.nav-btn')[3])">
+          <i class="ti ti-chart-bar"></i> View progress
+        </button>
+      </div>
+    </div>
+
+    <!-- ── TYPE PERFORMANCE ────────────────────────────── -->
+    <div class="review-section">
+
+      <!-- ── CONFIDENCE MATRIX ───────────────────── -->
+      ${(()=>{
+        const matrix = {sure:{c:0,w:0,s:0},['5050']:{c:0,w:0,s:0},guess:{c:0,w:0,s:0},none:{c:0,w:0,s:0}};
+        filteredQ.forEach(q => {
+          const conf = sessionConfidence[q.id] || 'none';
+          const res  = answers[q.id] || 's';
+          if (matrix[conf]) {
+            if (res==='correct') matrix[conf].c++;
+            else if (res==='wrong') matrix[conf].w++;
+            else matrix[conf].s++;
+          }
+        });
+        const overconf  = matrix['sure'].w;
+        const underconf = matrix['guess'].c;
+        const sureAcc   = matrix['sure'].c+matrix['sure'].w > 0
+          ? Math.round(matrix['sure'].c/(matrix['sure'].c+matrix['sure'].w)*100) : null;
+        if (overconf + underconf + matrix['sure'].c + matrix['5050'].c + matrix['guess'].c === 0) return '';
+        return `<div class="card" style="margin-bottom:16px;">
+          <div class="card-title" style="margin-bottom:12px;">
+            <i class="ti ti-brain" style="color:var(--purple);"></i> Confidence calibration
+            ${overconf>2?`<span class="badge badge-red" style="margin-left:auto;">⚠ ${overconf} overconfident wrong</span>`:''}
+          </div>
+          <div class="conf-matrix">
+            ${[['sure','✓ Sure','var(--teal)'],['5050','~ 50-50','var(--amber)'],['guess','? Guess','var(--red)']].map(([c,lbl,col])=>{
+              const d = matrix[c]; const tot = d.c+d.w+d.s;
+              if (tot===0) return '';
+              const acc = d.c+d.w>0 ? Math.round(d.c/(d.c+d.w)*100) : 0;
+              const warn = c==='sure'&&d.w>2 ? `⚠ ${d.w} wrong despite being "Sure"` :
+                           c==='guess'&&d.c>2 ? `🍀 ${d.c} right despite guessing` : '';
+              return `<div class="conf-matrix-row" style="border-left:3px solid ${col};">
+                <div class="cmr-label" style="color:${col};">${lbl}</div>
+                <div class="cmr-counts">
+                  <span class="cmr-c">✓ ${d.c}</span>
+                  <span class="cmr-w">✗ ${d.w}</span>
+                  <span class="cmr-s">— ${d.s}</span>
+                  <span class="cmr-acc">${d.c+d.w>0?acc+'% acc':''}</span>
+                </div>
+                ${warn?`<div class="cmr-warn">${warn}</div>`:''}
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;">
+            ${sureAcc!==null&&sureAcc<70?`⚠ You got ${100-sureAcc}% wrong even when "Sure" — calibrate your confidence.`:
+              sureAcc!==null&&sureAcc>=80?`✓ Good calibration — your "Sure" answers are ${sureAcc}% accurate.`:''}
+            ${underconf>3?`<br>🍀 You guessed correctly ${underconf} times — trust yourself more on those!`:''}
+          </div>
+        </div>`;
+      })()}
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:14px;">
+          <i class="ti ti-chart-donut" style="color:var(--purple);"></i>
+          Performance by answer type
+          <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:auto;">click any row to filter review below</span>
+        </div>
+        <div id="typePerfGrid">${typeAnalysisHTML}</div>
+      </div>
+
+      <!-- ── REVIEW LIST ─────────────────────────────── -->
+      <div class="card-title" style="font-size:15px;margin-bottom:10px;">
+        <i class="ti ti-eye" style="color:var(--blue);"></i> Review answers
+      </div>
+      ${filterBtns}
+      <div id="reviewList" style="margin-top:14px;"></div>
+    </div>`;
+
+  // Auto-show wrong answers on load
+  renderReview('wrong');
+}
+
+// ── REVIEW RENDERER ───────────────────────────────────────────
+function renderReview(filter) {
+  // Highlight active button
+  document.querySelectorAll('.review-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === filter);
+  });
+
+  const el = document.getElementById('reviewList');
+  if (!el) return;
+
+  // Filter questions
+  let pool = filteredQ.filter(q => {
+    const ans = answers[q.id];
+    if (filter === 'all')     return true;
+    if (filter === 'correct') return ans === 'correct';
+    if (filter === 'wrong')   return ans === 'wrong';
+    if (filter === 'skipped') return ans === 'skipped';
+    // answer type filter
+    return classifyAnswerType(q) === filter;
+  });
+
+  if (pool.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:32px;color:var(--text3);font-size:13px;">
+      No questions in this category.</div>`;
+    return;
+  }
+
+  el.innerHTML = pool.map((q, i) => {
+    const ans      = answers[q.id];
+    const chosen   = answers[q.id + '_chosen'];
+    const correct  = q.answer;
+    const isRight  = ans === 'correct';
+    const isWrong  = ans === 'wrong';
+    const isSkip   = ans === 'skipped';
+    const timeSec  = mockQTimes[q.id];
+    const timeStr  = timeSec != null ? (timeSec >= 60 ? `${Math.floor(timeSec/60)}m ${timeSec%60}s` : `${timeSec}s`) : '—';
+    const ansType  = classifyAnswerType(q);
+
+    const statusIcon = isRight ? `<span style="color:var(--teal);font-weight:700;">✓ Correct</span>`
+                     : isWrong ? `<span style="color:var(--red);font-weight:700;">✗ Wrong</span>`
+                     : `<span style="color:var(--text3);">— Skipped</span>`;
+
+    const borderColor = isRight ? 'var(--teal)' : isWrong ? 'var(--red)' : 'var(--border)';
+
+    const opts = ['A','B','C','D'].map(letter => {
+      const text = q['opt'+letter] || '';
+      let bg = '', col = 'var(--text)';
+      if (letter === correct) { bg = 'var(--teal-light)'; col = 'var(--teal-dark)'; }
+      if (letter === chosen && isWrong) { bg = 'var(--red-light)'; col = 'var(--red-dark)'; }
+      return `<div class="review-opt" style="background:${bg};color:${col};">
+        <strong>${letter}.</strong> ${text}
+        ${letter === correct ? ' <i class="ti ti-check" style="color:var(--teal);float:right;"></i>' : ''}
+        ${letter === chosen && isWrong ? ' <i class="ti ti-x" style="color:var(--red);float:right;"></i>' : ''}
+      </div>`;
+    }).join('');
+
+    return `<div class="review-card" style="border-left:3px solid ${borderColor};">
+      <div class="review-card-header">
+        <span class="q-num">Q${filteredQ.indexOf(q)+1}.</span>
+        ${subjectBadge(q.subject)}
+        <span class="badge badge-gray">${q.year}</span>
+        <span class="badge" style="background:var(--purple-light);color:var(--purple-dark);">${ansType}</span>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:11px;color:var(--text3);"><i class="ti ti-clock"></i> ${timeStr}</span>
+          ${statusIcon}
+        </span>
+      </div>
+      <div class="q-text" style="margin:10px 0;">${q.question}</div>
+      <div class="review-opts">${opts}</div>
+      ${q.explanation ? `<div class="explanation" style="margin-top:10px;">
+        <strong>Explanation:</strong> ${q.explanation}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function launchMockTestAgain() { openMockModal(); }
+
+function exitMockToList() {
+  mockActive = false;
+  answers = {};
+  filteredQ = [...allQuestions];
+  renderQuestions();
+}
+
+// ── QUIZ TIMER (legacy) ─────────────────────────────────────
+function startQuizTimer() {
+  quizSeconds = 0;
+  if (quizTimer) clearInterval(quizTimer);
+  quizTimer = setInterval(() => {
+    quizSeconds++;
+    const m = String(Math.floor(quizSeconds/60)).padStart(2,"0");
+    const s = String(quizSeconds%60).padStart(2,"0");
+    const el = document.getElementById("timerDisp");
+    el.innerHTML = `<i class="ti ti-clock" aria-hidden="true"></i> ${m}:${s}`;
+    if (quizSeconds >= 7200) endQuiz(); // 2 hr limit
+  }, 1000);
+}
+
+function endQuiz() {
+  if (quizTimer) clearInterval(quizTimer);
+  const correct = Object.values(answers).filter(v => v === "correct").length;
+  const wrong   = Object.values(answers).filter(v => v === "wrong").length;
+  const skipped = Object.values(answers).filter(v => v === "skipped").length;
+  const total   = correct + wrong;
+  const acc     = total > 0 ? Math.round(correct/total*100) : 0;
+  const score   = Math.max(0, Math.round(correct - wrong * 0.33));
+
+  document.getElementById("qContainer").innerHTML = `
+    <div class="result-screen">
+      <div class="result-score">${score}</div>
+      <div class="result-label">Net score (after -0.33 penalty)</div>
+      <div class="result-grid">
+        <div class="metric"><div class="metric-lbl">Correct</div><div class="metric-val" style="color:var(--teal);">${correct}</div></div>
+        <div class="metric"><div class="metric-lbl">Wrong</div><div class="metric-val" style="color:var(--red);">${wrong}</div></div>
+        <div class="metric"><div class="metric-lbl">Accuracy</div><div class="metric-val">${acc}%</div></div>
+      </div>
+      ${score >= 110 ? `<div style="background:var(--teal-light);color:var(--teal-dark);padding:12px 20px;border-radius:var(--radius-lg);margin:0 auto 16px;max-width:300px;font-weight:500;">
+        <i class="ti ti-trophy" aria-hidden="true"></i> Target achieved! You scored ${score}/150
+      </div>` : `<div style="background:var(--amber-light);color:var(--amber-dark);padding:12px 20px;border-radius:var(--radius-lg);margin:0 auto 16px;max-width:300px;">
+        Need ${110 - score} more to reach 110 target
+      </div>`}
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="location.reload()">
+          <i class="ti ti-refresh" aria-hidden="true"></i> New session
+        </button>
+        <button class="btn" onclick="showTab('progress',document.querySelectorAll('.nav-btn')[3])">
+          <i class="ti ti-chart-bar" aria-hidden="true"></i> View progress
+        </button>
+      </div>
+    </div>`;
+  document.getElementById("timerBar").style.display = "none";
+  document.getElementById("qNav").style.display     = "none";
+  document.getElementById("filterBar").style.display = "flex";
+}
+
+// ══════════════════════════════════════════════════════════════
+// CURRENT AFFAIRS
+// ══════════════════════════════════════════════════════════════
+function loadCA() {
+  const cat        = document.getElementById("ca-cat").value;
+  const search     = document.getElementById("ca-search").value;
+  const bkOnly     = document.getElementById("ca-bookmarked").checked;
+  document.getElementById("caFeed").innerHTML =
+    `<div class="loading"><i class="ti ti-loader"></i>Loading...</div>`;
+
+  google.script.run
+    .withSuccessHandler(items => renderCA(items, bkOnly))
+    .withFailureHandler(showError)
+    .getCurrentAffairs({ category: cat, search: search });
+}
+
+function debounceCA() {
+  clearTimeout(caDebounce);
+  caDebounce = setTimeout(loadCA, 400);
+}
+
+function renderCA(items, bkOnly) {
+  const el = document.getElementById("caFeed");
+  if (!items || items.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);">
+      No current affairs found. Admin needs to add some!</div>`;
+    return;
+  }
+
+  if (bkOnly) items = items.filter(item => caBookmarks.includes(item.headline));
+
+  const catColors = getCatColors();
+  const todayStr  = new Date().toDateString();
+  let   lastDate  = null;
+  let   html      = "";
+
+  items.forEach(item => {
+    const d       = new Date(item.date);
+    const dateStr = d.toDateString();
+    if (dateStr !== lastDate) {
+      const label = dateStr === todayStr ? "Today" : item.date;
+      html += `<div class="date-divider">${label}</div>`;
+      lastDate = dateStr;
+    }
+    const isBookmarked = caBookmarks.includes(item.headline);
+    const relBadge = item.relevance === "High"
+      ? `<span class="badge badge-teal">High relevance</span>`
+      : item.relevance === "Medium"
+      ? `<span class="badge badge-amber">Medium relevance</span>`
+      : `<span class="badge badge-gray">Low relevance</span>`;
+    const mcqHtml = item.mcq
+      ? `<span class="ca-mcq"><i class="ti ti-bulb" aria-hidden="true"></i> ${item.mcq}</span>` : "";
+
+    html += `
+      <div class="ca-item">
+        <div class="ca-item-header">
+          <div class="ca-item-body">
+            <div style="display:flex;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
+              <span class="badge" style="background:${catColors[item.category]||"var(--bg3)"};
+                color:${catColors[item.category+"T"]||"var(--text2)"};">${item.category}</span>
+              ${relBadge}
+            </div>
+            <div class="ca-headline">${item.headline}</div>
+            <div class="ca-detail">${item.detail||""}</div>
+            <div class="ca-footer">
+              ${item.source ? `<span class="ca-source"><i class="ti ti-link" aria-hidden="true"></i> ${item.source}</span>` : ""}
+              ${mcqHtml}
+            </div>
+          </div>
+          <button class="bookmark-btn ${isBookmarked?"active":""}"
+            onclick="toggleBookmark('${item.headline.replace(/'/g,"&#39;")}')"
+            aria-label="${isBookmarked?"Remove bookmark":"Bookmark"}">
+            <i class="ti ti-bookmark${isBookmarked?"-filled":""}" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+function toggleBookmark(headline) {
+  const idx = caBookmarks.indexOf(headline);
+  if (idx === -1) caBookmarks.push(headline);
+  else            caBookmarks.splice(idx, 1);
+  localStorage.setItem("caBookmarks", JSON.stringify(caBookmarks));
+  loadCA();
+  showToast(idx === -1 ? "Bookmarked!" : "Bookmark removed");
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════════════════════════
+function loadProgress() {
+  document.getElementById("progressContent").innerHTML =
+    `<div class="loading"><i class="ti ti-loader"></i>Loading your progress...</div>`;
+  renderHeatmap(); // always render from localStorage
+  google.script.run
+    .withSuccessHandler(prog => renderProgress(prog))
+    .withFailureHandler(showError)
+    .getUserProgress(userName);
+}
+
+function renderProgress(prog) {
+  const el = document.getElementById("progressContent");
+  const score = prog.projected || 0;
+  const pct   = Math.round(score / 110 * 100);
+  const subjectOrder = [
+    "Polity","Modern History","Ancient History","Geography",
+    "Economy","Science","Environment","Current Affairs","UP Special"
+  ];
+  const colors = {
+    "Polity":"var(--teal)","Modern History":"var(--purple)","Ancient History":"#AFA9EC",
+    "Geography":"var(--blue)","Economy":"var(--amber)","Science":"#639922",
+    "Environment":"var(--teal)","Current Affairs":"var(--pink)","UP Special":"var(--coral)"
+  };
+  const targets = {
+    "Polity":20,"Modern History":13,"Ancient History":8,"Geography":15,
+    "Economy":12,"Science":10,"Environment":10,"Current Affairs":16,"UP Special":14
+  };
+
+  const subjectBars = subjectOrder.map(sub => {
+    const data = prog.subjects[sub];
+    if (!data) return "";
+    const acc   = data.correct + data.wrong > 0
+      ? Math.round(data.correct / (data.correct + data.wrong) * 100) : 0;
+    const color = colors[sub] || "var(--blue)";
+    const status = acc >= 80 ? "✓" : acc >= 60 ? "~" : "✗";
+    const streakPip = getSubjectStreakPip(sub, data);
+    return `<div class="prog-row">
+      <div class="prog-labels">
+        <span>${sub} ${streakPip}<span style="color:var(--text3);margin-left:4px;">(${data.total} done)</span></span>
+        <span style="font-weight:500;color:${acc>=80?"var(--teal)":acc>=60?"var(--amber)":"var(--red)"};">${acc}% ${status}</span>
+      </div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${acc}%;background:${color};"></div></div>
+    </div>`;
+  }).join("");
+
+  // Weak areas
+  const weakAreas = subjectOrder
+    .filter(s => prog.subjects[s] && prog.subjects[s].total > 0)
+    .map(s => ({ sub: s, data: prog.subjects[s] }))
+    .filter(({ data }) => {
+      const acc = data.correct+data.wrong > 0 ? data.correct/(data.correct+data.wrong)*100 : 0;
+      return acc < 70;
+    })
+    .sort((a,b) => {
+      const accA = a.data.correct/(a.data.correct+a.data.wrong||1)*100;
+      const accB = b.data.correct/(b.data.correct+b.data.wrong||1)*100;
+      return accA - accB;
+    });
+
+  el.innerHTML = `
+    <div class="three-col">
+      <div class="metric"><div class="metric-lbl">Projected score</div>
+        <div class="metric-val" style="color:${score>=110?"var(--teal)":"var(--coral)"};">${score}/150</div>
+        <div class="metric-sub">${score>=110?"Target achieved!":"Need "+(110-score)+" more"}</div></div>
+      <div class="metric"><div class="metric-lbl">Accuracy</div>
+        <div class="metric-val">${prog.accuracy||0}%</div>
+        <div class="metric-sub">target: 88%</div></div>
+      <div class="metric"><div class="metric-lbl">Questions done</div>
+        <div class="metric-val">${prog.questionsAttempted||0}</div>
+        <div class="metric-sub">${prog.correct||0} correct, ${prog.wrong||0} wrong</div></div>
+    </div>
+
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:14px 16px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="flex-shrink:0;text-align:center;">
+          <div style="font-size:28px;font-weight:300;color:${score>=110?"var(--teal)":"var(--coral)"};">${score}</div>
+          <div style="font-size:11px;color:var(--text3);">/ 150</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Target: 110/150</div>
+          <div class="prog-bg" style="height:12px;">
+            <div class="prog-fill" style="width:${Math.min(100,pct)}%;
+              background:${score>=110?"var(--teal)":"var(--amber)"};"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px;">${pct}% of target reached</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true" style="color:var(--teal);"></i> Subject-wise accuracy</div>
+        ${subjectBars || `<div style="font-size:12px;color:var(--text3);">No data yet. Start practicing!</div>`}
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:12px;">
+          <div class="card-title"><i class="ti ti-alert-triangle" aria-hidden="true" style="color:var(--amber);"></i> Focus areas</div>
+          ${weakAreas.length > 0
+            ? weakAreas.slice(0,4).map(({sub,data}) => {
+                const acc = Math.round(data.correct/(data.correct+data.wrong||1)*100);
+                return `<div style="border-left:2px solid var(--amber);padding:5px 10px;
+                  margin-bottom:6px;background:var(--bg2);border-radius:0 4px 4px 0;">
+                  <div style="font-size:12px;font-weight:500;">${sub} (${acc}%)</div>
+                  <div style="font-size:11px;color:var(--text2);">
+                    ${data.correct} correct, ${data.wrong} wrong out of ${data.total} attempts
+                  </div>
+                </div>`;
+              }).join("")
+            : `<div style="font-size:12px;color:var(--text3);">
+                Looking good! No subject below 70% yet.</div>`}
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-flame" aria-hidden="true" style="color:var(--coral);"></i> Practice streak</div>
+          <div class="streak-dots" id="progressStreakDots"></div>
+          <div style="font-size:13px;margin-top:6px;">
+            <span style="font-weight:500;color:var(--coral);">${prog.streak||0} day streak</span>
+            <span style="color:var(--text3);"> • keep it up!</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Re-render streak dots
+  updateStreakUI(prog.streak || 0);
+
+  // Append extra analytics panels
+  renderWeakTopicHeatmap();
+  renderSpacedRepeatDue();
+  renderSpeedAccuracyScatter(prog);
+}
+
+// ── WEAK TOPIC HEATMAP ──────────────────────────────────────────
+function renderWeakTopicHeatmap() {
+  const topicAcc = JSON.parse(localStorage.getItem("pyqTopicAccuracy") || "{}");
+  const el = document.getElementById("progressContent");
+  if (!el) return;
+
+  const allTopics = [];
+  Object.entries(topicAcc).forEach(([sub, topics]) => {
+    Object.entries(topics).forEach(([topic, d]) => {
+      const tried = d.c + d.w;
+      if (tried < 2) return; // skip if barely attempted
+      const acc = Math.round(d.c / tried * 100);
+      allTopics.push({ sub, topic, c:d.c, w:d.w, tried, acc, last:d.last });
+    });
+  });
+
+  if (allTopics.length === 0) {
+    const div = document.createElement('div');
+    div.className = 'card'; div.style.marginTop = '12px';
+    div.innerHTML = `<div class="card-title"><i class="ti ti-map" style="color:var(--purple);"></i> Topic accuracy map</div>
+      <div style="font-size:12px;color:var(--text3);">Attempt more questions to see topic-level breakdown.</div>`;
+    el.appendChild(div); return;
+  }
+
+  allTopics.sort((a,b) => a.acc - b.acc);
+  const cellsHTML = allTopics.map(t => {
+    const col = t.acc >= 80 ? '#1D9E75' : t.acc >= 60 ? '#EF9F27' : t.acc >= 40 ? '#D85A30' : '#E24B4A';
+    const bg  = col + '22';
+    return `<div class="topic-cell" style="border-color:${col};background:${bg};"
+       title="${t.sub} › ${t.topic}: ${t.acc}% (${t.c}✓ ${t.w}✗)">
+      <div class="tc-name">${t.topic}</div>
+      <div class="tc-sub">${t.sub}</div>
+      <div class="tc-acc" style="color:${col};">${t.acc}%</div>
+    </div>`;
+  }).join('');
+
+  const div = document.createElement('div');
+  div.className = 'card'; div.style.marginTop = '12px';
+  div.innerHTML = `
+    <div class="card-title" style="margin-bottom:12px;">
+      <i class="ti ti-map" style="color:var(--purple);"></i> Topic accuracy map
+      <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:auto;">red = weak · green = strong</span>
+    </div>
+    <div class="topic-heatmap-grid">${cellsHTML}</div>
+    <div style="display:flex;gap:12px;font-size:11px;color:var(--text3);margin-top:10px;flex-wrap:wrap;">
+      <span><span style="display:inline-block;width:10px;height:10px;background:#E24B4A;border-radius:2px;margin-right:3px;"></span>&lt;40% — needs urgent focus</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#EF9F27;border-radius:2px;margin-right:3px;"></span>40-79% — practice more</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#1D9E75;border-radius:2px;margin-right:3px;"></span>≥80% — strong</span>
+    </div>`;
+  el.appendChild(div);
+}
+
+// ── SPACED REPETITION DUE ──────────────────────────────────────
+function renderSpacedRepeatDue() {
+  const srData  = JSON.parse(localStorage.getItem("pyqSpacedRepeat") || "{}");
+  const el = document.getElementById("progressContent");
+  if (!el || !allQuestions.length) return;
+
+  const today = new Date().toISOString().split("T")[0];
+  const due = Object.entries(srData).filter(([id, d]) => {
+    const dueDate = new Date(d.date);
+    dueDate.setDate(dueDate.getDate() + (d.interval || 3));
+    return dueDate.toISOString().split("T")[0] <= today;
+  }).map(([id, d]) => {
+    const q = allQuestions.find(q => String(q.id) === String(id));
+    return { id, ...d, q };
+  }).filter(x => x.q).slice(0, 10);
+
+  const div = document.createElement('div');
+  div.className = 'card'; div.style.marginTop = '12px';
+
+  if (due.length === 0) {
+    div.innerHTML = `<div class="card-title"><i class="ti ti-clock-check" style="color:var(--teal);"></i> Spaced repetition — due for review</div>
+      <div style="font-size:12px;color:var(--teal);">✓ No questions due for review today. Keep practicing!</div>`;
+    el.appendChild(div); return;
+  }
+
+  const rowsHTML = due.map(({q, subject, topic, interval}) => `
+    <div class="sr-row">
+      <div class="sr-meta"><span class="badge badge-red">Review due</span>
+        <span style="font-size:11px;color:var(--text3);">${subject} › ${topic}</span></div>
+      <div class="sr-q">${q.question.slice(0,100)}${q.question.length>100?'…':''}</div>
+    </div>`).join('');
+
+  div.innerHTML = `
+    <div class="card-title" style="margin-bottom:12px;">
+      <i class="ti ti-clock-check" style="color:var(--amber);"></i> Spaced repetition — ${due.length} due today
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">These are questions you got wrong earlier — time to retry them.</div>
+    ${rowsHTML}
+    <button class="btn btn-primary" style="margin-top:10px;" onclick="launchRevisionSession()">
+      <i class="ti ti-refresh"></i> Start revision session (${due.length} Q)
+    </button>`;
+  el.appendChild(div);
+}
+
+// ── SPEED VS ACCURACY SCATTER ──────────────────────────────────
+function renderSpeedAccuracyScatter(prog) {
+  const el = document.getElementById("progressContent");
+  if (!el) return;
+
+  const subjectOrder = ["Polity","Modern History","Ancient History","Geography",
+    "Economy","Science","Environment","Current Affairs","UP Special"];
+  const COLS = {
+    "Polity":"#1D9E75","Modern History":"#7F77DD","Ancient History":"#AFA9EC",
+    "Geography":"#378ADD","Economy":"#EF9F27","Science":"#639922",
+    "Environment":"#00A67E","Current Affairs":"#D4537E","UP Special":"#D85A30"
+  };
+
+  const points = subjectOrder.map(sub => {
+    const d = prog.subjects && prog.subjects[sub];
+    if (!d || d.total < 3) return null;
+    const acc = d.correct + d.wrong > 0 ? Math.round(d.correct/(d.correct+d.wrong)*100) : 0;
+    const avgT = d.avgTime || 0;
+    return { sub, acc, avgT, col: COLS[sub]||'#aaa' };
+  }).filter(Boolean);
+
+  if (points.length < 2) {
+    const div = document.createElement('div');
+    div.className = 'card'; div.style.marginTop = '12px';
+    div.innerHTML = `<div class="card-title"><i class="ti ti-chart-scatter" style="color:var(--blue);"></i> Speed vs Accuracy</div>
+      <div style="font-size:12px;color:var(--text3);">Attempt at least 3 questions per subject to see scatter plot.</div>`;
+    el.appendChild(div); return;
+  }
+
+  const maxT = Math.max(...points.map(p=>p.avgT), 1);
+  // SVG scatter — x=avgTime(0→maxT), y=accuracy(0→100)
+  const W = 300, H = 180, PAD = 30;
+  const dotsHTML = points.map(p => {
+    const cx = PAD + (p.avgT / maxT) * (W - PAD*2);
+    const cy = H - PAD - (p.acc / 100) * (H - PAD*2);
+    return `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="8"
+      fill="${p.col}" opacity="0.85" title="${p.sub}: ${p.acc}% acc, ${p.avgT}s avg">
+      </circle>
+      <text x="${cx.toFixed(0)}" y="${(cy-11).toFixed(0)}" text-anchor="middle"
+        font-size="9" fill="var(--text2)">${p.sub.split(' ')[0]}</text>`;
+  }).join('');
+
+  // Quadrant lines at 70% accuracy, midpoint time
+  const midT  = PAD + (W-PAD*2)/2;
+  const acc70 = H - PAD - 0.7*(H-PAD*2);
+
+  const div = document.createElement('div');
+  div.className = 'card'; div.style.marginTop = '12px';
+  div.innerHTML = `
+    <div class="card-title" style="margin-bottom:12px;">
+      <i class="ti ti-chart-scatter" style="color:var(--blue);"></i> Speed vs Accuracy by subject
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;overflow:visible;">
+      <!-- axes -->
+      <line x1="${PAD}" y1="${PAD}" x2="${PAD}" y2="${H-PAD}" stroke="var(--border)" stroke-width="1"/>
+      <line x1="${PAD}" y1="${H-PAD}" x2="${W-PAD}" y2="${H-PAD}" stroke="var(--border)" stroke-width="1"/>
+      <!-- quadrant lines -->
+      <line x1="${midT}" y1="${PAD}" x2="${midT}" y2="${H-PAD}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3"/>
+      <line x1="${PAD}" y1="${acc70.toFixed(0)}" x2="${W-PAD}" y2="${acc70.toFixed(0)}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3"/>
+      <!-- quadrant labels -->
+      <text x="${PAD+4}" y="${PAD+12}" font-size="8" fill="var(--teal)">Fast+Accurate ✓</text>
+      <text x="${midT+4}" y="${PAD+12}" font-size="8" fill="var(--amber)">Slow+Accurate</text>
+      <text x="${PAD+4}" y="${H-PAD-4}" font-size="8" fill="var(--amber)">Fast+Wrong ⚠</text>
+      <text x="${midT+4}" y="${H-PAD-4}" font-size="8" fill="var(--red)">Slow+Wrong ✗</text>
+      <!-- axis labels -->
+      <text x="${W/2}" y="${H-2}" font-size="9" fill="var(--text3)" text-anchor="middle">Avg time per Q →</text>
+      <text x="8" y="${H/2}" font-size="9" fill="var(--text3)" text-anchor="middle" transform="rotate(-90 8 ${H/2})">Accuracy % →</text>
+      ${dotsHTML}
+    </svg>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px;">
+      Top-left = ideal. Bottom-right = needs most work.
+    </div>`;
+  el.appendChild(div);
+}
+
+// ── REVISION SESSION (spaced repeat) ──────────────────────────
+function launchRevisionSession() {
+  const srData = JSON.parse(localStorage.getItem("pyqSpacedRepeat") || "{}");
+  const today  = new Date().toISOString().split("T")[0];
+  const dueIds = Object.entries(srData).filter(([id, d]) => {
+    const due = new Date(d.date);
+    due.setDate(due.getDate() + (d.interval||3));
+    return due.toISOString().split("T")[0] <= today;
+  }).map(([id]) => id);
+
+  const dueQs = allQuestions.filter(q => dueIds.includes(String(q.id)));
+  if (!dueQs.length) { showToast("No questions due!"); return; }
+
+  filteredQ = dueQs;
+  Object.keys(answers).forEach(k => delete answers[k]);
+  showTab('pyq', document.querySelectorAll('.nav-btn')[1]);
+  renderQuestions();
+  showToast(`Revision session: ${dueQs.length} questions to retry`);
+}
+
+// ══════════════════════════════════════════════════════════════
+// LEADERBOARD
+// ══════════════════════════════════════════════════════════════
+function loadLeaderboard() {
+  document.getElementById("lbContent").innerHTML =
+    `<div class="loading"><i class="ti ti-loader"></i>Loading leaderboard...</div>`;
+
+  google.script.run
+    .withSuccessHandler(lb => renderLeaderboard(lb))
+    .withFailureHandler(showError)
+    .getLeaderboard();
+}
+
+function renderLeaderboard(lb) {
+  const el = document.getElementById("lbContent");
+  const myRank = lb.findIndex(u => u.name === userName) + 1;
+  const medals = ["🥇","🥈","🥉"];
+
+  el.innerHTML = `
+    <div class="three-col">
+      <div class="metric"><div class="metric-lbl">Your rank</div>
+        <div class="metric-val">#${myRank || "—"}</div>
+        <div class="metric-sub">of ${lb.length} users</div></div>
+      <div class="metric"><div class="metric-lbl">Your best score</div>
+        <div class="metric-val" style="color:var(--teal);">${(lb.find(u=>u.name===userName)||{}).score||"—"}/150</div>
+        <div class="metric-sub">projected</div></div>
+      <div class="metric"><div class="metric-lbl">Total users</div>
+        <div class="metric-val">${lb.length}</div>
+        <div class="metric-sub">on the portal</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-trophy" aria-hidden="true" style="color:var(--amber);"></i> Leaderboard</div>
+      <table class="lb-table">
+        <thead><tr>
+          <th>Rank</th><th>Name</th>
+          <th>Score</th><th>Accuracy</th><th>Qs done</th><th>Last active</th>
+        </tr></thead>
+        <tbody>${lb.map((u,i) => {
+          const isMe = u.name === userName;
+          return `<tr class="${isMe?"me":""}">
+            <td class="lb-rank">${medals[i]||i+1}</td>
+            <td class="lb-name">${u.name}${isMe?" <span style='font-size:10px;color:var(--teal-dark);'>(you)</span>":""}</td>
+            <td style="font-weight:500;color:var(--teal-dark);">${u.score||0}/150</td>
+            <td>${u.accuracy||0}%</td>
+            <td>${u.attempted||0}</td>
+            <td style="font-size:11px;color:var(--text3);">${u.lastActive||""}</td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════════════════════
+function submitCA() {
+  const data = {
+    date:      document.getElementById("ca-date").value,
+    category:  document.getElementById("ca-cat-input").value,
+    headline:  document.getElementById("ca-headline").value.trim(),
+    detail:    document.getElementById("ca-detail").value.trim(),
+    source:    document.getElementById("ca-source").value.trim(),
+    relevance: document.getElementById("ca-relevance").value,
+    tags:      document.getElementById("ca-tags").value.trim(),
+    mcq:       document.getElementById("ca-mcq").value.trim(),
+  };
+
+  if (!data.headline) { showToast("Please enter a headline"); return; }
+  if (!data.detail)   { showToast("Please enter detail"); return; }
+
+  const statusEl = document.getElementById("ca-status");
+  statusEl.style.display = "block";
+  statusEl.style.color   = "var(--text3)";
+  statusEl.textContent   = "Adding...";
+
+  google.script.run
+    .withSuccessHandler(r => {
+      if (r.success) {
+        statusEl.style.color   = "var(--teal)";
+        statusEl.textContent   = "✓ Added successfully! Users will see it on their home screen.";
+        clearCAForm();
+        showToast("Current affair added!");
+      } else {
+        statusEl.style.color   = "var(--red)";
+        statusEl.textContent   = "Error: " + r.error;
+      }
+    })
+    .withFailureHandler(e => {
+      statusEl.style.color   = "var(--red)";
+      statusEl.textContent   = "Error: " + e.message;
+    })
+    .addCurrentAffair(data);
+}
+
+function clearCAForm() {
+  ["ca-headline","ca-detail","ca-source","ca-tags","ca-mcq"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+}
+
+function loadAdminStats() {
+  google.script.run
+    .withSuccessHandler(stats => {
+      document.getElementById("adminStats").innerHTML = `
+        <div class="metric"><div class="metric-lbl">Total questions</div>
+          <div class="metric-val">${stats.totalQuestions}</div></div>
+        <div class="metric"><div class="metric-lbl">CA items</div>
+          <div class="metric-val">${stats.totalCA}</div></div>
+        <div class="metric"><div class="metric-lbl">Status</div>
+          <div class="metric-val" style="color:var(--teal);font-size:14px;">Live ✓</div></div>`;
+    })
+    .getStats();
+}
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+function subjectBadge(subject) {
+  const map = {
+    "Polity":"badge-teal","Modern History":"badge-purple","Ancient History":"badge-purple",
+    "Geography":"badge-blue","Economy":"badge-amber","Science":"badge-teal",
+    "Environment":"badge-teal","Current Affairs":"badge-pink","UP Special":"badge-coral"
+  };
+  return `<span class="badge ${map[subject]||"badge-gray"}">${subject}</span>`;
+}
+
+function getCatColors() {
+  return {
+    "Polity":          "#E1F5EE", "PolityT":          "#085041",
+    "International":   "#E6F1FB", "InternationalT":   "#042C53",
+    "Economy":         "#FAEEDA", "EconomyT":         "#412402",
+    "Science":         "#EAF3DE", "ScienceT":         "#173404",
+    "UP Special":      "#FAECE7", "UP SpecialT":      "#4A1B0C",
+    "Awards":          "#EEEDFE", "AwardsT":          "#26215C",
+    "Environment":     "#E1F5EE", "EnvironmentT":     "#085041",
+    "Defence":         "#FCEBEB", "DefenceT":         "#501313",
+    "Sports":          "#FAEEDA", "SportsT":          "#412402",
+  };
+}
+
+function showToast(msg, duration=2500) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), duration);
+}
+
+function showError(e) {
+  console.error(e);
+  showToast("Error: " + (e.message || e), 4000);
+}
+</script>
+</body>
+</html>
