@@ -3970,51 +3970,51 @@ function renderDailyActivityLog() {
       <div style="width:${acc}%;height:100%;background:${color};border-radius:4px;"></div></div>` : '';
     const dateObj = new Date(d + 'T00:00:00');
     const label = d === today ? 'Today' : dateObj.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
-    return \`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
-      <div style="width:90px;font-size:12px;color:var(--text2);flex-shrink:0;">\${label}</div>
-      <div style="width:28px;text-align:right;font-size:13px;font-weight:500;color:var(--text);">\${s.attempted||0}</div>
-      <div style="font-size:11px;color:var(--text3);width:70px;flex-shrink:0;">\${s.correct||0}✓ \${s.wrong||0}✗</div>
-      \${bar}
-      <div style="width:34px;text-align:right;font-size:12px;font-weight:500;color:\${color};">\${tried>0?acc+'%':''}</div>
-    </div>\`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+      <div style="width:90px;font-size:12px;color:var(--text2);flex-shrink:0;">${label}</div>
+      <div style="width:28px;text-align:right;font-size:13px;font-weight:500;color:var(--text);">${s.attempted||0}</div>
+      <div style="font-size:11px;color:var(--text3);width:70px;flex-shrink:0;">${s.correct||0}✓ ${s.wrong||0}✗</div>
+      ${bar}
+      <div style="width:34px;text-align:right;font-size:12px;font-weight:500;color:${color};">${tried>0?acc+'%':''}</div>
+    </div>`;
   }).join('');
 
   const div = document.createElement('div');
   div.className = 'card';
   div.style.marginTop = '12px';
-  div.innerHTML = \`
+  div.innerHTML = `
     <div class="card-title"><i class="ti ti-calendar-stats" style="color:var(--blue);"></i> Daily activity log</div>
     <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
       <div class="metric" style="flex:1;min-width:100px;">
         <div class="metric-lbl">Total attempted</div>
-        <div class="metric-val" style="color:var(--blue);">\${totalAttempted}</div>
+        <div class="metric-val" style="color:var(--blue);">${totalAttempted}</div>
         <div class="metric-sub">unique questions</div>
       </div>
       <div class="metric" style="flex:1;min-width:100px;">
         <div class="metric-lbl">Today</div>
-        <div class="metric-val" style="color:var(--teal);">\${todayS.attempted||0}</div>
-        <div class="metric-sub">\${todayS.correct||0} correct</div>
+        <div class="metric-val" style="color:var(--teal);">${todayS.attempted||0}</div>
+        <div class="metric-sub">${todayS.correct||0} correct</div>
       </div>
       <div class="metric" style="flex:1;min-width:100px;">
         <div class="metric-lbl">Overall accuracy</div>
-        <div class="metric-val" style="color:\${overallAcc>=80?'var(--teal)':overallAcc>=60?'var(--amber)':'var(--red)'};">\${overallAcc}%</div>
-        <div class="metric-sub">\${allDayTotals.correct}✓ \${allDayTotals.wrong}✗</div>
+        <div class="metric-val" style="color:${overallAcc>=80?'var(--teal)':overallAcc>=60?'var(--amber)':'var(--red)'};">${overallAcc}%</div>
+        <div class="metric-sub">${allDayTotals.correct}✓ ${allDayTotals.wrong}✗</div>
       </div>
       <div class="metric" style="flex:1;min-width:100px;">
         <div class="metric-lbl">Active days</div>
-        <div class="metric-val">\${dates.length}</div>
+        <div class="metric-val">${dates.length}</div>
         <div class="metric-sub">days practiced</div>
       </div>
     </div>
-    \${dates.length === 0
+    ${dates.length === 0
       ? '<div style="font-size:12px;color:var(--text3);">No activity yet. Start attempting questions!</div>'
-      : \`<div style="font-size:11px;color:var(--text3);font-weight:500;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;gap:8px;">
+      : `<div style="font-size:11px;color:var(--text3);font-weight:500;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;gap:8px;">
           <span style="width:90px;">Date</span><span style="width:28px;text-align:right;">Qs</span>
           <span style="width:70px;">Breakdown</span><span style="flex:1;"></span>
           <span style="width:34px;text-align:right;">Acc</span></div>
-        \${rowsHTML}
-        \${dates.length > 14 ? \`<div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center;">Showing last 14 days of \${dates.length} total</div>\` : ''}\`}
-  \`;
+        ${rowsHTML}
+        ${dates.length > 14 ? `<div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center;">Showing last 14 days of ${dates.length} total</div>` : ''}`}
+  `;
   el.appendChild(div);
 }
 
