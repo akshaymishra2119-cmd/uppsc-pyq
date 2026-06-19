@@ -1411,6 +1411,8 @@ let clusterViewOn     = false;
 let pyqConfidence     = JSON.parse(localStorage.getItem("pyqConfidence") || "{}");
 let pyqDailyStats     = JSON.parse(localStorage.getItem("pyqDailyStats") || "{}");
 // { "2026-06-19": { attempted:5, correct:3, wrong:2, skipped:0 } }
+let pyqDailyLog       = JSON.parse(localStorage.getItem("pyqDailyLog") || "{}");
+// { "2026-06-19": [{ id, subject, topic, question, optA,optB,optC,optD, chosen, correct, result, year }] }
 let pyqMockSeen       = new Set(JSON.parse(localStorage.getItem("pyqMockSeen") || "[]"));
 // tracks which question IDs have been shown in mock sessions (non-repeating pool)
 let sessionConfidence = {}; // { qId: 'sure'|'5050'|'guess' } for current session
@@ -2839,6 +2841,25 @@ function attemptQ(qId, chosen, correct, idx) {
   if (result === 'correct') pyqDailyStats[today].correct++;
   else if (result === 'wrong') pyqDailyStats[today].wrong++;
   localStorage.setItem("pyqDailyStats", JSON.stringify(pyqDailyStats));
+  // ── Daily question diary ───────────────────────
+  if (!pyqDailyLog[today]) pyqDailyLog[today] = [];
+  // avoid duplicate entries for same question on same day
+  if (!pyqDailyLog[today].find(e => e.id === qId)) {
+    pyqDailyLog[today].push({
+      id:      qId,
+      subject: q.subject  || '',
+      topic:   q.subTopic || q.topic || '',
+      year:    q.year     || '',
+      question: q.question || '',
+      optA: q.optA || '', optB: q.optB || '',
+      optC: q.optC || '', optD: q.optD || '',
+      chosen:  chosen,
+      correct: correct,
+      result:  result,
+      time:    new Date().toTimeString().slice(0,5)
+    });
+    localStorage.setItem("pyqDailyLog", JSON.stringify(pyqDailyLog));
+  }
   // Spaced repetition: track wrong questions with date
   if (result === 'wrong') {
     const srData = JSON.parse(localStorage.getItem("pyqSpacedRepeat") || "{}");
@@ -3943,77 +3964,123 @@ function renderDailyActivityLog() {
   const el = document.getElementById("progressContent");
   if (!el) return;
 
-  const stats = pyqDailyStats;
-  const dates = Object.keys(stats).sort().reverse(); // newest first
+  const stats  = pyqDailyStats;
+  const log    = pyqDailyLog;
+  const dates  = Object.keys(stats).sort().reverse();
+  const today  = new Date().toISOString().split('T')[0];
 
-  // Overall totals from localStorage
+  // Overall summary counts
   const totalAttempted = attemptedQIds.size;
-  const allDayTotals = dates.reduce((acc, d) => {
+  const totalQ         = allQ.length || 449;
+  const totalUnseen    = totalQ - totalAttempted;
+  const allDayTotals   = dates.reduce((acc, d) => {
     acc.correct += stats[d].correct || 0;
     acc.wrong   += stats[d].wrong   || 0;
     return acc;
   }, { correct:0, wrong:0 });
   const overallAcc = (allDayTotals.correct + allDayTotals.wrong) > 0
-    ? Math.round(allDayTotals.correct / (allDayTotals.correct + allDayTotals.wrong) * 100)
-    : 0;
-
-  // Today's stats
-  const today = new Date().toISOString().split('T')[0];
+    ? Math.round(allDayTotals.correct / (allDayTotals.correct + allDayTotals.wrong) * 100) : 0;
   const todayS = stats[today] || { attempted:0, correct:0, wrong:0 };
 
-  const rowsHTML = dates.slice(0, 14).map(d => {
-    const s = stats[d];
-    const tried = (s.correct||0) + (s.wrong||0);
-    const acc = tried > 0 ? Math.round(s.correct / tried * 100) : 0;
-    const color = acc >= 80 ? 'var(--teal)' : acc >= 60 ? 'var(--amber)' : acc > 0 ? 'var(--red)' : 'var(--text3)';
-    const bar = tried > 0 ? `<div style="flex:1;background:var(--border);border-radius:4px;height:6px;overflow:hidden;">
-      <div style="width:${acc}%;height:100%;background:${color};border-radius:4px;"></div></div>` : '';
+  // Build HTML for each day
+  const daysHTML = dates.map((d, idx) => {
+    const s       = stats[d] || {};
+    const entries = log[d]   || [];
+    const tried   = (s.correct||0) + (s.wrong||0);
+    const acc     = tried > 0 ? Math.round(s.correct / tried * 100) : 0;
+    const accCol  = acc >= 80 ? '#1D9E75' : acc >= 60 ? '#EF9F27' : acc > 0 ? '#E24B4A' : '#999';
     const dateObj = new Date(d + 'T00:00:00');
-    const label = d === today ? 'Today' : dateObj.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
-    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
-      <div style="width:90px;font-size:12px;color:var(--text2);flex-shrink:0;">${label}</div>
-      <div style="width:28px;text-align:right;font-size:13px;font-weight:500;color:var(--text);">${s.attempted||0}</div>
-      <div style="font-size:11px;color:var(--text3);width:70px;flex-shrink:0;">${s.correct||0}✓ ${s.wrong||0}✗</div>
-      ${bar}
-      <div style="width:34px;text-align:right;font-size:12px;font-weight:500;color:${color};">${tried>0?acc+'%':''}</div>
-    </div>`;
+    const label   = d === today ? 'Today' : dateObj.toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'short', year:'numeric'});
+    const open    = idx === 0 ? 'open' : '';
+
+    // Question cards for this day
+    const qCards = entries.length === 0
+      ? `<div style="font-size:12px;color:var(--text3);padding:8px 0;">No detailed log (attempts made before diary feature was added)</div>`
+      : entries.map(e => {
+          const isRight  = e.result === 'correct';
+          const opts     = [['A', e.optA], ['B', e.optB], ['C', e.optC], ['D', e.optD]];
+          const optsHTML = opts.map(([ltr, txt]) => {
+            if (!txt) return '';
+            const isChosen  = ltr === e.chosen;
+            const isCorrect = ltr === e.correct;
+            let bg = 'var(--bg2)', border = 'var(--border)', color = 'var(--text)', weight = '400';
+            if (isCorrect) { bg = '#e6f9f2'; border = '#1D9E75'; color = '#1D9E75'; weight = '600'; }
+            if (isChosen && !isRight) { bg = '#fff0f0'; border = '#E24B4A'; color = '#E24B4A'; weight = '600'; }
+            const icon = isCorrect ? '✓' : (isChosen && !isRight ? '✗' : '');
+            return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 10px;
+              margin-bottom:5px;border-radius:7px;border:1px solid ${border};
+              background:${bg};color:${color};font-weight:${weight};font-size:12px;">
+              <span style="flex-shrink:0;font-weight:700;">${ltr}.</span>
+              <span style="flex:1;">${txt}</span>
+              ${icon ? `<span style="flex-shrink:0;">${icon}</span>` : ''}
+            </div>`;
+          }).join('');
+
+          const badge = isRight
+            ? `<span style="background:#e6f9f2;color:#1D9E75;border:1px solid #1D9E75;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">✓ Correct</span>`
+            : `<span style="background:#fff0f0;color:#E24B4A;border:1px solid #E24B4A;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">✗ Wrong</span>`;
+
+          return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;
+            margin-bottom:10px;background:var(--bg);">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">
+              <div style="font-size:12px;color:var(--text3);">${e.subject}${e.topic ? ' › ' + e.topic : ''} · ${e.year} · ${e.time||''}</div>
+              ${badge}
+            </div>
+            <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px;line-height:1.5;">${e.question}</div>
+            ${optsHTML}
+          </div>`;
+        }).join('');
+
+    return `<details ${open} style="border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;">
+      <summary style="display:flex;align-items:center;gap:10px;padding:12px 16px;
+        background:var(--bg2);cursor:pointer;list-style:none;user-select:none;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);">${label}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">
+            ${s.attempted||0} attempted · ${s.correct||0} correct · ${s.wrong||0} wrong
+          </div>
+        </div>
+        <div style="font-size:18px;font-weight:700;color:${accCol};">${tried>0?acc+'%':'-'}</div>
+        <div style="font-size:16px;color:var(--text3);">▾</div>
+      </summary>
+      <div style="padding:12px 14px;">
+        ${qCards}
+      </div>
+    </details>`;
   }).join('');
 
   const div = document.createElement('div');
   div.className = 'card';
   div.style.marginTop = '12px';
   div.innerHTML = `
-    <div class="card-title"><i class="ti ti-calendar-stats" style="color:var(--blue);"></i> Daily activity log</div>
-    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+    <div class="card-title"><i class="ti ti-calendar-stats" style="color:var(--blue);"></i> Daily practice diary</div>
+
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
       <div class="metric" style="flex:1;min-width:100px;">
         <div class="metric-lbl">Total attempted</div>
         <div class="metric-val" style="color:var(--blue);">${totalAttempted}</div>
         <div class="metric-sub">unique questions</div>
       </div>
       <div class="metric" style="flex:1;min-width:100px;">
+        <div class="metric-lbl">Not yet seen</div>
+        <div class="metric-val" style="color:var(--amber);">${totalUnseen}</div>
+        <div class="metric-sub">of ${totalQ} total</div>
+      </div>
+      <div class="metric" style="flex:1;min-width:100px;">
         <div class="metric-lbl">Today</div>
         <div class="metric-val" style="color:var(--teal);">${todayS.attempted||0}</div>
-        <div class="metric-sub">${todayS.correct||0} correct</div>
+        <div class="metric-sub">${todayS.correct||0} correct · ${todayS.wrong||0} wrong</div>
       </div>
       <div class="metric" style="flex:1;min-width:100px;">
         <div class="metric-lbl">Overall accuracy</div>
-        <div class="metric-val" style="color:${overallAcc>=80?'var(--teal)':overallAcc>=60?'var(--amber)':'var(--red)'};">${overallAcc}%</div>
+        <div class="metric-val" style="color:${overallAcc>=80?'var(--teal)':overallAcc>=60?'var(--amber)':'var(--coral)'};">${overallAcc}%</div>
         <div class="metric-sub">${allDayTotals.correct}✓ ${allDayTotals.wrong}✗</div>
       </div>
-      <div class="metric" style="flex:1;min-width:100px;">
-        <div class="metric-lbl">Active days</div>
-        <div class="metric-val">${dates.length}</div>
-        <div class="metric-sub">days practiced</div>
-      </div>
     </div>
+
     ${dates.length === 0
-      ? '<div style="font-size:12px;color:var(--text3);">No activity yet. Start attempting questions!</div>'
-      : `<div style="font-size:11px;color:var(--text3);font-weight:500;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;gap:8px;">
-          <span style="width:90px;">Date</span><span style="width:28px;text-align:right;">Qs</span>
-          <span style="width:70px;">Breakdown</span><span style="flex:1;"></span>
-          <span style="width:34px;text-align:right;">Acc</span></div>
-        ${rowsHTML}
-        ${dates.length > 14 ? `<div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center;">Showing last 14 days of ${dates.length} total</div>` : ''}`}
+      ? '<div style="font-size:13px;color:var(--text3);padding:12px 0;">No activity yet — start practicing and your diary will appear here.</div>'
+      : daysHTML}
   `;
   el.appendChild(div);
 }
