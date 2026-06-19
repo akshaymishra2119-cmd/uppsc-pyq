@@ -376,7 +376,8 @@ textarea{resize:vertical;min-height:70px;}
 .sb-chevron{font-size:16px;color:var(--text3);transition:transform 0.2s;flex-shrink:0;}
 .sb-body{padding:10px 14px;border-top:1px solid var(--border);background:var(--bg2);}
 .sb-topics{display:flex;flex-direction:column;gap:5px;}
-.sb-topic-row{display:grid;grid-template-columns:140px 1fr 70px;align-items:center;gap:8px;}
+.sb-topic-row{display:grid;grid-template-columns:140px 1fr 70px;align-items:center;gap:8px;cursor:pointer;padding:3px 4px;border-radius:6px;transition:background 0.12s;}
+.sb-topic-row:hover{background:var(--bg3);}
 .sb-topic-name{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sb-topic-bar-wrap{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;}
 .sb-topic-bar{height:100%;border-radius:4px;transition:width 0.4s;}
@@ -2178,7 +2179,7 @@ function renderSubjectBreakdown(questions) {
             const ap  = tot ? Math.round(acc.c/tot*100) : 0;
             return `<span class="sb-acc" style="color:${ap>=60?'var(--teal)':ap>=40?'var(--amber)':'var(--red)'};">${ap}%✓</span>`;
           })() : '';
-          return `<div class="sb-topic-row">
+          return `<div class="sb-topic-row" onclick="drillToTopic('${sub.replace(/'/g,"\\'")}','${topic.replace(/'/g,"\\'")}')">
             <div class="sb-topic-name">${topic}</div>
             <div class="sb-topic-bar-wrap">
               <div class="sb-topic-bar" style="width:${pct}%;background:${color};opacity:0.7;"></div>
@@ -2492,6 +2493,43 @@ function loadQuestions() {
     .getQuestions({ shuffle: false, limit: 500 });
 }
 
+let drillTopic = null; // active topic drill-down from subject breakdown
+
+function drillToTopic(subject, topic) {
+  // Set subject dropdown
+  const subSel = document.getElementById('f-subject');
+  if (subSel) {
+    subSel.value = subject;
+    // If exact value not found, try to match
+    if (subSel.value !== subject) {
+      for (let o of subSel.options) {
+        if (o.value === subject || o.text === subject) { subSel.value = o.value; break; }
+      }
+    }
+  }
+  drillTopic = topic;
+  // Switch to PYQ tab
+  showTab('pyq', document.querySelectorAll('.nav-btn')[1]);
+  applyFilters();
+  // Show active drill indicator
+  const existing = document.getElementById('drill-indicator');
+  if (existing) existing.remove();
+  const indicator = document.createElement('div');
+  indicator.id = 'drill-indicator';
+  indicator.style.cssText = 'background:var(--blue-light);border:1px solid var(--blue);border-radius:8px;padding:6px 12px;margin-bottom:10px;font-size:12px;color:var(--blue-dark);display:flex;align-items:center;gap:8px;';
+  indicator.innerHTML = `<i class="ti ti-filter"></i> Showing: <strong>${subject} → ${topic}</strong> <button onclick="clearDrill()" style="margin-left:auto;background:none;border:none;color:var(--blue);cursor:pointer;font-size:12px;">✕ Clear</button>`;
+  const container = document.getElementById('questionsContainer');
+  if (container) container.parentNode.insertBefore(indicator, container);
+  showToast(`📚 ${topic}: ${filteredQ.length} questions`);
+}
+
+function clearDrill() {
+  drillTopic = null;
+  const ind = document.getElementById('drill-indicator');
+  if (ind) ind.remove();
+  applyFilters();
+}
+
 function applyFilters() {
   if (mockActive) return; // don't re-filter during mock test
   const subject = document.getElementById("f-subject").value;
@@ -2506,6 +2544,8 @@ function applyFilters() {
     if (filterHighPri    && (q.repeatsIn||"").split(",").filter(Boolean).length < 2) return false;
     if (filterNotDone    && attemptedQIds.has(String(q.id))) return false;
     if (filterBookmarked && !pyqBookmarks.includes(String(q.id))) return false;
+    // Topic drill-down from subject breakdown
+    if (drillTopic && (q.subTopic !== drillTopic && q.topic !== drillTopic)) return false;
     return true;
   });
 
