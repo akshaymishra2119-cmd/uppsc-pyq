@@ -180,6 +180,51 @@ function addCurrentAffair(data) {
   }
 }
 
+// ── BULK ADD CURRENT AFFAIRS (admin only) ────────────────────
+// Accepts an array of CA objects (same shape as addCurrentAffair).
+// Returns { success: true, added: N } or { success: false, error: "..." }
+function bulkAddCurrentAffairs(rows) {
+  try {
+    const userEmail = Session.getActiveUser().getEmail();
+    if (userEmail !== ADMIN_EMAIL) {
+      return { success: false, error: "Not authorized" };
+    }
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return { success: false, error: "No rows provided" };
+    }
+
+    const ss    = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet   = ss.getSheetByName(SHEET_CA);
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEET_CA);
+      sheet.getRange(1,1,1,8).setValues([[
+        "Date","Category","Headline","Detail","Source",
+        "UPPSC_Relevance","Tags","MCQ"
+      ]]);
+      sheet.getRange(1,1,1,8).setFontWeight("bold");
+    }
+
+    const values = rows.map(r => [
+      r.date       || "",
+      r.category   || "",
+      r.headline   || "",
+      r.detail     || "",
+      r.source     || "",
+      r.relevance  || "Medium",
+      r.tags       || "",
+      r.mcq        || ""
+    ]);
+
+    const lastRow = sheet.getLastRow();
+    sheet.getRange(lastRow + 1, 1, values.length, 8).setValues(values);
+
+    return { success: true, added: values.length };
+  } catch(e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
 // ── SAVE USER PROGRESS ────────────────────────────────────────
 function saveProgress(entry) {
   try {

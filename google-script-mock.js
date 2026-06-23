@@ -45,6 +45,7 @@
     'getStats',
     'checkAdmin',
     'getAnalytics',
+    'bulkAddCurrentAffairs',
   ];
 
   const runObj = {

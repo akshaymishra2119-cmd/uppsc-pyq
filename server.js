@@ -213,6 +213,19 @@ app.post('/api/getAnalytics', (req, res) => {
   res.json({ yearCounts, subjectCounts, difficulty, yearSubject, repeatingCount, total: qs.length });
 });
 
+// ── API: bulkAddCurrentAffairs ────────────────────────────────
+app.post('/api/bulkAddCurrentAffairs', (req, res) => {
+  const rows = Array.isArray(req.body) ? req.body : [];
+  if (rows.length === 0) return res.json({ success: false, error: 'No rows provided' });
+  const db = loadDB();
+  rows.forEach(r => db.currentAffairs.push({
+    ...r,
+    date: formatDate(r.date || new Date())
+  }));
+  saveDB(db);
+  res.json({ success: true, added: rows.length });
+});
+
 // ── API: checkAdmin ───────────────────────────────────────────
 app.post('/api/checkAdmin', (req, res) => {
   // In local dev, you are always admin
