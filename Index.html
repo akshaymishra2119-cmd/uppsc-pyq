@@ -41,15 +41,89 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 #userName-display{font-size:13px;color:var(--text2);}
 
 /* ── NAV ──────────────────────────────────────── */
-.nav{background:#0d2b5e;border-bottom:1px solid rgba(201,168,76,0.2);
-  padding:0 20px;display:flex;gap:0;overflow-x:auto;}
-.nav-btn{padding:11px 16px;font-size:13px;border:none;background:transparent;
-  cursor:pointer;color:rgba(255,255,255,0.55);border-bottom:2px solid transparent;
-  white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
-.nav-btn:hover{color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.05);}
-.nav-btn.active{color:#c9a84c;border-bottom-color:#c9a84c;font-weight:600;}
-.nav-btn.admin-btn{margin-left:auto;color:rgba(255,180,180,0.7);}
-.nav-btn.admin-btn.active{color:#ffaaaa;border-bottom-color:#ffaaaa;}
+.nav{background:#fff;border-bottom:1px solid #e8eaf0;
+  padding:0 20px;display:flex;gap:0;overflow-x:auto;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.nav-btn{padding:12px 16px;font-size:13px;border:none;background:transparent;
+  cursor:pointer;color:#6B7280;border-bottom:2.5px solid transparent;
+  white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all 0.15s;font-weight:500;}
+.nav-btn:hover{color:#1a1a2e;background:#F9FAFB;}
+.nav-btn.active{color:#2563EB;border-bottom-color:#2563EB;font-weight:700;}
+.nav-btn.admin-btn{margin-left:auto;color:#9CA3AF;}
+.nav-btn.admin-btn.active{color:#EF4444;border-bottom-color:#EF4444;}
+
+/* ── NEW HERO BANNER (light theme) ──────────────── */
+.hero-grid-new{display:grid;grid-template-columns:1fr 260px;gap:14px;margin-bottom:16px;}
+@media(max-width:700px){.hero-grid-new{grid-template-columns:1fr;}}
+.hero-welcome{border-radius:20px;background:linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 50%,#2563EB 100%);
+  padding:24px 26px;position:relative;overflow:hidden;
+  box-shadow:0 8px 28px rgba(37,99,235,0.28);}
+.hw-blob1{position:absolute;top:-60px;right:-50px;width:220px;height:220px;
+  border-radius:50%;background:rgba(255,255,255,0.06);pointer-events:none;}
+.hw-blob2{position:absolute;bottom:-50px;left:50px;width:150px;height:150px;
+  border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;}
+.hw-dots{position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,0.07) 1px,transparent 1px);
+  background-size:22px 22px;pointer-events:none;}
+.hw-top{display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:18px;position:relative;}
+.hw-greet{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:5px;}
+.hw-name{font-size:23px;font-weight:800;color:#fff;letter-spacing:-.4px;line-height:1.1;}
+.hw-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:5px;line-height:1.5;}
+.hw-streak{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
+  border-radius:12px;padding:10px 14px;text-align:center;flex-shrink:0;}
+.hw-streak-val{font-size:20px;font-weight:800;color:#FCD34D;}
+.hw-streak-lbl{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;}
+.hw-mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  margin-bottom:16px;position:relative;}
+.hw-ms{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.14);
+  border-radius:10px;padding:10px 12px;}
+.hw-ms-val{font-size:18px;font-weight:800;color:#fff;}
+.hw-ms-lbl{font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px;}
+.hw-ms-delta{font-size:10px;font-weight:600;color:#86EFAC;margin-top:3px;}
+.hw-prog{position:relative;margin-bottom:18px;}
+.hw-prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.hw-prog-lbl{font-size:11px;color:rgba(255,255,255,0.45);font-weight:500;}
+.hw-prog-pct{font-size:13px;font-weight:700;color:#fff;}
+.hw-prog-track{background:rgba(255,255,255,0.12);border-radius:99px;height:8px;overflow:hidden;}
+.hw-prog-fill{height:100%;border-radius:99px;
+  background:linear-gradient(90deg,#86EFAC,#34D399,#FCD34D);transition:width .8s ease;}
+.hw-btns{display:flex;gap:8px;flex-wrap:wrap;position:relative;}
+.hw-btn{padding:9px 16px;border-radius:9px;border:none;font-size:12px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:5px;}
+.hw-btn-white{background:#fff;color:#2563EB;box-shadow:0 2px 10px rgba(0,0,0,0.15);}
+.hw-btn-yellow{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;
+  box-shadow:0 2px 10px rgba(245,158,11,0.3);}
+.hw-btn-ghost{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;}
+/* countdown card */
+.hero-countdown{border-radius:20px;background:#fff;
+  border:1px solid #e8eaf0;padding:26px 18px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.06);position:relative;overflow:hidden;}
+.hcd-stripe{position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,#EF4444,#F97316,#EAB308,#22C55E,#3B82F6);}
+.hcd-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9CA3AF;
+  margin-bottom:8px;font-weight:600;}
+.hcd-num{font-size:68px;font-weight:900;line-height:1;color:#1E3A8A;letter-spacing:-3px;}
+.hcd-unit{font-size:11px;font-weight:600;color:#9CA3AF;letter-spacing:1px;
+  text-transform:uppercase;margin-top:3px;}
+.hcd-bar{width:50px;height:3px;
+  background:linear-gradient(90deg,#2563EB,#6366F1);border-radius:99px;
+  margin:12px auto;}
+.hcd-exam{font-size:13px;font-weight:700;color:#1E3A8A;}
+.hcd-date{font-size:11px;color:#9CA3AF;margin-top:3px;}
+.hcd-urgent{margin-top:12px;background:#FEF2F2;border:1px solid #FECACA;
+  border-radius:99px;padding:5px 14px;font-size:11px;font-weight:700;color:#DC2626;}
+.hcd-tip{margin-top:8px;font-size:11px;color:#9CA3AF;line-height:1.5;padding:0 4px;}
+/* hero quote band */
+.hw-quote-band{background:linear-gradient(90deg,#EEF2FF,#F0FDF4);
+  border:1px solid #C7D2FE;border-radius:12px;padding:14px 18px;
+  display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;}
+.hw-q-mark{font-size:36px;line-height:1;color:#A5B4FC;font-family:Georgia,serif;
+  flex-shrink:0;margin-top:-4px;}
+.hw-q-text{font-size:12px;color:#4B5563;line-height:1.6;font-style:italic;}
+.hw-q-auth{font-size:10px;color:#9CA3AF;margin-top:4px;font-weight:600;}
 
 /* ── MAIN CONTENT ─────────────────────────────── */
 .main{max-width:1100px;margin:0 auto;padding:16px;}
@@ -815,6 +889,100 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
 <!-- ══ HOME TAB ══════════════════════════════════════════════ -->
 <div class="tab active" id="tab-home">
+
+  <!-- ══ HERO BANNER (light theme) ════════════════════════════ -->
+  <div class="hero-grid-new" id="heroBanner">
+
+    <!-- Welcome card (blue gradient) -->
+    <div class="hero-welcome">
+      <div class="hw-blob1"></div>
+      <div class="hw-blob2"></div>
+      <div class="hw-dots"></div>
+
+      <!-- top: greeting + streak -->
+      <div class="hw-top">
+        <div>
+          <div class="hw-greet">Ghatna Chakra · UPPSC PYQ</div>
+          <div class="hw-name" id="heroBannerGreeting">Good morning! 👋</div>
+          <div class="hw-sub" id="heroUserLine">Let's practise smarter today.</div>
+        </div>
+        <div class="hw-streak">
+          <div class="hw-streak-val">🔥 <span id="heroStreak">0</span></div>
+          <div class="hw-streak-lbl">Day Streak</div>
+        </div>
+      </div>
+
+      <!-- 3 mini stats -->
+      <div class="hw-mini-stats">
+        <div class="hw-ms">
+          <div class="hw-ms-val" id="hbAttempted">—</div>
+          <div class="hw-ms-lbl">Qs Practised</div>
+          <div class="hw-ms-delta">today's progress</div>
+        </div>
+        <div class="hw-ms">
+          <div class="hw-ms-val" id="hbAccuracy">—</div>
+          <div class="hw-ms-lbl">Accuracy</div>
+          <div class="hw-ms-delta">target: 88%</div>
+        </div>
+        <div class="hw-ms">
+          <div class="hw-ms-val" id="hbScore">—</div>
+          <div class="hw-ms-lbl">Proj. Score</div>
+          <div class="hw-ms-delta" style="color:#FCD34D;">need 110/150</div>
+        </div>
+      </div>
+
+      <!-- progress bar -->
+      <div class="hw-prog">
+        <div class="hw-prog-row">
+          <span class="hw-prog-lbl">📚 Syllabus coverage</span>
+          <span class="hw-prog-pct" id="heroPrepPct">—%</span>
+        </div>
+        <div class="hw-prog-track">
+          <div class="hw-prog-fill" id="heroPrepBar" style="width:0%;"></div>
+        </div>
+      </div>
+
+      <!-- action buttons -->
+      <div class="hw-btns">
+        <button class="hw-btn hw-btn-white" onclick="showTab('pyq',document.querySelector('[onclick*=pyq]'))">
+          <i class="ti ti-books" aria-hidden="true"></i> Practice PYQ
+        </button>
+        <button class="hw-btn hw-btn-yellow" onclick="showTab('daily-quiz',document.querySelector('[onclick*=daily-quiz]'))">
+          <i class="ti ti-bolt" aria-hidden="true"></i> Daily Quiz
+        </button>
+        <button class="hw-btn hw-btn-ghost" onclick="showTab('ca',document.querySelector('[onclick*=\'ca\']'))">
+          <i class="ti ti-news" aria-hidden="true"></i> Today's CA
+        </button>
+      </div>
+
+      <!-- hidden CA count anchor (used by updateHeroBanner) -->
+      <span id="hbCA" style="display:none;">0</span>
+    </div>
+
+    <!-- Countdown card (white) -->
+    <div class="hero-countdown">
+      <div class="hcd-stripe"></div>
+      <div class="hcd-lbl">Days to Exam</div>
+      <div class="hcd-num" id="heroDaysLeft">—</div>
+      <div class="hcd-unit">Days Remaining</div>
+      <div class="hcd-bar"></div>
+      <div class="hcd-exam">UPPSC PCS Prelims 2026</div>
+      <div class="hcd-date">📅 6 December 2026</div>
+      <div class="hcd-urgent">⚠️ Less than 6 months!</div>
+      <div class="hcd-tip">~27 days per subject if you start now.</div>
+    </div>
+
+  </div>
+
+  <!-- quote band -->
+  <div class="hw-quote-band">
+    <div class="hw-q-mark">"</div>
+    <div>
+      <div class="hw-q-text" id="heroQuote">Success is the sum of small efforts repeated day in and day out.</div>
+      <div class="hw-q-auth" id="heroQuoteAuth">— Daily Motivation</div>
+    </div>
+  </div>
+  <!-- ══ END HERO BANNER ══════════════════════════════════════ -->
 
   <!-- ── 4 STAT CARDS ───────────────────────────────────────── -->
   <div class="gc-stat-grid" id="gcStatGrid">
@@ -1938,6 +2106,7 @@ function renderAnalytics(data) {
 function loadHome() {
   // Show local counts instantly before server responds
   updateHomeMetricsFromLocal();
+  updateHeroBanner({ accuracy:0, projected:0, streak:0, questionsAttempted:0 });
 
   // Load PYQ analytics charts
   loadAnalytics();
@@ -1965,10 +2134,68 @@ function loadHome() {
 }
 
 function updateHomeMetrics(prog) {
-  // Use local attemptedQIds count — always accurate without server delay
   document.getElementById("hm-attempted").textContent = attemptedQIds.size || prog.questionsAttempted || 0;
   document.getElementById("hm-accuracy").textContent  = (prog.accuracy || 0) + "%";
   document.getElementById("hm-projected").textContent = (prog.projected || 0) + "/150";
+  updateHeroBanner(prog);
+}
+
+function updateHeroBanner(prog) {
+  const attempted = attemptedQIds.size || prog.questionsAttempted || 0;
+  const accuracy  = prog.accuracy || 0;
+  const projected = prog.projected || 0;
+  const streak    = prog.streak   || userStreak || 0;
+
+  // Greeting by time of day
+  const h = new Date().getHours();
+  const greet = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  const el = document.getElementById("heroBannerGreeting");
+  if (el) el.textContent = greet + (userName ? ", " + userName + "!" : "!");
+
+  // Streak
+  const strEl = document.getElementById("heroStreak");
+  if (strEl) strEl.textContent = streak;
+
+  // Mini stat cards
+  const sa = document.getElementById("hbAttempted");
+  const sc = document.getElementById("hbAccuracy");
+  const ss = document.getElementById("hbScore");
+  if (sa) sa.textContent = attempted;
+  if (sc) sc.textContent = accuracy + "%";
+  if (ss) ss.textContent = projected + "/150";
+
+  // CA count
+  const caEl = document.getElementById("hbCA");
+  const caCount = document.getElementById("caTodayCount");
+  if (caEl) caEl.textContent = caCount ? (caCount.textContent || "0") : "0";
+
+  // Prep progress: attempted / 449 * 100
+  const pct = Math.min(100, Math.round(attempted / 449 * 100));
+  const pp = document.getElementById("heroPrepPct");
+  if (pp) pp.textContent = pct + "%";
+  const pb = document.getElementById("heroPrepBar");
+  if (pb) pb.style.width = pct + "%";
+
+  // Exam countdown
+  const examDate = new Date("2026-12-06");
+  const today    = new Date(); today.setHours(0,0,0,0);
+  const diff     = Math.ceil((examDate - today) / 86400000);
+  const dEl = document.getElementById("heroDaysLeft");
+  if (dEl) dEl.textContent = diff > 0 ? diff : "🎯";
+
+  // Rotating motivational quote
+  const quotes = [
+    "Success is the sum of small efforts repeated day in and day out.",
+    "Every question you practise today is one less surprise on exam day.",
+    "The expert was once a beginner. Keep going.",
+    "Revise. Recall. Repeat. That is the UPPSC formula.",
+    "Your rank tomorrow depends on the hours you put in today.",
+    "Hard work beats talent when talent doesn't work hard.",
+    "Consistency is the bridge between goals and achievement.",
+    "One PYQ a day keeps the failure away."
+  ];
+  const qEl = document.getElementById("heroQuote");
+  if (qEl) qEl.textContent = quotes[new Date().getDate() % quotes.length];
 }
 
 function updateHomeMetricsFromLocal() {
