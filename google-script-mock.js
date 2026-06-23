@@ -46,6 +46,7 @@
     'checkAdmin',
     'getAnalytics',
     'bulkAddCurrentAffairs',
+    'getDailyQuiz',
     'getUPPSCNews',
     'bulkAddUPPSCNews',
   ];

@@ -174,6 +174,13 @@ textarea{resize:vertical;min-height:70px;}
   border:1px solid var(--pink);border-radius:var(--radius-lg);padding:10px 14px;
   margin-bottom:12px;display:flex;align-items:center;gap:10px;}
 .today-banner i{color:var(--pink);font-size:20px;}
+.dq-count-btn:hover{border-color:var(--teal)!important;color:var(--teal)!important;background:var(--teal-light)!important;}
+.dq-count-btn.selected{border-color:var(--teal)!important;background:var(--teal)!important;color:#fff!important;}
+.dq-dot{width:14px;height:14px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);flex-shrink:0;transition:background 0.2s;}
+.dq-dot.correct{background:var(--teal);}
+.dq-dot.wrong{background:var(--red);}
+.dq-dot.current{background:var(--amber);border-color:var(--amber);}
+.dq-dot.skipped{background:var(--text3);}
 
 /* ── HOME CA PREVIEW ──────────────────────────── */
 .ca-preview{border-left:3px solid var(--pink);padding:6px 10px;margin-bottom:7px;
@@ -789,6 +796,9 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn" onclick="showTab('uppsc-news',this)">
     <i class="ti ti-map-pin" aria-hidden="true"></i> UPPSC Daily News
   </button>
+  <button class="nav-btn" onclick="showTab('daily-quiz',this)">
+    <i class="ti ti-bolt" aria-hidden="true"></i> Daily Quiz
+  </button>
   <button class="nav-btn" onclick="showTab('progress',this)">
     <i class="ti ti-chart-bar" aria-hidden="true"></i> Progress
   </button>
@@ -1316,6 +1326,107 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <div id="uppscFeed"><div class="loading"><i class="ti ti-loader"></i> Loading UP news...</div></div>
 </div>
 
+<!-- ══ DAILY QUIZ TAB ════════════════════════════════════════ -->
+<div class="tab" id="tab-daily-quiz">
+
+  <!-- SETUP SCREEN -->
+  <div id="dq-setup">
+    <div class="today-banner" style="background:linear-gradient(135deg,#1D9E75,#085041);color:#fff;margin-bottom:16px;">
+      <i class="ti ti-bolt" style="font-size:26px;color:#ffe066;"></i>
+      <div>
+        <div style="font-weight:700;font-size:15px;">Daily Quiz</div>
+        <div style="font-size:12px;opacity:0.85;">Mix of PYQ + Today's Current Affairs MCQs</div>
+      </div>
+    </div>
+
+    <div class="card" style="max-width:540px;margin:0 auto;">
+      <div class="card-title" style="font-size:14px;"><i class="ti ti-list-numbers" style="color:var(--teal);"></i> How many questions?</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;" id="dq-count-grid">
+        ${[10,20,30,40,50].map(n => `
+          <button class="dq-count-btn" onclick="selectDQCount(${n},this)"
+            style="padding:18px 0;font-size:20px;font-weight:700;border:2px solid var(--border);
+            border-radius:10px;background:var(--bg2);cursor:pointer;transition:all 0.15s;color:var(--text);">
+            ${n}
+          </button>`).join('')}
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">Question mix</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+            <input type="checkbox" id="dq-use-pyq" checked> PYQ (Past Year Questions)
+          </label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+            <input type="checkbox" id="dq-use-ca" checked> Today's News MCQs
+          </label>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="dq-start-btn" onclick="startDailyQuiz()"
+        style="width:100%;padding:12px;font-size:14px;" disabled>
+        <i class="ti ti-player-play"></i> Start Quiz
+      </button>
+      <div id="dq-setup-msg" style="font-size:12px;color:var(--text3);margin-top:8px;text-align:center;">
+        Select number of questions to begin
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="dq-quiz" style="display:none;max-width:680px;margin:0 auto;">
+    <!-- Progress bar -->
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;color:var(--text2);" id="dq-progress-label">Question 1 of 10</span>
+        <span style="font-size:12px;font-weight:600;" id="dq-timer-label">⏱ 0:00</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:99px;height:6px;">
+        <div id="dq-progress-bar" style="background:var(--teal);height:6px;border-radius:99px;width:0%;transition:width 0.3s;"></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;" id="dq-dot-row"></div>
+    </div>
+    <div id="dq-question-wrap"></div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="dq-results" style="display:none;max-width:540px;margin:0 auto;">
+    <div class="card" style="text-align:center;padding:24px;">
+      <div style="font-size:36px;margin-bottom:6px;" id="dq-result-emoji">🎉</div>
+      <div style="font-size:22px;font-weight:700;margin-bottom:4px;" id="dq-score-text"></div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px;" id="dq-score-sub"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+        <div class="metric" style="background:var(--teal-light);">
+          <div class="metric-lbl">Correct</div>
+          <div class="metric-val" id="dq-r-correct" style="color:var(--teal);">0</div>
+        </div>
+        <div class="metric" style="background:var(--red-light);">
+          <div class="metric-lbl">Wrong</div>
+          <div class="metric-val" id="dq-r-wrong" style="color:var(--red);">0</div>
+        </div>
+        <div class="metric" style="background:var(--bg3);">
+          <div class="metric-lbl">Skipped</div>
+          <div class="metric-val" id="dq-r-skipped">0</div>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:20px;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600;">Category breakdown</div>
+        <div id="dq-r-breakdown" style="font-size:12px;color:var(--text2);"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="restartDQ()" style="flex:1;">
+          <i class="ti ti-refresh"></i> Try Again
+        </button>
+        <button class="btn" onclick="reviewDQ()" style="flex:1;">
+          <i class="ti ti-eye"></i> Review Answers
+        </button>
+      </div>
+    </div>
+    <!-- Review section -->
+    <div id="dq-review-list" style="display:none;margin-top:12px;"></div>
+  </div>
+
+</div>
+
 <!-- ══ PROGRESS TAB ══════════════════════════════════════════ -->
 <div class="tab" id="tab-progress">
   <!-- Heatmap card (always visible) -->
@@ -1709,6 +1820,7 @@ function showTab(id, btn) {
 
   if (id === "ca")          loadCA();
   if (id === "uppsc-news")  loadUPPSCNews();
+  if (id === "daily-quiz")  initDailyQuiz();
   if (id === "progress")    loadProgress();
   if (id === "leaderboard") loadLeaderboard();
   if (id === "admin")       loadAdminStats();
@@ -4439,6 +4551,239 @@ function renderUPPSCFeed(rows, dateFilter) {
   });
 
   feed.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// DAILY QUIZ
+// ══════════════════════════════════════════════════════════════
+let dqQuestions  = [];   // loaded question pool
+let dqAnswers    = {};   // { id: 'correct'|'wrong'|'skipped', chosen: letter }
+let dqCurrent    = 0;    // current question index
+let dqCount      = 0;    // chosen count
+let dqTimerSec   = 0;
+let dqTimerInt   = null;
+
+function initDailyQuiz() {
+  // Reset to setup screen
+  document.getElementById("dq-setup").style.display  = "";
+  document.getElementById("dq-quiz").style.display   = "none";
+  document.getElementById("dq-results").style.display= "none";
+}
+
+function selectDQCount(n, btn) {
+  dqCount = n;
+  document.querySelectorAll(".dq-count-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  document.getElementById("dq-start-btn").disabled = false;
+  document.getElementById("dq-setup-msg").textContent = `${n} questions selected — press Start!`;
+}
+
+function startDailyQuiz() {
+  const usePYQ = document.getElementById("dq-use-pyq").checked;
+  const useCA  = document.getElementById("dq-use-ca").checked;
+  if (!usePYQ && !useCA) { showToast("Select at least one question type"); return; }
+  if (!dqCount) { showToast("Select number of questions first"); return; }
+
+  document.getElementById("dq-start-btn").disabled = true;
+  document.getElementById("dq-setup-msg").textContent = "Loading questions…";
+
+  google.script.run
+    .withSuccessHandler(qs => {
+      if (!qs || !qs.length) {
+        showToast("No questions available");
+        document.getElementById("dq-start-btn").disabled = false;
+        document.getElementById("dq-setup-msg").textContent = "Select number of questions to begin";
+        return;
+      }
+      dqQuestions = qs;
+      dqAnswers   = {};
+      dqCurrent   = 0;
+      dqTimerSec  = 0;
+      clearInterval(dqTimerInt);
+      dqTimerInt  = setInterval(() => {
+        dqTimerSec++;
+        const m = Math.floor(dqTimerSec/60), s = dqTimerSec%60;
+        const el = document.getElementById("dq-timer-label");
+        if (el) el.textContent = `⏱ ${m}:${String(s).padStart(2,"0")}`;
+      }, 1000);
+
+      document.getElementById("dq-setup").style.display  = "none";
+      document.getElementById("dq-quiz").style.display   = "";
+      document.getElementById("dq-results").style.display= "none";
+      renderDQ();
+    })
+    .withFailureHandler(e => {
+      showToast("Failed to load: " + e.message);
+      document.getElementById("dq-start-btn").disabled = false;
+    })
+    .getDailyQuiz({ count: dqCount, usePYQ, useCA });
+}
+
+function renderDQ() {
+  const q    = dqQuestions[dqCurrent];
+  const total = dqQuestions.length;
+
+  // Progress bar & label
+  document.getElementById("dq-progress-label").textContent = `Question ${dqCurrent+1} of ${total}`;
+  document.getElementById("dq-progress-bar").style.width   = `${((dqCurrent)/total)*100}%`;
+
+  // Dot row
+  const dotRow = document.getElementById("dq-dot-row");
+  dotRow.innerHTML = dqQuestions.map((qq, i) => {
+    const a = dqAnswers[qq.id];
+    let cls = "dq-dot";
+    if (i === dqCurrent) cls += " current";
+    else if (a === "correct") cls += " correct";
+    else if (a === "wrong")   cls += " wrong";
+    else if (a === "skipped") cls += " skipped";
+    return `<div class="${cls}" title="Q${i+1}"></div>`;
+  }).join("");
+
+  const ans   = dqAnswers[q.id];
+  const shown = ans !== undefined;
+
+  // Source badge
+  const srcBadge = q.source === "Daily News"
+    ? `<span class="badge" style="background:var(--teal-light);color:var(--teal-dark);">📰 Daily News</span>`
+    : `<span class="badge badge-amber">📚 PYQ ${q.year||""}</span>`;
+
+  // Options
+  const opts = ["A","B","C","D"].map((l,i) => {
+    const text = [q.optA,q.optB,q.optC,q.optD][i];
+    if (!text) return "";
+    let style = "border:1.5px solid var(--border);background:var(--bg);color:var(--text);";
+    if (shown) {
+      if (l === q.answer) style = "border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-weight:600;";
+      else if (dqAnswers[q.id+"_chosen"] === l) style = "border:1.5px solid var(--red);background:var(--red-light);color:var(--red-dark);";
+      else style = "border:1.5px solid var(--border);background:var(--bg3);color:var(--text3);";
+    }
+    return `<button onclick="${shown?"":"attemptDQ('"+q.id+"','"+l+"','"+q.answer+"')"}"
+      ${shown?"disabled":""}
+      style="width:100%;text-align:left;padding:11px 14px;border-radius:8px;cursor:${shown?"default":"pointer"};
+      margin-bottom:7px;font-size:13px;transition:all 0.15s;${style}">
+      <strong>${l}.</strong> ${text}
+    </button>`;
+  }).join("");
+
+  const explanation = shown ? `
+    <div class="explanation" style="margin-top:10px;">
+      <strong>Correct answer:</strong> ${q.answer}. ${q.answerText||""}<br><br>
+      ${q.explanation ? `<strong>Explanation:</strong> ${q.explanation}` : ""}
+    </div>` : "";
+
+  const isLast = dqCurrent === total - 1;
+
+  const actionBtn = shown
+    ? `<button class="btn btn-primary" onclick="${isLast ? "showDQResults()" : "nextDQ()"}"
+        style="width:100%;margin-top:10px;padding:11px;">
+        ${isLast ? '<i class="ti ti-flag"></i> See Results' : '<i class="ti ti-arrow-right"></i> Next Question'}
+       </button>`
+    : `<button class="btn" onclick="skipDQ('${q.id}')"
+        style="margin-top:8px;font-size:12px;">
+        <i class="ti ti-forward-skip"></i> Skip
+       </button>`;
+
+  document.getElementById("dq-question-wrap").innerHTML = `
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+        ${srcBadge}
+        ${q.subject ? `<span class="badge" style="background:var(--blue-light);color:var(--blue-dark);">${q.subject}</span>` : ""}
+        ${q.difficulty ? `<span class="badge ${q.difficulty==="Easy"?"badge-teal":q.difficulty==="Medium"?"badge-amber":"badge-red"}">${q.difficulty}</span>` : ""}
+      </div>
+      <div class="q-text" style="font-size:14px;font-weight:500;margin-bottom:14px;line-height:1.6;">${q.question}</div>
+      <div>${opts}</div>
+      ${explanation}
+      ${actionBtn}
+    </div>`;
+}
+
+function attemptDQ(qId, chosen, correct) {
+  if (dqAnswers[qId] !== undefined) return;
+  dqAnswers[qId] = chosen === correct ? "correct" : "wrong";
+  dqAnswers[qId + "_chosen"] = chosen;
+  renderDQ();
+}
+
+function skipDQ(qId) {
+  if (dqAnswers[qId] !== undefined) return;
+  dqAnswers[qId] = "skipped";
+  const isLast = dqCurrent === dqQuestions.length - 1;
+  if (isLast) showDQResults(); else nextDQ();
+}
+
+function nextDQ() {
+  if (dqCurrent < dqQuestions.length - 1) { dqCurrent++; renderDQ(); }
+  else showDQResults();
+}
+
+function showDQResults() {
+  clearInterval(dqTimerInt);
+  const total   = dqQuestions.length;
+  const correct = dqQuestions.filter(q => dqAnswers[q.id] === "correct").length;
+  const wrong   = dqQuestions.filter(q => dqAnswers[q.id] === "wrong").length;
+  const skipped = total - correct - wrong;
+  const pct     = Math.round(correct / total * 100);
+
+  document.getElementById("dq-quiz").style.display    = "none";
+  document.getElementById("dq-results").style.display = "";
+  document.getElementById("dq-review-list").style.display = "none";
+
+  document.getElementById("dq-result-emoji").textContent =
+    pct >= 80 ? "🏆" : pct >= 60 ? "🎯" : pct >= 40 ? "📚" : "💪";
+  document.getElementById("dq-score-text").textContent = `${correct} / ${total} Correct`;
+  document.getElementById("dq-score-sub").textContent  =
+    `${pct}% accuracy • Time: ${Math.floor(dqTimerSec/60)}m ${dqTimerSec%60}s`;
+  document.getElementById("dq-r-correct").textContent  = correct;
+  document.getElementById("dq-r-wrong").textContent    = wrong;
+  document.getElementById("dq-r-skipped").textContent  = skipped;
+
+  // Breakdown by source
+  const pyqC = dqQuestions.filter(q => q.source !== "Daily News" && dqAnswers[q.id] === "correct").length;
+  const pyqT = dqQuestions.filter(q => q.source !== "Daily News").length;
+  const caC  = dqQuestions.filter(q => q.source === "Daily News" && dqAnswers[q.id] === "correct").length;
+  const caT  = dqQuestions.filter(q => q.source === "Daily News").length;
+  document.getElementById("dq-r-breakdown").innerHTML = [
+    pyqT ? `📚 PYQ: ${pyqC}/${pyqT} correct` : "",
+    caT  ? `📰 Daily News: ${caC}/${caT} correct` : ""
+  ].filter(Boolean).join(" &nbsp;|&nbsp; ");
+}
+
+function reviewDQ() {
+  const reviewList = document.getElementById("dq-review-list");
+  if (reviewList.style.display !== "none") { reviewList.style.display = "none"; return; }
+  reviewList.style.display = "";
+  reviewList.innerHTML = dqQuestions.map((q, idx) => {
+    const a = dqAnswers[q.id];
+    const icon = a === "correct" ? "✅" : a === "wrong" ? "❌" : "⏭";
+    const chosen = dqAnswers[q.id+"_chosen"];
+    return `<div class="card" style="margin-bottom:8px;border-left:3px solid ${a==="correct"?"var(--teal)":a==="wrong"?"var(--red)":"var(--text3)"};">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">${icon} Q${idx+1} · ${q.source==="Daily News"?"📰 Daily News":"📚 PYQ"}</div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px;">${q.question}</div>
+      ${["A","B","C","D"].map((l,i) => {
+        const text = [q.optA,q.optB,q.optC,q.optD][i];
+        if (!text) return "";
+        const isCorrect = l === q.answer;
+        const isChosen  = l === chosen && !isCorrect;
+        return `<div style="font-size:12px;padding:5px 8px;border-radius:5px;margin-bottom:3px;
+          background:${isCorrect?"var(--teal-light)":isChosen?"var(--red-light)":"transparent"};
+          color:${isCorrect?"var(--teal-dark)":isChosen?"var(--red-dark)":"var(--text2)"};
+          font-weight:${isCorrect?"600":"400"};">
+          ${l}. ${text} ${isCorrect?"✓":""}${isChosen?"✗":""}
+        </div>`;
+      }).join("")}
+      ${q.explanation ? `<div style="font-size:11px;color:var(--text3);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">
+        💡 ${q.explanation}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+function restartDQ() {
+  document.getElementById("dq-results").style.display = "none";
+  document.getElementById("dq-setup").style.display   = "";
+  dqCount = 0; dqQuestions = []; dqAnswers = {};
+  document.querySelectorAll(".dq-count-btn").forEach(b => b.classList.remove("selected"));
+  document.getElementById("dq-start-btn").disabled = true;
+  document.getElementById("dq-setup-msg").textContent = "Select number of questions to begin";
 }
 
 function submitBulkUPPSC() {

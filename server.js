@@ -213,6 +213,46 @@ app.post('/api/getAnalytics', (req, res) => {
   res.json({ yearCounts, subjectCounts, difficulty, yearSubject, repeatingCount, total: qs.length });
 });
 
+// ── API: getDailyQuiz ─────────────────────────────────────────
+app.post('/api/getDailyQuiz', (req, res) => {
+  const { count = 10, usePYQ = true, useCA = true } = req.body || {};
+  const db = loadDB();
+  if (!db.dailyQuizQuestions) db.dailyQuizQuestions = [];
+
+  let pool = [];
+
+  // Add PYQ questions
+  if (usePYQ && db.questions.length) {
+    const pyqPool = [...db.questions].sort(() => Math.random() - 0.5);
+    pool = pool.concat(pyqPool.map(q => ({ ...q, source: 'PYQ' })));
+  }
+
+  // Add daily news MCQ questions
+  if (useCA && db.dailyQuizQuestions.length) {
+    pool = pool.concat(db.dailyQuizQuestions.map(q => ({ ...q, source: 'Daily News' })));
+  }
+
+  if (!pool.length) return res.json([]);
+
+  // Shuffle and slice to requested count
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  // Try to include at least some Daily News Qs if both selected
+  let result = [];
+  if (usePYQ && useCA && db.dailyQuizQuestions.length) {
+    const caQs  = pool.filter(q => q.source === 'Daily News').slice(0, Math.min(5, count));
+    const pyqQs = pool.filter(q => q.source === 'PYQ').slice(0, count - caQs.length);
+    result = [...caQs, ...pyqQs].sort(() => Math.random() - 0.5);
+  } else {
+    result = pool.slice(0, count);
+  }
+
+  res.json(result.slice(0, count));
+});
+
 // ── API: getUPPSCNews ─────────────────────────────────────────
 app.post('/api/getUPPSCNews', (req, res) => {
   const filters = req.body || {};
