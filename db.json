@@ -8196,5 +8196,87 @@
     }
   ],
   "progress": [],
-  "leaderboard": []
+  "leaderboard": [],
+  "uppscNews": [
+    {
+      "date": "23 Jun 2026",
+      "category": "UP Infrastructure",
+      "headline": "Ganga Expressway Inauguration Imminent; 600 km Across 12 Districts",
+      "detail": "The Ganga Expressway (600 km, 12 districts) is largely complete and expected to be inaugurated in 2026. Nine wayside amenities are being developed along the route including EV charging, motels, and fuel stations. UP has allocated ₹66,000 crore for roads, bridges, and expressways in Budget 2026-27.",
+      "source": "Indian Infrastructure / IndianMasterminds",
+      "relevance": "High",
+      "tags": "Ganga Expressway, UPEIDA, UP Budget 2026, Expressway, Infrastructure",
+      "mcq": "The Ganga Expressway in UP spans across how many districts? → 12 districts (600 km length)"
+    },
+    {
+      "date": "23 Jun 2026",
+      "category": "UP Schemes",
+      "headline": "Yogi Govt Approves Cashless Medical Treatment for 15 Lakh Education Dept Staff",
+      "detail": "The UP government formally approved a cashless medical treatment scheme for ~15 lakh teachers and non-teaching staff (and their families) under the Basic and Secondary Education Departments. This is part of the Yogi government's welfare push for government employees in the education sector.",
+      "source": "SarkariYojana / UP Govt",
+      "relevance": "High",
+      "tags": "UP Schemes, Cashless Medical, Education Department, Yogi Government, Teachers",
+      "mcq": "The UP government's cashless medical treatment scheme covers employees of which two departments? → Basic Education and Secondary Education Departments"
+    },
+    {
+      "date": "23 Jun 2026",
+      "category": "UP Agriculture",
+      "headline": "UP Launches Mukhyamantri Svadeshi Gau Samvardhan Yojana for Indigenous Cows",
+      "detail": "The Yogi government launched the Mukhyamantri Svadeshi Gau Samvardhan Yojana to increase high-quality indigenous cow population, promote dairy farming, and create employment for youth and women in rural areas. The scheme focuses on improving indigenous (desi) cow breeds over exotic breeds.",
+      "source": "SarkariYojana",
+      "relevance": "High",
+      "tags": "Mukhyamantri Svadeshi Gau Samvardhan Yojana, Indigenous Cows, Dairy Farming, UP Agriculture, Rural Employment",
+      "mcq": "Mukhyamantri Svadeshi Gau Samvardhan Yojana launched in UP aims to promote? → Indigenous (desi) cow breeds, dairy farming, and rural employment"
+    },
+    {
+      "date": "23 Jun 2026",
+      "category": "UP Law & Order",
+      "headline": "SC Stays Allahabad HC Order on ₹10 Lakh Compensation for Illegal UP Police Detention",
+      "detail": "The Supreme Court stayed an Allahabad High Court order directing the UP government to pay ₹10 lakh compensation to a man allegedly held in illegal police detention for 3+ months. The HC had held the arrest illegal under Article 22(1) — failure to provide written grounds of arrest. The SC bench of Justices Prashant Kumar Mishra and Sanjeev Sachdeva passed the interim stay.",
+      "source": "India Legal Live",
+      "relevance": "High",
+      "tags": "Article 22, Illegal Detention, UP Police, Supreme Court, Allahabad HC, Fundamental Rights",
+      "mcq": "Article 22(1) of the Constitution mandates that an arrested person must be? → Informed of the grounds of arrest and allowed to consult a legal practitioner of their choice"
+    },
+    {
+      "date": "23 Jun 2026",
+      "category": "UP Culture & Heritage",
+      "headline": "BRICS Culture Working Group Meeting Held in Varanasi, UP",
+      "detail": "India hosted the 2nd BRICS Culture Working Group (CWG) Meeting in Varanasi — one of the world's oldest living cities and UP's cultural capital. The meeting focused on cultural heritage conservation, creative industries, museum cooperation, and cultural tourism among BRICS nations. Varanasi's selection reinforces its significance as India's soft power hub.",
+      "source": "InsightsIAS / BRICS 2026",
+      "relevance": "High",
+      "tags": "BRICS 2026, Varanasi, Culture Working Group, Cultural Heritage, Soft Power, UP Tourism",
+      "mcq": "The 2nd BRICS Culture Working Group Meeting in June 2026 was held in which UP city? → Varanasi"
+    },
+    {
+      "date": "23 Jun 2026",
+      "category": "UP Environment",
+      "headline": "UP's Groundwater Crisis Deepens; 500 STPs Treating Only 25% of Wastewater",
+      "detail": "A CSE analysis highlights UP's worsening groundwater crisis driven by water-intensive crops (wheat, sugarcane) and over-extraction via tube wells. UP has 500 STPs with 2,000 MLD capacity but treats only ~500 MLD. Ganga pollution continues due to 1.5 million tons of annual crop residue burning and industrial effluents from small units along the river.",
+      "source": "Down To Earth / CSE India",
+      "relevance": "High",
+      "tags": "Groundwater, Ganga Pollution, UP STP, Namami Gange, Crop Residue Burning, Water Crisis",
+      "mcq": "UP has 500 STPs with treatment capacity of 2000 MLD, but actual treatment is only? → ~500 MLD (25% utilisation)"
+    },
+    {
+      "date": "23 Jun 2026",
+      "category": "PCS Exam",
+      "headline": "UPPSC PCS Prelims 2026 Scheduled for December 6; UP Special Paper Covers 20-30% Syllabus",
+      "detail": "UPPSC PCS Prelims 2026 is scheduled for 6 December 2026. GS Papers V & VI are UP-specific, covering UP history, art, architecture, culture, geography, governance, economy, and demography. UP-specific content forms 20-30% of total UPPSC PCS questions. Aspirants must focus on state schemes, geography (rivers, soil), culture, and local governance.",
+      "source": "TheIASHub / UPPSC Official",
+      "relevance": "High",
+      "tags": "UPPSC PCS 2026, Prelims Date, UP Special Paper, PCS Syllabus, December 6",
+      "mcq": "UPPSC PCS Prelims 2026 is scheduled on? → 6 December 2026"
+    },
+    {
+      "date": "23 Jun 2026",
+      "category": "UP Economy",
+      "headline": "UP Cabinet Raises Wheat MSP by ₹160/Quintal; Additional ₹20 for Handling",
+      "detail": "The UP cabinet chaired by CM Yogi Adityanath approved an increase of ₹160/quintal in wheat MSP for the current procurement season, plus an additional ₹20/quintal for cleaning, sorting, and handling costs. This is significant for UP's ~2.5 crore wheat farmer families and places UP as one of the highest wheat-procurement states.",
+      "source": "India.com / UP Govt",
+      "relevance": "Medium",
+      "tags": "MSP, Wheat MSP, UP Cabinet, Yogi Adityanath, Farmers, Procurement, Agriculture",
+      "mcq": "The UP cabinet increased wheat MSP by ₹160/quintal; what is MSP? → Minimum Support Price — floor price guaranteed by government to farmers for their produce"
+    }
+  ]
 }

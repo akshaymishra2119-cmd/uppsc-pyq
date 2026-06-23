@@ -213,6 +213,35 @@ app.post('/api/getAnalytics', (req, res) => {
   res.json({ yearCounts, subjectCounts, difficulty, yearSubject, repeatingCount, total: qs.length });
 });
 
+// ── API: getUPPSCNews ─────────────────────────────────────────
+app.post('/api/getUPPSCNews', (req, res) => {
+  const filters = req.body || {};
+  const db      = loadDB();
+  if (!db.uppscNews) db.uppscNews = [];
+  let rows = [...db.uppscNews].reverse();
+  if (filters.category && filters.category !== 'all')
+    rows = rows.filter(r => r.category === filters.category);
+  if (filters.search) {
+    const q = filters.search.toLowerCase();
+    rows = rows.filter(r =>
+      String(r.headline).toLowerCase().includes(q) ||
+      String(r.detail).toLowerCase().includes(q)
+    );
+  }
+  res.json(rows);
+});
+
+// ── API: bulkAddUPPSCNews ─────────────────────────────────────
+app.post('/api/bulkAddUPPSCNews', (req, res) => {
+  const rows = Array.isArray(req.body) ? req.body : [];
+  if (rows.length === 0) return res.json({ success: false, error: 'No rows provided' });
+  const db = loadDB();
+  if (!db.uppscNews) db.uppscNews = [];
+  rows.forEach(r => db.uppscNews.push({ ...r, date: formatDate(r.date || new Date()) }));
+  saveDB(db);
+  res.json({ success: true, added: rows.length });
+});
+
 // ── API: bulkAddCurrentAffairs ────────────────────────────────
 app.post('/api/bulkAddCurrentAffairs', (req, res) => {
   const rows = Array.isArray(req.body) ? req.body : [];

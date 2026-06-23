@@ -46,6 +46,8 @@
     'checkAdmin',
     'getAnalytics',
     'bulkAddCurrentAffairs',
+    'getUPPSCNews',
+    'bulkAddUPPSCNews',
   ];
 
   const runObj = {

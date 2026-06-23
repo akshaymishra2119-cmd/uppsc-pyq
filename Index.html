@@ -791,6 +791,9 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn" onclick="showTab('ca',this)">
     <i class="ti ti-news" aria-hidden="true"></i> Current Affairs
   </button>
+  <button class="nav-btn" onclick="showTab('uppsc-news',this)">
+    <i class="ti ti-map-pin" aria-hidden="true"></i> UPPSC Daily News
+  </button>
   <button class="nav-btn" onclick="showTab('progress',this)">
     <i class="ti ti-chart-bar" aria-hidden="true"></i> Progress
   </button>
@@ -1286,6 +1289,39 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <div id="caFeed"><div class="loading"><i class="ti ti-loader"></i>Loading current affairs...</div></div>
 </div>
 
+<!-- ══ UPPSC DAILY NEWS TAB ══════════════════════════════════ -->
+<div class="tab" id="tab-uppsc-news">
+  <div class="today-banner" style="background:linear-gradient(135deg,#0d2b5e,#1a4a8a);color:#fff;">
+    <i class="ti ti-map-pin" aria-hidden="true" style="font-size:22px;color:#c9a84c;"></i>
+    <div>
+      <div style="font-weight:600;font-size:13px;">UPPSC Daily News — <span id="uppscTodayDate"></span></div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.7);">UP State Current Affairs • <span id="uppscTodayCount">—</span> items today</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <select id="uppsc-cat" onchange="loadUPPSCNews()">
+      <option value="all">All categories</option>
+      <option>UP Polity</option>
+      <option>UP Economy</option>
+      <option>UP Infrastructure</option>
+      <option>UP Agriculture</option>
+      <option>UP Culture & Heritage</option>
+      <option>UP Environment</option>
+      <option>UP Law & Order</option>
+      <option>UP Schemes</option>
+      <option>PCS Exam</option>
+    </select>
+    <input type="text" id="uppsc-search" placeholder="Search UP news..."
+      style="width:200px;font-size:12px;" oninput="debounceUPPSC()">
+    <select id="uppsc-date-filter" onchange="loadUPPSCNews()" style="font-size:12px;">
+      <option value="all">All dates</option>
+    </select>
+  </div>
+
+  <div id="uppscFeed"><div class="loading"><i class="ti ti-loader"></i> Loading UP news...</div></div>
+</div>
+
 <!-- ══ PROGRESS TAB ══════════════════════════════════════════ -->
 <div class="tab" id="tab-progress">
   <!-- Heatmap card (always visible) -->
@@ -1401,6 +1437,29 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       </button>
       <button class="btn" onclick="document.getElementById('bulk-ca-json').value=''">Clear</button>
       <span id="bulk-ca-status" style="font-size:12px;color:var(--text2);"></span>
+    </div>
+  </div>
+
+  <!-- ── UPPSC NEWS BULK IMPORT ─────────────────────────── -->
+  <div class="card" style="margin-top:12px;">
+    <div class="card-title">
+      <i class="ti ti-map-pin" aria-hidden="true" style="color:var(--amber);"></i>
+      Bulk Import — UPPSC Daily News (UP State)
+      <span style="margin-left:auto;font-size:11px;font-weight:400;color:var(--text3);">
+        JSON array of UP-specific news items
+      </span>
+    </div>
+    <div class="form-group" style="margin-bottom:10px;">
+      <textarea id="bulk-uppsc-json" rows="6"
+        style="font-family:monospace;font-size:11px;resize:vertical;"
+        placeholder='[{"date":"2026-06-23","category":"UP Infrastructure","headline":"Ganga Expressway inauguration imminent","detail":"...","source":"TOI","relevance":"High","tags":"Ganga Expressway, UPEIDA","mcq":"..."}]'></textarea>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-primary" onclick="submitBulkUPPSC()">
+        <i class="ti ti-upload" aria-hidden="true"></i> Import UP news
+      </button>
+      <button class="btn" onclick="document.getElementById('bulk-uppsc-json').value=''">Clear</button>
+      <span id="bulk-uppsc-status" style="font-size:12px;color:var(--text2);"></span>
     </div>
   </div>
 
@@ -1677,6 +1736,7 @@ function showTab(id, btn) {
   if (btn) btn.classList.add("active");
 
   if (id === "ca")          loadCA();
+  if (id === "uppsc-news")  loadUPPSCNews();
   if (id === "progress")    loadProgress();
   if (id === "leaderboard") loadLeaderboard();
   if (id === "admin")       loadAdminStats();
@@ -4345,6 +4405,133 @@ function submitBulkCA() {
       statusEl.textContent = "Error: " + e.message;
     })
     .bulkAddCurrentAffairs(rows);
+}
+
+// ── UPPSC DAILY NEWS ──────────────────────────────────────────
+let uppscDebounce = null;
+
+function debounceUPPSC() {
+  clearTimeout(uppscDebounce);
+  uppscDebounce = setTimeout(loadUPPSCNews, 300);
+}
+
+function loadUPPSCNews() {
+  const cat    = document.getElementById("uppsc-cat").value;
+  const search = document.getElementById("uppsc-search").value.trim();
+  const dateF  = document.getElementById("uppsc-date-filter").value;
+  const feed   = document.getElementById("uppscFeed");
+  feed.innerHTML = '<div class="loading"><i class="ti ti-loader"></i> Loading UP news...</div>';
+
+  google.script.run
+    .withSuccessHandler(rows => renderUPPSCFeed(rows, dateF))
+    .withFailureHandler(() => { feed.innerHTML = '<div class="empty">Could not load UP news.</div>'; })
+    .getUPPSCNews({ category: cat, search });
+}
+
+function renderUPPSCFeed(rows, dateFilter) {
+  const feed = document.getElementById("uppscFeed");
+  const countEl = document.getElementById("uppscTodayCount");
+  const dateEl  = document.getElementById("uppscTodayDate");
+
+  // Populate date filter options
+  const dateSelect = document.getElementById("uppsc-date-filter");
+  const existingDates = new Set([...dateSelect.options].map(o => o.value).filter(v => v !== "all"));
+  const newDates = [...new Set(rows.map(r => r.date))].sort().reverse();
+  newDates.forEach(d => {
+    if (!existingDates.has(d)) {
+      const opt = document.createElement("option");
+      opt.value = d; opt.textContent = d;
+      dateSelect.appendChild(opt);
+    }
+  });
+
+  // Filter by date
+  let filtered = dateFilter && dateFilter !== "all" ? rows.filter(r => r.date === dateFilter) : rows;
+
+  // Today count
+  const today = new Date().toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+  dateEl.textContent = today;
+  const todayCount = rows.filter(r => r.date === rows[0]?.date).length;
+  countEl.textContent = todayCount;
+
+  if (!filtered.length) {
+    feed.innerHTML = '<div class="empty">No UP news found for selected filter.</div>';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  filtered.forEach(r => { if (!byDate[r.date]) byDate[r.date] = []; byDate[r.date].push(r); });
+
+  const catColors = {
+    "UP Polity":"var(--blue)","UP Economy":"var(--teal)","UP Infrastructure":"var(--amber)",
+    "UP Agriculture":"var(--teal-dark)","UP Culture & Heritage":"var(--purple)",
+    "UP Environment":"var(--teal)","UP Law & Order":"var(--red)","UP Schemes":"var(--pink)",
+    "PCS Exam":"var(--coral)"
+  };
+
+  let html = "";
+  Object.entries(byDate).forEach(([date, items]) => {
+    html += `<div style="margin-bottom:6px;padding:6px 10px;background:var(--bg3);border-radius:6px;
+      font-size:11px;font-weight:600;color:var(--text2);letter-spacing:0.5px;">
+      📅 ${date} &nbsp;·&nbsp; ${items.length} items
+    </div>`;
+    items.forEach(r => {
+      const color = catColors[r.category] || "var(--blue)";
+      const rel   = r.relevance === "High" ? "🔴" : r.relevance === "Medium" ? "🟡" : "🟢";
+      html += `<div class="card" style="border-left:3px solid ${color};margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+          <span style="background:${color};color:#fff;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;">
+            ${r.category}
+          </span>
+          <span style="font-size:11px;color:var(--text3);">${rel} ${r.relevance} relevance</span>
+          ${r.source ? `<span style="font-size:11px;color:var(--text3);margin-left:auto;">📰 ${r.source}</span>` : ""}
+        </div>
+        <div style="font-weight:600;font-size:13px;color:var(--text);margin-bottom:5px;">${r.headline}</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:6px;">${r.detail}</div>
+        ${r.tags ? `<div style="font-size:11px;color:var(--text3);">🏷 ${r.tags}</div>` : ""}
+        ${r.mcq ? `<div style="margin-top:8px;padding:7px 10px;background:var(--amber-light);border-radius:6px;
+          font-size:11px;color:var(--amber-dark);">💡 <b>Quick MCQ:</b> ${r.mcq}</div>` : ""}
+      </div>`;
+    });
+  });
+
+  feed.innerHTML = html;
+}
+
+function submitBulkUPPSC() {
+  const raw = document.getElementById("bulk-uppsc-json").value.trim();
+  const statusEl = document.getElementById("bulk-uppsc-status");
+  if (!raw) { showToast("Paste a JSON array first"); return; }
+  let rows;
+  try {
+    rows = JSON.parse(raw);
+    if (!Array.isArray(rows)) throw new Error("Must be a JSON array");
+  } catch(e) {
+    statusEl.style.color = "var(--red)";
+    statusEl.textContent = "⚠ " + e.message;
+    return;
+  }
+  statusEl.style.color = "var(--text3)";
+  statusEl.textContent = `Importing ${rows.length} entries…`;
+  google.script.run
+    .withSuccessHandler(r => {
+      if (r.success) {
+        statusEl.style.color = "var(--teal)";
+        statusEl.textContent = `✓ Imported ${r.added} UP news items!`;
+        document.getElementById("bulk-uppsc-json").value = "";
+        showToast(`${r.added} UP news items added!`);
+        loadUPPSCNews();
+      } else {
+        statusEl.style.color = "var(--red)";
+        statusEl.textContent = "Error: " + r.error;
+      }
+    })
+    .withFailureHandler(e => {
+      statusEl.style.color = "var(--red)";
+      statusEl.textContent = "Error: " + e.message;
+    })
+    .bulkAddUPPSCNews(rows);
 }
 
 function clearCAForm() {
