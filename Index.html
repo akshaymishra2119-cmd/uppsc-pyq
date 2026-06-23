@@ -1342,12 +1342,11 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <div class="card" style="max-width:540px;margin:0 auto;">
       <div class="card-title" style="font-size:14px;"><i class="ti ti-list-numbers" style="color:var(--teal);"></i> How many questions?</div>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;" id="dq-count-grid">
-        ${[10,20,30,40,50].map(n => `
-          <button class="dq-count-btn" onclick="selectDQCount(${n},this)"
-            style="padding:18px 0;font-size:20px;font-weight:700;border:2px solid var(--border);
-            border-radius:10px;background:var(--bg2);cursor:pointer;transition:all 0.15s;color:var(--text);">
-            ${n}
-          </button>`).join('')}
+        <button class="dq-count-btn" onclick="selectDQCount(10,this)" style="padding:18px 0;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;background:var(--bg2);cursor:pointer;transition:all 0.15s;color:var(--text);">10</button>
+        <button class="dq-count-btn" onclick="selectDQCount(20,this)" style="padding:18px 0;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;background:var(--bg2);cursor:pointer;transition:all 0.15s;color:var(--text);">20</button>
+        <button class="dq-count-btn" onclick="selectDQCount(30,this)" style="padding:18px 0;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;background:var(--bg2);cursor:pointer;transition:all 0.15s;color:var(--text);">30</button>
+        <button class="dq-count-btn" onclick="selectDQCount(40,this)" style="padding:18px 0;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;background:var(--bg2);cursor:pointer;transition:all 0.15s;color:var(--text);">40</button>
+        <button class="dq-count-btn" onclick="selectDQCount(50,this)" style="padding:18px 0;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;background:var(--bg2);cursor:pointer;transition:all 0.15s;color:var(--text);">50</button>
       </div>
 
       <div style="margin-bottom:16px;">
