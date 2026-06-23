@@ -389,11 +389,6 @@ textarea{resize:vertical;min-height:70px;}
 }
 
 /* ── SMART INSTANT REVIEW ───────────────────── */
-.sir-wrap{margin-top:14px;border-top:2px dashed var(--border);padding-top:12px;}
-.sir-header{font-size:11px;font-weight:700;color:var(--amber);margin-bottom:10px;
-  display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.5px;}
-.sir-card{background:var(--bg2);border-radius:10px;padding:10px 12px;margin-bottom:8px;
-  border:1px solid var(--border);}
 
 /* ── OPTION BIAS REPORT ─────────────────────── */
 .bias-row{display:grid;grid-template-columns:20px 1fr 170px;align-items:center;gap:8px;margin-bottom:8px;}
@@ -1074,7 +1069,6 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   .bias-nums{font-size:9px;}
 
   /* Smart instant review */
-  .sir-card{padding:8px 10px;}
 
   /* Buttons */
   .btn{padding:6px 12px;font-size:12px;}
@@ -1625,28 +1619,6 @@ function renderClusterView() {
   container.innerHTML = `<div class="cluster-wrap">${html}</div>`;
 }
 
-function attemptSIR(qId, chosen, correct) {
-  // Inline answer reveal for Smart Instant Review cards — no full re-render
-  const card = document.getElementById('qcard-'+qId);
-  if (!card || card.dataset.sirDone) return;
-  card.dataset.sirDone = '1';
-  const isRight = chosen === correct;
-  card.querySelectorAll('.opt-btn').forEach(b => {
-    const letter = b.querySelector('strong').textContent.replace('.','');
-    b.disabled = true;
-    if (letter === correct) b.classList.add('opt-correct');
-    else if (letter === chosen && !isRight) b.classList.add('opt-wrong');
-    else b.classList.add('opt-disabled');
-  });
-  const q = allQuestions.find(q => String(q.id) === String(qId));
-  const expDiv = document.getElementById('sir-exp-'+qId);
-  if (expDiv && q) {
-    expDiv.innerHTML = `<div class="explanation" style="font-size:12px;margin-top:8px;">
-      ${isRight ? '✅ Correct!' : '❌ Wrong.'} <strong>${q.answer}.</strong> ${q.answerText||''}
-      ${q.explanation ? '<br>' + q.explanation : ''}
-    </div>`;
-  }
-}
 
 function toggleCluster(header) {
   const card = header.closest('.cluster-card');
@@ -2759,41 +2731,11 @@ function renderQuestions() {
       </button>`;
     }).join("");
 
-    // Smart instant review — 2 related questions shown after wrong
-    const smartReview = (shown && answers[q.id] === 'wrong') ? (() => {
-      const related = allQuestions.filter(r =>
-        r.id !== q.id &&
-        (r.subTopic && r.subTopic === q.subTopic || r.topic === q.topic) &&
-        !answers[r.id]
-      ).slice(0, 2);
-      if (!related.length) return '';
-      const rCards = related.map((r,ri) => {
-        const rOpts = ['A','B','C','D'].filter(l => r['opt'+l]).map(l =>
-          `<button class="opt-btn" onclick="attemptSIR('${r.id}','${l}','${r.answer}')" style="text-align:left;font-size:12px;padding:6px 10px;">
-            <strong>${l}.</strong> ${r['opt'+l]}
-          </button>`
-        ).join('');
-        return `<div class="sir-card" id="qcard-${r.id}">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">
-            ${r.year} · ${r.subject} · ${r.subTopic||r.topic||''}
-          </div>
-          <div class="q-text" style="font-size:13px;margin:0 0 8px;">${r.question}</div>
-          <div class="opts" style="gap:4px;">${rOpts}</div>
-          <div id="sir-exp-${r.id}"></div>
-        </div>`;
-      }).join('');
-      return `<div class="sir-wrap">
-        <div class="sir-header"><i class="ti ti-refresh-dot"></i> Practice 2 related questions</div>
-        ${rCards}
-      </div>`;
-    })() : '';
-
     const explanation = shown ? `
       <div class="explanation">
         <strong>Correct answer:</strong> ${q.answer}. ${q.answerText}<br><br>
         <strong>Explanation:</strong> ${q.explanation || "No explanation available."}
-      </div>
-      ${smartReview}` : "";
+      </div>` : "";
 
     const skipBtn = !shown ? `<button class="btn btn-sm" style="margin-top:8px;" onclick="skipQ('${q.id}',${idx})">
       <i class="ti ti-forward-skip"></i> Skip
