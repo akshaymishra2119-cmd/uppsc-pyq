@@ -2334,7 +2334,7 @@ function renderHomeCA(items) {
   });
 
   document.getElementById("hm-ca").textContent = todayItems.length;
-  document.getElementById("caTodayCount").textContent = todayItems.length;
+  const _ctc = document.getElementById("caTodayCount"); if (_ctc) _ctc.textContent = todayItems.length;
 
   if (todayItems.length === 0) {
     el.innerHTML = `<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px;">
@@ -4406,7 +4406,7 @@ function renderDailyActivityLog() {
 
   // Overall summary counts
   const totalAttempted = attemptedQIds.size;
-  const totalQ         = allQ.length || 449;
+  const totalQ         = allQuestions.length || 449;
   const totalUnseen    = totalQ - totalAttempted;
   const allDayTotals   = dates.reduce((acc, d) => {
     acc.correct += stats[d].correct || 0;
