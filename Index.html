@@ -5152,6 +5152,18 @@ function getCatColors() {
     "Current Affairs": "#FEF9E7", "Current AffairsT": "#7D6608"
   };
 }
+function showToast(msg, duration=2500) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), duration);
+}
+
+function showError(e) {
+  console.error(e);
+  showToast("Error: " + (e.message || e), 4000);
+}
+
 </script>
 </body>
 </html>
