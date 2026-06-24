@@ -2326,12 +2326,9 @@ function renderSubjectBars(subjects) {
 
 function renderHomeCA(items) {
   const el = document.getElementById("homeCAfeed");
-  const todayStr = new Date().toDateString();
-
-  const todayItems = items.filter(item => {
-    const d = new Date(item.date);
-    return d.toDateString() === todayStr;
-  });
+  // Match against the same format used in db.json: "24 Jun 2026"
+  const todayStr = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+  const todayItems = items.filter(item => (item.date || '') === todayStr);
 
   document.getElementById("hm-ca").textContent = todayItems.length;
   const _ctc = document.getElementById("caTodayCount"); if (_ctc) _ctc.textContent = todayItems.length;
@@ -2347,8 +2344,8 @@ function renderHomeCA(items) {
     <div class="ca-preview">
       <span class="badge" style="background:${catColors[item.category]||"var(--bg3)"};
         color:${catColors[item.category+"T"]||"var(--text2)"};">${item.category}</span>
-      <div class="ca-preview-head">${item.headline}</div>
-      <div class="ca-preview-sub">${(item.detail||"").substring(0,80)}...</div>
+      <div class="ca-preview-head">${item.headline||item.title||""}</div>
+      <div class="ca-preview-sub">${(item.detail||item.summary||"").substring(0,80)}...</div>
     </div>
   `).join("");
 }
@@ -4122,7 +4119,7 @@ function renderCAPanel() {
   const catColors = getCatColors();
 
   el.innerHTML = items.map(item => {
-    const isBookmarked = caBookmarks.includes(item.headline);
+    const _hl = item.headline||item.title||""; const isBookmarked = caBookmarks.includes(_hl);
     const mcqHtml = item.mcq
       ? `<div style="margin-top:8px;padding:7px 10px;background:var(--bg2);border-radius:6px;
           border-left:3px solid var(--blue);font-size:12px;color:var(--text2);">
@@ -4139,12 +4136,12 @@ function renderCAPanel() {
             <span style="font-size:11px;color:var(--text3);">${relDot}</span>
             ${item.source ? `<span style="font-size:11px;color:var(--text3);">· <i class="ti ti-link" aria-hidden="true"></i> ${item.source}</span>` : ''}
           </div>
-          <div class="ca-headline">${item.headline}</div>
-          <div class="ca-detail" style="margin-top:5px;">${item.detail||''}</div>
+          <div class="ca-headline">${item.headline||item.title||""}</div>
+          <div class="ca-detail" style="margin-top:5px;">${item.detail||item.summary||''}</div>
           ${mcqHtml}
         </div>
         <button class="bookmark-btn ${isBookmarked?'active':''}"
-          onclick="toggleBookmark('${item.headline.replace(/'/g,"&#39;")}')"
+          onclick="toggleBookmark('${(item.headline||item.title||'').replace(/'/g,"&#39;")}')"
           aria-label="${isBookmarked?'Remove bookmark':'Bookmark'}">
           <i class="ti ti-bookmark${isBookmarked?'-filled':''}" aria-hidden="true"></i>
         </button>
