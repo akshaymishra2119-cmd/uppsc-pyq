@@ -1,18 +1,148 @@
 // ============================================================
 // UPPSC STUDY PORTAL — Local Dev Server
-// Mirrors all Apps Script backend functions as Express routes.
 // Run: node server.js  →  http://localhost:3000
 // ============================================================
 
-const express = require('express');
-const fs      = require('fs');
-const path    = require('path');
+const express      = require('express');
+const fs           = require('fs');
+const path         = require('path');
+const bcrypt       = require('bcryptjs');
+const jwt          = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 
 const app    = express();
 const PORT   = process.env.PORT || 3000;
 const DB     = path.join(__dirname, 'db.json');
+const USERS  = path.join(__dirname, 'users.json');
+const JWT_SECRET = process.env.JWT_SECRET || 'ghatna-chakra-secret-2026';
 
 app.use(express.json({ strict: false }));
+app.use(cookieParser());
+
+// ── USERS DB HELPERS ──────────────────────────────────────────
+function loadUsers() {
+  if (!fs.existsSync(USERS)) {
+    fs.writeFileSync(USERS, JSON.stringify({ users: [] }, null, 2));
+    return { users: [] };
+  }
+  return JSON.parse(fs.readFileSync(USERS, 'utf8'));
+}
+function saveUsers(data) { fs.writeFileSync(USERS, JSON.stringify(data, null, 2)); }
+
+// ── JWT MIDDLEWARE ────────────────────────────────────────────
+function authMiddleware(req, res, next) {
+  const token = req.cookies.token || (req.headers.authorization || '').replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Not logged in' });
+  try { req.user = jwt.verify(token, JWT_SECRET); next(); }
+  catch { res.status(401).json({ error: 'Session expired, please login again' }); }
+}
+
+// ── REGISTER ──────────────────────────────────────────────────
+app.post('/api/register', async (req, res) => {
+  const { name, email, password } = req.body || {};
+  if (!name || !email || !password) return res.status(400).json({ error: 'All fields required' });
+  if (password.length < 6) return res.status(400).json({ error: 'Password min 6 characters' });
+  const data = loadUsers();
+  if (data.users.find(u => u.email.toLowerCase() === email.toLowerCase()))
+    return res.status(400).json({ error: 'Email already registered' });
+  const hash = await bcrypt.hash(password, 10);
+  const user = { id: Date.now().toString(), name: name.trim(), email: email.toLowerCase().trim(),
+                 password: hash, createdAt: new Date().toISOString(), attempts: [] };
+  data.users.push(user);
+  saveUsers(data);
+  const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+  res.cookie('token', token, { httpOnly: true, maxAge: 30*24*60*60*1000 });
+  res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
+});
+
+// ── LOGIN ─────────────────────────────────────────────────────
+app.post('/api/login', async (req, res) => {
+  const { email, password, rememberMe } = req.body || {};
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  const data = loadUsers();
+  const user = data.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  if (!user) return res.status(400).json({ error: 'Email not registered' });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(400).json({ error: 'Incorrect password' });
+  const expiresIn = rememberMe ? '30d' : '1d';
+  const maxAge    = rememberMe ? 30*24*60*60*1000 : 24*60*60*1000;
+  const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn });
+  res.cookie('token', token, { httpOnly: true, maxAge });
+  res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
+});
+
+// ── LOGOUT ────────────────────────────────────────────────────
+app.post('/api/logout', (req, res) => { res.clearCookie('token'); res.json({ success: true }); });
+
+// ── CHECK SESSION ─────────────────────────────────────────────
+app.get('/api/me', (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.json({ loggedIn: false });
+  try {
+    const user = jwt.verify(token, JWT_SECRET);
+    res.json({ loggedIn: true, user: { id: user.id, name: user.name, email: user.email } });
+  } catch { res.json({ loggedIn: false }); }
+});
+
+// ── SAVE ATTEMPT ──────────────────────────────────────────────
+app.post('/api/saveAttempt', authMiddleware, (req, res) => {
+  const data = loadUsers();
+  const user = data.users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  if (!user.attempts) user.attempts = [];
+  user.attempts.push({ ...req.body, date: new Date().toISOString() });
+  saveUsers(data);
+  res.json({ success: true });
+});
+
+// ── MY STATS ─────────────────────────────────────────────────
+app.get('/api/myStats', authMiddleware, (req, res) => {
+  const data = loadUsers();
+  const user = data.users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const attempts = user.attempts || [];
+  const correct  = attempts.filter(a => a.result === 'correct').length;
+  const wrong    = attempts.filter(a => a.result === 'wrong').length;
+  const accuracy = (correct+wrong)>0 ? Math.round(correct/(correct+wrong)*100) : 0;
+  const today    = new Date().toDateString();
+  const yest     = new Date(Date.now()-86400000).toDateString();
+  const todayA   = attempts.filter(a => new Date(a.date).toDateString()===today);
+  const yestA    = attempts.filter(a => new Date(a.date).toDateString()===yest);
+  const tC=todayA.filter(a=>a.result==='correct').length, tW=todayA.filter(a=>a.result==='wrong').length;
+  const yC=yestA.filter(a=>a.result==='correct').length,  yW=yestA.filter(a=>a.result==='wrong').length;
+  const subjects = {};
+  attempts.forEach(a => {
+    if (!a.subject) return;
+    if (!subjects[a.subject]) subjects[a.subject]={correct:0,wrong:0,total:0};
+    subjects[a.subject].total++;
+    if (a.result==='correct') subjects[a.subject].correct++;
+    if (a.result==='wrong')   subjects[a.subject].wrong++;
+  });
+  const dailyMap = {};
+  attempts.forEach(a => {
+    const d=new Date(a.date).toDateString();
+    if (!dailyMap[d]) dailyMap[d]={correct:0,wrong:0,total:0};
+    dailyMap[d].total++;
+    if (a.result==='correct') dailyMap[d].correct++;
+    if (a.result==='wrong')   dailyMap[d].wrong++;
+  });
+  const dates=Object.keys(dailyMap).sort((a,b)=>new Date(b)-new Date(a));
+  let streak=0;
+  if (dates[0]===today||dates[0]===yest) {
+    streak=1;
+    for (let i=1;i<dates.length;i++) {
+      if ((new Date(dates[i-1])-new Date(dates[i]))/86400000<=1.5) streak++;
+      else break;
+    }
+  }
+  res.json({
+    total: attempts.length, correct, wrong, accuracy, streak,
+    projected: Math.max(0, correct-Math.round(wrong*0.33)),
+    today:     { total:todayA.length, correct:tC, wrong:tW, accuracy:(tC+tW)>0?Math.round(tC/(tC+tW)*100):0 },
+    yesterday: { total:yestA.length,  correct:yC, wrong:yW, accuracy:(yC+yW)>0?Math.round(yC/(yC+yW)*100):0 },
+    subjects, dailyHistory: dailyMap
+  });
+});
 
 // ── DB HELPERS ────────────────────────────────────────────────
 function loadDB() {

@@ -1,316 +1,209 @@
-#!/usr/bin/env python3
 """
-UPPSC Instagram Reel Generator - v2 (Q+Options together)
-Layout: Intro(2s) -> Question+Options(10s) -> Answer(7s) -> CTA(4s) = 23s
+Ghatna Chakra — Daily Reel Generator
+Generates 10 Instagram Reels per day from UPPSC PYQ questions.
+Subjects rotate day-by-day. Output: D:\uppsc_pyq\reels\YYYY-MM-DD\reel_01.mp4 ... reel_10.mp4
 
 Usage:
-  python make_reels.py news 10   # 10 news reels from dailyQuizQuestions
-  python make_reels.py geo 10    # 10 Geography reels (GEO_001...)
-  python make_reels.py pol 5     # Polity  pol / hist / eco / sci / env / up / ca
+  python make_reels.py              # auto-detect today's subject
+  python make_reels.py --subject Polity
+  python make_reels.py --date 2026-06-25
 """
-import json, sys, os, subprocess, math, tempfile, shutil, wave
+
+import json, os, math, random, subprocess, argparse, shutil
+from datetime import date
 from PIL import Image, ImageDraw, ImageFont
-import platform, numpy as np
+import imageio_ffmpeg
 
-try:
-    import imageio_ffmpeg
-    FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
-except Exception:
-    FFMPEG = "ffmpeg"
+BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+DB_PATH    = os.path.join(BASE_DIR, "db.json")
+MUSIC_PATH = os.path.join(BASE_DIR, "mondamusic-lofi-study-542566.mp3")
+OUT_BASE   = os.path.join(BASE_DIR, "reels")
+FPS = 24
+W, H = 1080, 1920
 
-if platform.system() == "Windows":
-    BASE, FONT_DIR = r"D:\uppsc_pyq", r"C:\Windows\Fonts"
-else:
-    BASE     = "/sessions/vibrant-compassionate-ride/mnt/uppsc_pyq"
-    FONT_DIR = "/usr/share/fonts/truetype/liberation"
+SUBJECTS = [
+    "Polity","Modern History","Geography","Economy",
+    "Science","Environment","Current Affairs","UP Special","Ancient History",
+]
 
-DB_PATH  = os.path.join(BASE, "db.json")
-OUT_DIR  = os.path.join(BASE, "reels")
-LOFI_MP3 = os.path.join(BASE, "mondamusic-lofi-study-542566.mp3")
-os.makedirs(OUT_DIR, exist_ok=True)
+BG=(13,13,23); CARD=(24,26,44); ACCENT=(99,102,241)
+GREEN_BG=(16,60,35); GREEN_T=(110,231,140); WHITE=(255,255,255)
+GREY=(140,150,180); GOLD=(251,191,36)
 
-W, H, FPS = 1080, 1920, 24
-
-def load_font(name, size):
-    for c in [os.path.join(FONT_DIR, name),
-              os.path.join(FONT_DIR, "LiberationSans-Bold.ttf"),
-              os.path.join(FONT_DIR, "LiberationSans-Regular.ttf"),
-              "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-              "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-              r"C:\Windows\Fonts\arialbd.ttf", r"C:\Windows\Fonts\Arial.ttf"]:
-        if os.path.exists(c):
-            try: return ImageFont.truetype(c, size)
+def F(sz, bold=False):
+    candidates = []
+    if bold:
+        candidates = ["C:/Windows/Fonts/arialbd.ttf","C:/Windows/Fonts/calibrib.ttf",
+                      "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+                      "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
+    else:
+        candidates = ["C:/Windows/Fonts/arial.ttf","C:/Windows/Fonts/calibri.ttf",
+                      "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+                      "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]
+    for p in candidates:
+        if os.path.exists(p):
+            try: return ImageFont.truetype(p, sz)
             except: pass
     return ImageFont.load_default()
 
-F_HUGE  = load_font("LiberationSans-Bold.ttf",    160)
-F_TITLE = load_font("LiberationSans-Bold.ttf",     68)
-F_Q     = load_font("LiberationSans-Bold.ttf",     46)
-F_OPT   = load_font("LiberationSans-Regular.ttf",  40)
-F_BODY  = load_font("LiberationSans-Regular.ttf",  50)
-F_SMALL = load_font("LiberationSans-Regular.ttf",  36)
-F_BRAND = load_font("LiberationSans-Bold.ttf",     42)
-F_TAG   = load_font("LiberationSans-Bold.ttf",     34)
+FB=F(34,1); FBig=F(54,1); FQ=F(50,1); FOpt=F(43); FExp=F(44)
+FSm=F(29); FTim=F(58,1); FTimSm=F(28)
 
-BG_TOP  = (12, 18, 50);  BG_BOT  = (8, 12, 30);   BG_CARD = (28, 38, 65)
-BG_OPT  = (22, 32, 56);  ACCENT  = (99,102,241);   ACCENT2 = (168,85,247)
-GOLD    = (251,191,36);   GREEN   = (34,197,94);    GREEN_D = (22,135,62)
-WHITE   = (255,255,255);  GREY    = (148,163,184);  LIGHT   = (220,228,244)
-OPT_COLS = [((99,102,241),(180,182,255)), ((16,185,129),(150,240,200)),
-            ((245,158,11),(255,220,130)), ((239,68,68),(255,160,160))]
-
-def gradient_bg(img, top, bot):
-    arr = np.zeros((H,W,3), dtype=np.uint8)
-    for c in range(3):
-        arr[:,:,c] = np.linspace(top[c], bot[c], H, dtype=np.uint8)[:,np.newaxis]
-    img.paste(Image.fromarray(arr))
-
-def rr(draw, xy, r, fill, outline=None, w=2):
-    x0,y0,x1,y1 = xy
-    if x0>=x1 or y0>=y1: return
-    draw.rounded_rectangle([x0,y0,x1,y1], radius=r, fill=fill, outline=outline, width=w)
-
-def wrap(text, font, max_w, max_l=None):
-    words = text.split(); lines, cur = [], ""
-    for word in words:
-        test = (cur+" "+word).strip()
-        if font.getbbox(test)[2]-font.getbbox(test)[0] <= max_w: cur = test
+def wrap(text, font, max_w, draw):
+    words=text.split(); lines=[]; line=""
+    for w in words:
+        t=(line+" "+w).strip()
+        if draw.textlength(t,font=font)<=max_w: line=t
         else:
-            if cur: lines.append(cur)
-            cur = word
-    if cur: lines.append(cur)
-    if max_l and len(lines) > max_l:
-        lines = lines[:max_l]; lines[-1] = lines[-1][:max(4,len(lines[-1])-3)]+"..."
+            if line: lines.append(line)
+            line=w
+    if line: lines.append(line)
     return lines
 
-def th(font, n, gap=10):
-    b = font.getbbox("Ag"); return n*(b[3]-b[1])+(n-1)*gap
+def rr(d,xy,r,fill,outline=None,ow=2):
+    d.rounded_rectangle(xy,radius=r,fill=fill,outline=outline,width=ow)
 
-def mlt(draw, lines, font, x, y, col, align="left", gap=12):
-    for ln in lines:
-        b = font.getbbox(ln); lw,lh = b[2]-b[0], b[3]-b[1]
-        dx = x - lw//2 if align=="center" else (x-lw if align=="right" else x)
-        draw.text((dx, y), ln, font=font, fill=col); y += lh+gap
-    return y
+def opt_card(d,lbl,txt,x,y,w,ok=False):
+    bg=GREEN_BG if ok else (32,34,58); bdr=GREEN_T if ok else (70,75,120); tc=GREEN_T if ok else (210,215,245)
+    rr(d,[x,y,x+w,y+108],22,fill=bg,outline=bdr,ow=2)
+    rr(d,[x+14,y+24,x+70,y+84],16,fill=ACCENT if not ok else GREEN_T)
+    lc=(13,13,23) if ok else WHITE
+    lw=d.textlength(lbl,font=FBig); d.text((x+14+(56-lw)/2,y+28),lbl,font=FBig,fill=lc)
+    ls=wrap(txt,FOpt,w-105,d); th=len(ls)*(FOpt.size+6); sy=y+(108-th)//2
+    for i,l in enumerate(ls): d.text((x+90,sy+i*(FOpt.size+6)),l,font=FOpt,fill=tc)
 
-def pill(draw, cx, cy, text, font, bg, fg, px=24, py=10):
-    b = font.getbbox(text); tw,tht = b[2]-b[0], b[3]-b[1]
-    x0,y0 = cx-tw//2-px, cy-tht//2-py; x1,y1 = cx+tw//2+px, cy+tht//2+py
-    rr(draw,(x0,y0,x1,y1),28,bg); draw.text((x0+px,y0+py),text,font=font,fill=fg)
+def timer_ring(d,cx,cy,r,elapsed,total,color):
+    d.ellipse([cx-r,cy-r,cx+r,cy+r],outline=(50,52,80),width=8)
+    ang=360*(1-elapsed/total)
+    d.arc([cx-r,cy-r,cx+r,cy+r],start=-90,end=-90+ang,fill=color,width=8)
+    rem=max(0,total-elapsed); num=str(int(math.ceil(rem)))
+    nw=d.textlength(num,font=FTim); d.text((cx-nw/2,cy-FTim.size//2-2),num,font=FTim,fill=color)
+    lw=d.textlength("sec",font=FTimSm); d.text((cx-lw/2,cy+FTim.size//2-2),"sec",font=FTimSm,fill=GREY)
 
-def brand_bar(draw, sub="UPPSC", rid=""):
-    draw.rectangle([(0,H-110),(W,H)], fill=(8,12,30))
-    draw.line([(0,H-110),(W,H-110)], fill=ACCENT, width=2)
-    draw.text((50,H-82), "@uppsc_pyq_daily", font=F_BRAND, fill=GREY)
-    if rid:
-        b = F_TAG.getbbox(rid); draw.text((W-b[2]+b[0]-50,H-82), rid, font=F_TAG, fill=GOLD)
+def make_bg():
+    img=Image.new("RGB",(W,H),BG); d=ImageDraw.Draw(img)
+    for i in range(300):
+        a=1-i/300; c=tuple(int(BG[k]+(20-BG[k])*a*(0.6 if k==2 else 0.3)) for k in range(3))
+        d.line([(0,i),(W,i)],fill=c)
+    return img,d
+
+def header(d,subject,year):
+    d.text((54,58),"GHATNA CHAKRA",font=FB,fill=ACCENT)
+    d.text((54,96),"UPPSC PYQ Practice",font=FSm,fill=GREY)
+    badge=subject.upper(); bw=int(d.textlength(badge,font=FB))+36
+    rr(d,[W-54-bw,54,W-54,102],24,ACCENT); d.text((W-54-bw+18,62),badge,font=FB,fill=WHITE)
+    d.text((54,136),f"UPPSC {year}",font=FSm,fill=GREY)
+    d.line([(54,172),(W-54,172)],fill=(45,48,80),width=2)
+
+def footer(d):
+    txt="Ghatna Chakra  •  UPPSC PCS 2026"
+    d.text(((W-d.textlength(txt,font=FSm))/2,H-72),txt,font=FSm,fill=(60,65,100))
+
+def q_frame(q,elapsed,q_lines,lh):
+    img,d=make_bg(); header(d,q.get("subject",""),q.get("year","2025"))
+    timer_ring(d,W-88,88,46,elapsed,10,GOLD)
+    for i,l in enumerate(q_lines): d.text((54,200+i*lh),l,font=FQ,fill=WHITE)
+    oy=200+len(q_lines)*lh+32
+    for lbl,txt in [("A",q["optA"]),("B",q["optB"]),("C",q["optC"]),("D",q["optD"])]:
+        opt_card(d,lbl,txt,54,oy,W-108); oy+=124
+    footer(d); return img
+
+def ans_frame(q,elapsed,q_lines,lh):
+    img,d=make_bg(); header(d,q.get("subject",""),q.get("year","2025"))
+    timer_ring(d,W-88,88,46,elapsed,5,GREEN_T)
+    for i,l in enumerate(q_lines): d.text((54,200+i*lh),l,font=FQ,fill=(170,175,210))
+    oy=200+len(q_lines)*lh+32
+    for lbl,txt in [("A",q["optA"]),("B",q["optB"]),("C",q["optC"]),("D",q["optD"])]:
+        opt_card(d,lbl,txt,54,oy,W-108,ok=(lbl==q["answer"])); oy+=124
+    footer(d); return img
+
+def exp_frame(q,elapsed):
+    img,d=make_bg(); header(d,q.get("subject",""),q.get("year","2025"))
+    timer_ring(d,W-88,88,46,elapsed,5,(140,180,255))
+    ans_map={"A":q["optA"],"B":q["optB"],"C":q["optC"],"D":q["optD"]}
+    tick=f"Correct: {q['answer']}  —  {ans_map.get(q['answer'],'')}"
+    while d.textlength(tick,font=FBig)>W-140: tick=tick[:-4]+"..."
+    rr(d,[54,195,W-54,320],22,fill=GREEN_BG,outline=GREEN_T,ow=2)
+    tw=d.textlength(tick,font=FBig); d.text(((W-tw)/2,242),tick,font=FBig,fill=GREEN_T)
+    rr(d,[54,350,W-54,H-100],24,fill=CARD)
+    d.text((88,380),"Explanation",font=FB,fill=ACCENT)
+    d.line([(88,426),(W-88,426)],fill=(50,55,90),width=1)
+    exp=q.get("explanation","") or q.get("detail","") or "Refer NCERT for more details."
+    exp_lines=wrap(exp,FExp,W-160,d); ey=450
+    for l in exp_lines:
+        d.text((88,ey),l,font=FExp,fill=(215,220,245)); ey+=FExp.size+10
+        if ey>H-200: break
+    footer(d); return img
+
+def build_reel(q, out_path):
+    ffmpeg=imageio_ffmpeg.get_ffmpeg_exe()
+    kf_dir=out_path.replace(".mp4","_kf"); os.makedirs(kf_dir,exist_ok=True)
+    dummy=Image.new("RGB",(W,H)); dd=ImageDraw.Draw(dummy)
+    q_lines=wrap(q["question"],FQ,W-108,dd); lh=FQ.size+10
+    idx=0
+    for sec in range(10,0,-1):
+        q_frame(q,10-sec,q_lines,lh).save(f"{kf_dir}/f{idx:04d}.png"); idx+=1
+    for sec in range(5,0,-1):
+        ans_frame(q,5-sec,q_lines,lh).save(f"{kf_dir}/f{idx:04d}.png"); idx+=1
+    for sec in range(5,0,-1):
+        exp_frame(q,5-sec).save(f"{kf_dir}/f{idx:04d}.png"); idx+=1
+    tmp=out_path.replace(".mp4","_silent.mp4")
+    subprocess.run([ffmpeg,"-y","-framerate","1","-i",f"{kf_dir}/f%04d.png",
+        "-vf","fps=24,scale=1080:1920","-c:v","libx264","-pix_fmt","yuv420p",
+        "-crf","20","-preset","fast",tmp],capture_output=True,check=True)
+    if os.path.exists(MUSIC_PATH):
+        subprocess.run([ffmpeg,"-y","-i",tmp,"-i",MUSIC_PATH,
+            "-filter_complex","[1:a]volume=0.35,afade=t=out:st=18:d=2[a]",
+            "-map","0:v","-map","[a]","-c:v","copy","-c:a","aac","-b:a","128k",
+            "-shortest",out_path],capture_output=True,check=True)
+        os.remove(tmp)
     else:
-        draw.text((50,H-82), sub[:22], font=F_BRAND, fill=ACCENT)
+        os.rename(tmp,out_path)
+    shutil.rmtree(kf_dir,ignore_errors=True)
 
-def frame_intro(t, q, n, rid=""):
-    img = Image.new("RGB",(W,H)); draw = ImageDraw.Draw(img)
-    gradient_bg(img,(20,10,60),BG_BOT)
-    r = int(180+40*math.sin(t*math.pi*3)); cx,cy = W//2, H//2-200
-    draw.ellipse([(cx-r,cy-r),(cx+r,cy+r)], outline=ACCENT, width=8)
-    draw.ellipse([(cx-r+20,cy-r+20),(cx+r-20,cy+r-20)], fill=ACCENT2)
-    mlt(draw,["UPPSC"],F_HUGE,W//2,cy-90,WHITE,align="center")
-    mlt(draw,["Daily Quiz"],F_TITLE,W//2,cy+90,GOLD,align="center")
-    sub = q.get("subject","GS")
-    pill(draw,W//2,cy+240,f"  {sub}  ",F_BODY,ACCENT,WHITE)
-    a = min(1.0,t*3); c=tuple(int(v*a) for v in LIGHT)
-    mlt(draw,["Swipe up for Answer"],F_SMALL,W//2,H//2+280,c,align="center")
-    brand_bar(draw,sub,rid); return img
+def get_subject_for_date(d):
+    epoch=date(2026,1,1)
+    return SUBJECTS[(d-epoch).days % len(SUBJECTS)]
 
-def frame_question_options(t, q, n, rid=""):
-    img = Image.new("RGB",(W,H)); draw = ImageDraw.Draw(img)
-    gradient_bg(img,BG_TOP,BG_BOT)
-    sub  = q.get("subject","General"); diff = q.get("difficulty","Medium")
-    draw.rectangle([(0,0),(W,130)], fill=ACCENT)
-    draw.text((50,30), sub.upper(), font=F_Q, fill=WHITE)
-    dc = {"Easy":(34,197,94),"Medium":(251,191,36),"Hard":(239,68,68)}.get(diff,GOLD)
-    pill(draw,W-110,65,diff,F_SMALL,dc,(10,10,10),px=18,py=8)
-    qtext = q.get("question","")
-    ql = wrap(qtext,F_Q,W-160,max_l=5); qh = th(F_Q,len(ql),gap=12)+60
-    rr(draw,(40,140,W-40,140+qh),22,BG_CARD); mlt(draw,ql,F_Q,70,170,LIGHT,gap=12)
-    opts = [("A",q.get("optA","")),("B",q.get("optB","")),
-            ("C",q.get("optC","")),("D",q.get("optD",""))]
-    oy_start = 140+qh+18; avail = H-110-oy_start-10
-    opt_h = (avail - 12*3)//4
-    for i,(label,text) in enumerate(opts):
-        oy = oy_start + i*(opt_h+12)
-        bg_col,_ = OPT_COLS[i]
-        prog = max(0.0,min(1.0,(t - i*0.12)*4)); ox0 = 40+int((1-prog)*W)
-        if ox0 > W-80: continue
-        rr(draw,(ox0,oy,W-40,oy+opt_h),18,BG_OPT,outline=bg_col,w=2)
-        cr = min(36,opt_h//2-8); ccx = ox0+26+cr; ccy = oy+opt_h//2
-        draw.ellipse([(ccx-cr,ccy-cr),(ccx+cr,ccy+cr)],fill=bg_col)
-        b=F_Q.getbbox(label); lw,lh=b[2]-b[0],b[3]-b[1]
-        draw.text((ccx-lw//2,ccy-lh//2-2),label,font=F_Q,fill=WHITE)
-        tw = W-40-(ox0+26+cr*2+20)-30
-        ol = wrap(text,F_OPT,tw,max_l=2); obh=th(F_OPT,len(ol),gap=8)
-        mlt(draw,ol,F_OPT,ox0+26+cr*2+18,oy+(opt_h-obh)//2,LIGHT,gap=8)
-    brand_bar(draw,sub,rid); return img
-
-def frame_answer(t, q, n, rid=""):
-    img = Image.new("RGB",(W,H)); draw = ImageDraw.Draw(img)
-    gradient_bg(img,(8,30,18),(5,15,10))
-    sub = q.get("subject","GS"); ans = q.get("answer","?")
-    ans_text = q.get("answerText",""); expl = q.get("explanation","")
-    draw.rectangle([(0,0),(W,140)], fill=GREEN_D)
-    draw.text((50,35), f"ANSWER:  Option  {ans}", font=F_TITLE, fill=WHITE)
-    a = min(1.0,t*2); cc=tuple(int(c*a) for c in BG_CARD)
-    rr(draw,(40,160,W-40,620),24,cc)
-    opts = {"A":q.get("optA",""),"B":q.get("optB",""),"C":q.get("optC",""),"D":q.get("optD","")}
-    correct = opts.get(ans,""); display = ans_text if ans_text else correct
-    gc = tuple(int(c*a) for c in GREEN)
-    mlt(draw, wrap(display,F_Q,W-160,max_l=5), F_Q, 70, 200, gc, gap=14)
-    if ans_text and correct and ans_text.strip()!=correct.strip():
-        mlt(draw, wrap(f"Option {ans}: {correct}",F_OPT,W-160,max_l=2), F_OPT, 70, 470, GOLD, gap=10)
-    draw.line([(50,650),(W-50,650)], fill=GREEN_D, width=2)
-    draw.text((50,668),"WHY?",font=F_Q,fill=GOLD)
-    ea = min(1.0,max(0,(t-0.4)*2)); ec=tuple(int(c*ea) for c in LIGHT)
-    mlt(draw, wrap(expl,F_SMALL,W-120,max_l=14), F_SMALL, 50, 730, ec, gap=10)
-    brand_bar(draw,sub,rid); return img
-
-def frame_cta(t, q, n, rid=""):
-    img = Image.new("RGB",(W,H)); draw = ImageDraw.Draw(img)
-    gradient_bg(img,(20,10,55),BG_BOT)
-    for i in range(30):
-        sx=int((i*317+t*120)%W); sy=int((i*211)%(H-200))
-        br=int(128+127*math.sin(t*4+i)); sc=(br,br,int(br*0.6))
-        draw.ellipse([(sx-2,sy-2),(sx+2,sy+2)],fill=sc)
-    a=min(1.0,t*2); c=lambda col: tuple(int(v*a) for v in col)
-    sub = q.get("subject","GS")
-    mlt(draw,["Follow for"],F_TITLE,W//2,H//2-360,c(WHITE),align="center")
-    mlt(draw,["Daily UPPSC"],F_TITLE,W//2,H//2-270,c(GOLD),align="center")
-    mlt(draw,["Questions!"],F_TITLE,W//2,H//2-180,c(ACCENT2),align="center")
-    pill(draw,W//2,H//2-20,"  @uppsc_pyq_daily  ",F_BODY,ACCENT,WHITE)
-    pill(draw,W//2,H//2+110,"  Like  •  Share  •  Save  ",F_SMALL,ACCENT2,WHITE)
-    mlt(draw,[f"500+ {sub} Questions Available"],F_SMALL,W//2,H//2+220,c(GREY),align="center")
-    brand_bar(draw,sub,rid); return img
-
-PHASES = [(frame_intro,2.0),(frame_question_options,10.0),(frame_answer,7.0),(frame_cta,4.0)]
-TOTAL_DUR = sum(d for _,d in PHASES)
-
-def make_bgm_wav(path, dur=24.0, rate=44100):
-    def note(freq, d, vol=0.18):
-        t = np.linspace(0,d,int(rate*d),False)
-        s = np.sin(2*np.pi*freq*t)*0.6 + np.sin(4*np.pi*freq*t)*0.25 + np.sin(6*np.pi*freq*t)*0.1
-        e = np.ones(len(t)); atk=max(1,int(rate*0.01)); rel=max(1,int(rate*0.4))
-        e[:atk]=np.linspace(0,1,atk); e[-rel:]=np.linspace(0.55,0,rel)
-        return s*e*vol
-    chords=[[261.63,329.63,392.00],[220.00,261.63,329.63],[174.61,220.00,261.63],[196.00,246.94,293.66]]
-    total=int(rate*dur); out=np.zeros(total); cd=dur/len(chords)
-    for i,chord in enumerate(chords):
-        st=int(i*cd*rate)
-        for f in chord:
-            seg=note(f,cd); end=min(st+len(seg),total); out[st:end]+=seg[:end-st]
-    t2=np.linspace(0,dur,total); out+=np.sin(2*np.pi*130.81*t2)*0.04
-    out=out/(np.max(np.abs(out))+1e-9)*0.75
-    fade=min(int(rate*2),total//4); out[:fade]*=np.linspace(0,1,fade); out[-fade:]*=np.linspace(1,0,fade)
-    frames=(out*32767).astype(np.int16)
-    with wave.open(path,'w') as wf:
-        wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(rate); wf.writeframes(frames.tobytes())
-
-def make_video(q, fname, rid=""):
-    out_path = os.path.join(OUT_DIR, fname)
-    tmp = tempfile.mkdtemp()
-    has_lofi = os.path.exists(LOFI_MP3)
-    if has_lofi:
-        audio_in = ["-stream_loop","-1","-i",LOFI_MP3]
-    else:
-        bgm = os.path.join(tmp,"bgm.wav"); print("  Generating piano BGM...")
-        make_bgm_wav(bgm, dur=TOTAL_DUR+1.0); audio_in = ["-i",bgm]
-    cmd = ([FFMPEG,"-y","-f","rawvideo","-vcodec","rawvideo",
-            "-s",f"{W}x{H}","-pix_fmt","rgb24","-r",str(FPS),"-i","-"]
-           + audio_in
-           + ["-c:v","libx264","-preset","fast","-crf","23",
-              "-pix_fmt","yuv420p","-c:a","aac","-b:a","128k",
-              "-af","volume=0.30","-shortest","-movflags","+faststart",out_path])
-    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    for renderer,duration in PHASES:
-        nf = int(duration*FPS)
-        for f in range(nf):
-            proc.stdin.write(renderer(f/max(1,nf-1), q, nf, rid).tobytes())
-    proc.stdin.close(); proc.wait()
-    shutil.rmtree(tmp, ignore_errors=True)
-    size = os.path.getsize(out_path)//1024 if os.path.exists(out_path) else 0
-    print(f"  OK {fname} ({size}KB, {'lofi' if has_lofi else 'bgm'})")
-    return out_path
-
-SUBJECT_MAP = {
-    "geo":  ("Geography",      "GEO"),
-    "pol":  ("Polity",         "POL"),
-    "hist": ("Modern History", "HIST"),
-    "eco":  ("Economy",        "ECO"),
-    "sci":  ("Science",        "SCI"),
-    "env":  ("Environment",    "ENV"),
-    "up":   ("UP Special",     "UP"),
-    "ca":   ("Current Affairs","CA"),
-}
-
-def load_db():
-    with open(DB_PATH, encoding="utf-8") as f: return json.load(f)
-
-def save_db(db):
-    with open(DB_PATH, "w", encoding="utf-8") as f: json.dump(db, f, ensure_ascii=False, indent=2)
-
-def get_used(db, prefix):
-    return set(db.get("reelProgress",{}).get(prefix,[]))
-
-def mark_used(db, prefix, qid):
-    db.setdefault("reelProgress",{}).setdefault(prefix,[])
-    if qid not in db["reelProgress"][prefix]: db["reelProgress"][prefix].append(qid)
-
-def next_seq(db, prefix):
-    return len(db.get("reelProgress",{}).get(prefix,[])) + 1
+def get_questions(subject, n=10):
+    with open(DB_PATH,"r",encoding="utf-8") as f: db=json.load(f)
+    questions=db.get("questions",db) if isinstance(db,dict) else db
+    subj_lo=subject.lower()
+    pool=[q for q in questions
+          if subj_lo in (q.get("subject","") or "").lower()
+          and all(q.get(k) for k in ["question","optA","optB","optC","optD","answer"])]
+    if not pool:
+        print(f"  Warning: no questions for '{subject}', using all")
+        pool=[q for q in questions if all(q.get(k) for k in ["question","optA","optB","optC","optD","answer"])]
+    return random.sample(pool, min(n, len(pool)))
 
 def main():
-    mode  = sys.argv[1].lower() if len(sys.argv)>1 else "geo"
-    count = int(sys.argv[2])    if len(sys.argv)>2 else 3
-    db = load_db()
+    parser=argparse.ArgumentParser()
+    parser.add_argument("--subject")
+    parser.add_argument("--date")
+    parser.add_argument("--count",type=int,default=10)
+    args=parser.parse_args()
+    today=date.fromisoformat(args.date) if args.date else date.today()
+    subject=args.subject or get_subject_for_date(today)
+    count=args.count
+    out_dir=os.path.join(OUT_BASE,today.isoformat())
+    os.makedirs(out_dir,exist_ok=True)
+    print(f"\n{'='*52}")
+    print(f"  Ghatna Chakra Reel Generator")
+    print(f"  Date: {today}  |  Subject: {subject}  |  Count: {count}")
+    print(f"  Output: {out_dir}")
+    print(f"{'='*52}\n")
+    questions=get_questions(subject,count)
+    print(f"  Loaded {len(questions)} questions\n")
+    for i,q in enumerate(questions,1):
+        out=os.path.join(out_dir,f"reel_{i:02d}.mp4")
+        print(f"  [{i:02d}/{count}] {q['question'][:55]}...")
+        try:
+            build_reel(q,out)
+            print(f"         ✓ reel_{i:02d}.mp4")
+        except Exception as e:
+            print(f"         ✗ Error: {e}")
+    print(f"\n  Done! Reels saved to:\n  {out_dir}\n")
 
-    if mode == "news":
-        prefix = "NEWS"; all_qs = db.get("dailyQuizQuestions",[])
-        used   = get_used(db,prefix)
-        qs     = [q for q in all_qs if q.get("id","") not in used]
-        if not qs: db.get("reelProgress",{}).pop(prefix,None); qs = all_qs
-        qs = qs[:count]; seq = next_seq(db,prefix)
-        label = lambda i,q: f"NEWS_{seq+i-1:03d}"
-    elif mode == "all":
-        prefix = "ALL"; all_qs = db.get("questions",[])
-        used   = get_used(db,prefix)
-        qs     = [q for q in all_qs if q.get("id","") not in used][:count]
-        label  = lambda i,q: q.get("id",f"Q{i:03d}")
-    else:
-        if mode not in SUBJECT_MAP:
-            print(f"Unknown mode '{mode}'. Use: news geo pol hist eco sci env up ca all"); sys.exit(1)
-        subj_name,prefix = SUBJECT_MAP[mode]
-        all_qs = [q for q in db.get("questions",[]) if q.get("subject","").lower()==subj_name.lower()]
-        used   = get_used(db,prefix)
-        qs     = [q for q in all_qs if q.get("id","") not in used]
-        if not qs: db.get("reelProgress",{}).pop(prefix,None); used=set(); qs=all_qs
-        qs = qs[:count]; seq = next_seq(db,prefix)
-        label = lambda i,q: f"{prefix}_{seq+i-1:03d}"
-
-    if not qs: print("No questions found!"); sys.exit(1)
-    print(f"\n{'='*50}")
-    print(f" Mode: {mode.upper()}  |  Count: {len(qs)}")
-    print(f" Audio: {'Lofi MP3' if os.path.exists(LOFI_MP3) else 'Piano BGM'}")
-    print(f"{'='*50}\n")
-
-    for i,q in enumerate(qs,1):
-        rid   = label(i,q)
-        subj  = q.get("subject","GS").replace(" ","_")[:12]
-        fname = f"reel_{rid}_{subj}.mp4"
-        print(f"[{i}/{len(qs)}] {rid}  {q.get('question','')[:55]}...")
-        make_video(q, fname, rid)
-        mark_used(db, prefix, q.get("id",f"unk_{i}"))
-
-    save_db(db)
-    print(f"\nDone! {len(qs)} reel(s) saved to reels/")
-    print(f"Tracking saved -> db.json reelProgress.{prefix}\n")
-
-if __name__ == "__main__":
+if __name__=="__main__":
     main()

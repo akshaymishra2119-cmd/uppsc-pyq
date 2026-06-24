@@ -881,7 +881,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <i class="ti ti-bolt" aria-hidden="true"></i> Daily Quiz
   </button>
   <button class="nav-btn" onclick="showTab('progress',this)">
-    <i class="ti ti-chart-bar" aria-hidden="true"></i> Progress
+    <i class="ti ti-chart-bar" aria-hidden="true"></i> Track Progress
   </button>
   <button class="nav-btn" onclick="showTab('leaderboard',this)">
     <i class="ti ti-trophy" aria-hidden="true"></i> Leaderboard
@@ -889,6 +889,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn admin-btn" id="adminNavBtn" style="display:none;" onclick="showTab('admin',this)">
     <i class="ti ti-settings" aria-hidden="true"></i> Admin
   </button>
+  <button id="authNavBtn" onclick="openAuthModal('login')">Login / Register</button>
 </div>
 
 <!-- MAIN -->
@@ -1409,24 +1410,140 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
 <!-- ══ CURRENT AFFAIRS TAB ═══════════════════════════════════ -->
 <div class="tab" id="tab-ca">
-  <!-- CA Portal: two-panel layout -->
-  <div style="display:flex;gap:0;height:calc(100vh - 160px);min-height:480px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--card-bg);">
+  <style>
+    /* CA responsive layout */
+    .ca-shell {
+      display: flex;
+      gap: 0;
+      height: calc(100vh - 160px);
+      min-height: 480px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--card-bg);
+    }
+    /* Desktop sidebar */
+    .ca-sidebar {
+      width: 170px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      background: var(--bg2);
+      display: flex;
+      flex-direction: column;
+    }
+    .ca-sidebar-label {
+      padding: 10px 14px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    /* Mobile date strip (hidden on desktop) */
+    .ca-date-strip {
+      display: none;
+      overflow-x: auto;
+      padding: 10px 12px;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      flex-shrink: 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .ca-date-strip::-webkit-scrollbar { display: none; }
+    .ca-date-chip {
+      flex-shrink: 0;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: none;
+      font-size: 12px;
+      color: var(--text2);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .ca-date-chip.ca-chip-active {
+      background: var(--blue-light);
+      border-color: var(--blue);
+      color: var(--blue-dark);
+      font-weight: 600;
+    }
+    /* Right panel */
+    .ca-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .ca-panel-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .ca-filter-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 640px) {
+      .ca-shell {
+        flex-direction: column;
+        height: auto;
+        min-height: unset;
+        border-radius: 12px;
+      }
+      .ca-sidebar { display: none; }
+      .ca-date-strip { display: flex; }
+      .ca-panel { overflow: visible; }
+      .ca-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .ca-filter-row {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 2px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .ca-filter-row::-webkit-scrollbar { display: none; }
+      .ca-filter-row input { min-width: 100px; }
+      #caFeed { padding: 10px 12px; }
+      .ca-item { padding: 12px; }
+    }
+  </style>
 
-    <!-- LEFT SIDEBAR: day list -->
-    <div style="width:170px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg2);">
-      <div style="padding:10px 14px 8px;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);">By date</div>
+  <div class="ca-shell">
+
+    <!-- LEFT SIDEBAR (desktop only) -->
+    <div class="ca-sidebar">
+      <div class="ca-sidebar-label">By date</div>
       <div id="caDayList"><div class="loading" style="padding:20px 14px;font-size:12px;"><i class="ti ti-loader"></i> Loading...</div></div>
     </div>
 
-    <!-- RIGHT PANEL: stories for selected day -->
-    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- RIGHT PANEL -->
+    <div class="ca-panel">
+      <!-- Mobile date strip -->
+      <div class="ca-date-strip" id="caDateStrip"></div>
+
       <!-- Panel header -->
-      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0;">
+      <div class="ca-panel-header">
         <div>
           <div style="font-size:14px;font-weight:500;color:var(--text);" id="caPanelTitle">Current affairs</div>
           <div style="font-size:11px;color:var(--text3);" id="caPanelSub">Select a date from the sidebar</div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="caFilterRow">
+        <div class="ca-filter-row" id="caFilterRow">
           <button class="ca-filter-btn ca-filter-on" onclick="setCaFilter('all',this)">All</button>
           <button class="ca-filter-btn" onclick="setCaFilter('Polity',this)">Polity</button>
           <button class="ca-filter-btn" onclick="setCaFilter('Economy',this)">Economy</button>
@@ -1437,11 +1554,12 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
             style="font-size:12px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg2);color:var(--text);width:130px;">
         </div>
       </div>
+
       <!-- Story cards -->
       <div style="flex:1;overflow-y:auto;padding:14px 16px;" id="caFeed">
         <div style="text-align:center;padding:60px 20px;color:var(--text3);font-size:13px;">
           <i class="ti ti-calendar" style="font-size:32px;display:block;margin-bottom:10px;" aria-hidden="true"></i>
-          Select a date from the left to see stories
+          Select a date to see stories
         </div>
       </div>
     </div>
@@ -1595,6 +1713,15 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       <div class="heatmap-legend-cell" data-lv="3" style="background:#155724;"></div>
       <div class="heatmap-legend-cell" data-lv="4" style="background:#0a3316;"></div>
       &nbsp;More
+    </div>
+  </div>
+  <div id="progressLoginPrompt" style="display:none;">
+    <div class="tp-login-prompt">
+      <div style="font-size:48px;margin-bottom:12px;">📊</div>
+      <h3>Track Your Progress</h3>
+      <p>Login to see your daily timeline, accuracy trends,<br>correct vs wrong breakdown — all saved across sessions.</p>
+      <button class="tp-login-btn" onclick="openAuthModal('login')">Login / Register — it's free</button>
+      <div style="margin-top:16px;font-size:11px;color:var(--text3);">Already have an account? <a href="#" onclick="openAuthModal('login');return false;" style="color:#6366f1;">Login here</a></div>
     </div>
   </div>
   <div id="progressContent"><div class="loading"><i class="ti ti-loader"></i>Loading your progress...</div></div>
@@ -2097,6 +2224,9 @@ function loadHome() {
 
   // Load PYQ analytics charts
   loadAnalytics();
+
+  // Pull live stats from auth server
+  refreshDashboardStats();
 
   // Load progress for metrics
   google.script.run
@@ -3160,6 +3290,47 @@ function renderOneQ(idx) {
   updateNavInfo(idx);
 }
 
+// ── Server-side attempt tracking ──────────────────────────────
+async function saveAttemptToServer(data) {
+  if (!currentUser) return; // not logged in, skip
+  try {
+    await fetch('/api/saveAttempt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    refreshDashboardStats();
+  } catch(e) { /* silent fail — localStorage is primary */ }
+}
+
+async function refreshDashboardStats() {
+  if (!currentUser) return;
+  try {
+    const res  = await fetch('/api/myStats');
+    const data = await res.json();
+    if (data.error) return;
+
+    // Update hero banner stat cards live
+    const todayData = data.today || {};
+    const sa = document.getElementById("hbAttempted");
+    const sc = document.getElementById("hbAccuracy");
+    const ss = document.getElementById("hbScore");
+    const strEl = document.getElementById("heroStreak");
+    if (sa) sa.textContent = todayData.total || 0;
+    if (sc) sc.textContent = (todayData.accuracy || 0) + "%";
+    if (ss) ss.textContent = (data.projected || 0) + "/150";
+    if (strEl) strEl.textContent = data.streak || 0;
+
+    // Update home tab metric cards too if visible
+    const hmAt = document.getElementById("hm-attempted");
+    const hmAc = document.getElementById("hm-accuracy");
+    const hmPr = document.getElementById("hm-projected");
+    if (hmAt) hmAt.textContent = todayData.total || 0;
+    if (hmAc) hmAc.textContent = (todayData.accuracy || 0) + "%";
+    if (hmPr) hmPr.textContent = (data.projected || 0) + "/150";
+  } catch(e) {}
+}
+
 function attemptQ(qId, chosen, correct, idx) {
   if (answers[qId] !== undefined) return;
   if (mockActive) { mockAttemptQ(qId, chosen, correct); return; }
@@ -3226,6 +3397,8 @@ function attemptQ(qId, chosen, correct, idx) {
     srData[qId] = { date: today, subject: q.subject, topic: topicKey, interval: 3 };
     localStorage.setItem("pyqSpacedRepeat", JSON.stringify(srData));
   }
+  // ── Save to server for live dashboard ──────────────
+  saveAttemptToServer({ qId, subject: q.subject, year: q.year || '', result, timeTaken });
   renderQuestions();
   setTimeout(() => { const el = document.getElementById('qcard-'+qId); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 50);
 }
@@ -3498,6 +3671,8 @@ function mockAttemptQ(qId, chosen, correct) {
     srData2[qId] = { date: new Date().toISOString().split("T")[0], subject:q.subject, topic:topicKey2, interval:3 };
     localStorage.setItem("pyqSpacedRepeat", JSON.stringify(srData2));
   }
+  // ── Save to server for live dashboard ──────────────
+  saveAttemptToServer({ qId, subject: q.subject, year: q.year || '', result, timeTaken });
   // Adaptive mode: upgrade difficulty after 3 consecutive correct
   if (mockSettings.mode === "adaptive") {
     const recentResults = Object.values(answers).slice(-3);
@@ -4060,6 +4235,19 @@ function buildCASidebar() {
     </button>`;
   }).join('');
 
+  // Build mobile date chip strip
+  const strip = document.getElementById("caDateStrip");
+  if (strip) {
+    strip.innerHTML = dates.map(d => {
+      const count = dateMap[d].length;
+      const isToday = d === todayStr;
+      const isActive = d === caActiveDate;
+      return `<button class="ca-date-chip${isActive?' ca-chip-active':''}" onclick="selectCADay('${d.replace(/'/g,"\\'")}')">
+        ${isToday?'Today':d} <span style="opacity:.6;">(${count})</span>
+      </button>`;
+    }).join('');
+  }
+
   renderCAPanel();
 
   // Update today banner count
@@ -4072,13 +4260,7 @@ function buildCASidebar() {
 
 function selectCADay(date) {
   caActiveDate = date;
-  // Update sidebar active state
-  document.querySelectorAll('.ca-day-btn').forEach(btn => {
-    const isActive = btn.textContent.trim().startsWith(date) ||
-      (date === new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) && btn.textContent.includes('Today'));
-    btn.classList.toggle('ca-day-active', false);
-  });
-  // Re-render sidebar to update active
+  // Re-render sidebar + chips to update active state
   buildCASidebar();
 }
 
@@ -4163,13 +4345,223 @@ function toggleBookmark(headline) {
 // PROGRESS
 // ══════════════════════════════════════════════════════════════
 function loadProgress() {
-  document.getElementById("progressContent").innerHTML =
-    `<div class="loading"><i class="ti ti-loader"></i>Loading your progress...</div>`;
-  renderHeatmap(); // always render from localStorage
-  google.script.run
-    .withSuccessHandler(prog => renderProgress(prog))
-    .withFailureHandler(showError)
-    .getUserProgress(userName);
+  // Show login prompt if not logged in
+  const prompt = document.getElementById("progressLoginPrompt");
+  const content = document.getElementById("progressContent");
+  if (!currentUser) {
+    if (prompt) prompt.style.display = "";
+    if (content) content.style.display = "none";
+    renderHeatmap();
+    return;
+  }
+  if (prompt) prompt.style.display = "none";
+  if (content) content.style.display = "";
+  content.innerHTML = `<div class="loading"><i class="ti ti-loader"></i>Loading your progress...</div>`;
+  renderHeatmap();
+
+  // Load server-side stats first (real tracked data)
+  fetch('/api/myStats')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.error) renderServerProgress(data);
+    })
+    .catch(() => {})
+    .finally(() => {
+      // Also load Google Apps Script progress (subject bars etc.)
+      google.script.run
+        .withSuccessHandler(prog => renderProgress(prog))
+        .withFailureHandler(() => {})
+        .getUserProgress(userName);
+    });
+}
+
+function renderServerProgress(data) {
+  const el = document.getElementById("progressContent");
+  const todayData     = data.today     || {};
+  const yesterdayData = data.yesterday || {};
+
+  // Build day-by-day lookup for current month
+  const hist = data.dailyHistory || {};
+  const now  = new Date();
+  const yr   = now.getFullYear();
+  const mo   = now.getMonth(); // 0-indexed
+  const daysInMonth = new Date(yr, mo+1, 0).getDate();
+  const todayDay    = now.getDate();
+  const monthName   = now.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+
+  // Map "Mon Jun 24 2026" style keys → day number
+  const dayMap = {};
+  Object.keys(hist).forEach(k => {
+    const d = new Date(k);
+    if (d.getFullYear()===yr && d.getMonth()===mo) {
+      dayMap[d.getDate()] = hist[k];
+    }
+  });
+
+  const maxT = Object.values(dayMap).reduce((m,d)=>Math.max(m,d.total||0),1);
+
+  // Build day columns HTML
+  let colsHTML = '';
+  for (let day=1; day<=daysInMonth; day++) {
+    const d    = dayMap[day];
+    const isToday = day === todayDay;
+    const hasDot  = !!d;
+
+    let barsHTML = '';
+    if (d && d.total > 0) {
+      const scale  = 72 / maxT;
+      const wH     = Math.max(3, Math.round((d.wrong||0)  * scale));
+      const cH     = Math.max(3, Math.round((d.correct||0)* scale));
+      const tH     = Math.max(0, Math.round(d.total*scale) - cH - wH);
+      barsHTML = `
+        <div style="height:${tH}px;width:100%;background:#B5D4F4;border-radius:2px 2px 0 0;min-height:${tH>0?2:0}px;"></div>
+        <div style="height:${cH}px;width:100%;background:#1D9E75;min-height:2px;"></div>
+        <div style="height:${wH}px;width:100%;background:#E24B4A;min-height:2px;border-radius:0 0 2px 2px;"></div>`;
+    }
+
+    const dotColor = hasDot ? '#378ADD' : 'var(--border,#ddd)';
+    const numColor = isToday ? '#378ADD' : 'var(--text3,#aaa)';
+    const numWeight= isToday ? '700' : '400';
+    const cursor   = hasDot ? 'pointer' : 'default';
+    const onclick  = hasDot
+      ? `onclick="tlSelectDay(${day})" `
+      : '';
+
+    colsHTML += `
+      <div class="tl-day-col" id="tlDay${day}" ${onclick}style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:${cursor};">
+        <div style="display:flex;flex-direction:column;justify-content:flex-end;height:80px;width:100%;gap:1px;">
+          ${barsHTML}
+        </div>
+        <div style="width:6px;height:6px;border-radius:50%;background:${dotColor};"></div>
+        <div style="font-size:9px;color:${numColor};font-weight:${numWeight};">${day}</div>
+      </div>`;
+  }
+
+  el.innerHTML = `
+    <style>
+      .sp-summary-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+      @media(max-width:600px){.sp-summary-4{grid-template-columns:repeat(2,1fr);}}
+      .sp-card{background:var(--bg2,#f5f5f5);border:1px solid var(--border,#e0e0e0);border-radius:12px;padding:12px 14px;text-align:center;}
+      .sp-card-lbl{font-size:10px;color:var(--text3,#888);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+      .sp-card-val{font-size:24px;font-weight:800;}
+      .sp-card-sub{font-size:11px;color:var(--text3,#888);margin-top:2px;}
+      .tl-outer{border:1px solid var(--border,#e0e0e0);border-radius:14px;padding:16px;background:var(--bg,#fff);margin-bottom:14px;}
+      .tl-scroll{overflow-x:auto;padding-bottom:4px;}
+      .tl-day-col:hover{opacity:.8;}
+      .tl-detail{background:var(--bg2,#f5f5f5);border-radius:10px;padding:12px 16px;margin-top:14px;
+        display:flex;align-items:center;gap:20px;flex-wrap:wrap;min-height:48px;}
+      .tl-leg{display:flex;gap:14px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border,#e0e0e0);}
+      .tl-leg span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3,#888);}
+      .tl-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;}
+      .sp-sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:4px;}
+      .sp-sub-c{background:var(--bg2,#f5f5f5);border:1px solid var(--border,#e0e0e0);border-radius:10px;padding:10px 12px;}
+    </style>
+
+    <!-- 4 stat cards -->
+    <div class="sp-summary-4">
+      <div class="sp-card">
+        <div class="sp-card-lbl">Today</div>
+        <div class="sp-card-val" style="color:#378ADD;">${todayData.total||0}</div>
+        <div class="sp-card-sub">&#10003;${todayData.correct||0} &nbsp;&#10007;${todayData.wrong||0} &nbsp;${todayData.accuracy||0}%</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-card-lbl">Yesterday</div>
+        <div class="sp-card-val" style="color:#7F77DD;">${yesterdayData.total||0}</div>
+        <div class="sp-card-sub">&#10003;${yesterdayData.correct||0} &nbsp;&#10007;${yesterdayData.wrong||0} &nbsp;${yesterdayData.accuracy||0}%</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-card-lbl">All-time</div>
+        <div class="sp-card-val" style="color:#1D9E75;">${data.total||0}</div>
+        <div class="sp-card-sub">&#10003;${data.correct||0} &nbsp;&#10007;${data.wrong||0} &nbsp;${data.accuracy||0}%</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-card-lbl">Streak &#128293;</div>
+        <div class="sp-card-val" style="color:#D85A30;">${data.streak||0}</div>
+        <div class="sp-card-sub">day${(data.streak||0)!==1?'s':''} active</div>
+      </div>
+    </div>
+
+    <!-- Calendar timeline -->
+    <div class="tl-outer">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:600;">${monthName}</div>
+        <div style="font-size:11px;color:var(--text3,#888);">Click a day to see details</div>
+      </div>
+
+      <div class="tl-scroll">
+        <div style="display:grid;grid-template-columns:repeat(${daysInMonth},1fr);gap:3px;min-width:${Math.max(520,daysInMonth*20)}px;">
+          ${colsHTML}
+        </div>
+      </div>
+
+      <div class="tl-leg">
+        <span><i style="background:#B5D4F4;"></i>Attempted</span>
+        <span><i style="background:#1D9E75;"></i>Correct</span>
+        <span><i style="background:#E24B4A;"></i>Wrong</span>
+      </div>
+
+      <div class="tl-detail" id="tlDetailBox">
+        <span style="font-size:12px;color:var(--text3,#888);">&#8592; Click any active day bar above</span>
+      </div>
+    </div>
+
+    <!-- Subject breakdown -->
+    ${Object.keys(data.subjects||{}).length > 0 ? `
+    <div style="border:1px solid var(--border,#e0e0e0);border-radius:14px;padding:16px;background:var(--bg,#fff);margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Subject breakdown</div>
+      <div class="sp-sub-grid">
+        ${Object.entries(data.subjects).map(([sub,d])=>{
+          const acc=(d.correct+d.wrong)>0?Math.round(d.correct/(d.correct+d.wrong)*100):0;
+          const col=acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
+          return `<div class="sp-sub-c">
+            <div style="font-size:11px;font-weight:600;margin-bottom:4px;color:var(--text2,#555);">${sub}</div>
+            <div style="font-size:18px;font-weight:800;color:${col};">${acc}%</div>
+            <div style="font-size:11px;color:var(--text3,#888);">&#10003;${d.correct} &nbsp;&#10007;${d.wrong} &nbsp;of ${d.total}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+  `;
+
+  // Store dayMap for click handler
+  window._tlDayMap = dayMap;
+}
+
+function tlSelectDay(day) {
+  const d = (window._tlDayMap||{})[day];
+  if (!d) return;
+  // Dim all, highlight selected
+  document.querySelectorAll('.tl-day-col').forEach(c => c.style.opacity = '0.45');
+  const sel = document.getElementById('tlDay'+day);
+  if (sel) sel.style.opacity = '1';
+
+  const acc = (d.correct+d.wrong)>0 ? Math.round(d.correct/(d.correct+d.wrong)*100) : 0;
+  const accColor = acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
+  const now = new Date();
+  const label = new Date(now.getFullYear(), now.getMonth(), day)
+    .toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+
+  const box = document.getElementById('tlDetailBox');
+  if (box) box.innerHTML = `
+    <span style="font-size:13px;font-weight:600;">${label}</span>
+    <span style="width:1px;height:30px;background:var(--border,#ddd);"></span>
+    <span style="text-align:center;">
+      <div style="font-size:20px;font-weight:800;color:#378ADD;">${d.total}</div>
+      <div style="font-size:10px;color:var(--text3,#888);">attempted</div>
+    </span>
+    <span style="text-align:center;">
+      <div style="font-size:20px;font-weight:800;color:#1D9E75;">${d.correct||0}</div>
+      <div style="font-size:10px;color:var(--text3,#888);">correct</div>
+    </span>
+    <span style="text-align:center;">
+      <div style="font-size:20px;font-weight:800;color:#E24B4A;">${d.wrong||0}</div>
+      <div style="font-size:10px;color:var(--text3,#888);">wrong</div>
+    </span>
+    <span style="text-align:center;">
+      <div style="font-size:20px;font-weight:800;color:${accColor};">${acc}%</div>
+      <div style="font-size:10px;color:var(--text3,#888);">accuracy</div>
+    </span>
+  `;
 }
 
 function renderProgress(prog) {
@@ -4981,8 +5373,11 @@ function renderDQ() {
 
 function attemptDQ(qId, chosen, correct) {
   if (dqAnswers[qId] !== undefined) return;
-  dqAnswers[qId] = chosen === correct ? "correct" : "wrong";
+  const result = chosen === correct ? "correct" : "wrong";
+  dqAnswers[qId] = result;
   dqAnswers[qId + "_chosen"] = chosen;
+  const q = dqQuestions.find(q => q.id === qId);
+  if (q) saveAttemptToServer({ qId, subject: q.subject || "Daily Quiz", year: q.year || "", result, timeTaken: 0 });
   renderDQ();
 }
 
@@ -5162,5 +5557,163 @@ function showError(e) {
 }
 
 </script>
+
+<!-- ══ AUTH MODAL (non-blocking) ══════════════════════════════ -->
+<style>
+/* Login button in nav */
+#authNavBtn{margin-left:auto;padding:7px 16px;background:#6366f1;color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;flex-shrink:0;}
+#authNavBtn:hover{background:#4f46e5;}
+#authNavBtn.signed-in{background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#6366f1;}
+
+/* Modal backdrop */
+#authModal{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+#authModal.open{display:flex;}
+
+/* Modal box */
+.auth-box{background:#1a1d35;border:1px solid rgba(99,102,241,0.35);border-radius:20px;padding:32px 28px;width:340px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);position:relative;}
+.auth-close{position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(255,255,255,0.4);font-size:20px;cursor:pointer;line-height:1;}
+.auth-close:hover{color:#fff;}
+.auth-logo{font-size:20px;font-weight:800;color:#fff;margin-bottom:2px;text-align:center;}
+.auth-logo span{color:#6366f1;}
+.auth-sub{font-size:11px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:20px;}
+.auth-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:18px;}
+.auth-tab-btn{flex:1;padding:9px;background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:.15s;}
+.auth-tab-btn.active{color:#fff;border-bottom-color:#6366f1;}
+.auth-field{width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:9px;padding:11px 13px;color:#fff;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none;transition:.15s;}
+.auth-field:focus{border-color:#6366f1;}
+.auth-field::placeholder{color:rgba(255,255,255,0.3);}
+.auth-check{display:flex;align-items:center;gap:7px;margin-bottom:14px;font-size:12px;color:rgba(255,255,255,0.5);cursor:pointer;}
+.auth-btn{width:100%;padding:12px;background:#6366f1;border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.auth-btn:hover{background:#4f46e5;}
+.auth-err{font-size:11px;color:#f87171;text-align:center;min-height:16px;margin-bottom:6px;}
+
+/* Track progress login prompt */
+.tp-login-prompt{text-align:center;padding:48px 24px;}
+.tp-login-prompt h3{font-size:18px;font-weight:700;margin-bottom:8px;}
+.tp-login-prompt p{font-size:13px;color:var(--text3);margin-bottom:24px;}
+.tp-login-btn{padding:11px 28px;background:#6366f1;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;}
+</style>
+
+<!-- Auth modal -->
+<div id="authModal">
+  <div class="auth-box">
+    <button class="auth-close" onclick="closeAuthModal()">&#x2715;</button>
+    <div class="auth-logo">Ghatna <span>Chakra</span></div>
+    <div class="auth-sub">Login to track your progress day-wise</div>
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="authTabLogin" onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab-btn" id="authTabReg" onclick="switchAuthTab('register')">Register</button>
+    </div>
+    <div id="authLoginForm">
+      <input class="auth-field" id="loginEmail" type="email" placeholder="Email address" />
+      <input class="auth-field" id="loginPassword" type="password" placeholder="Password" />
+      <label class="auth-check"><input type="checkbox" id="rememberMe" checked /> Remember me 30 days</label>
+      <div class="auth-err" id="loginErr"></div>
+      <button class="auth-btn" onclick="doLogin()">Login &rarr;</button>
+    </div>
+    <div id="authRegisterForm" style="display:none;">
+      <input class="auth-field" id="regName" type="text" placeholder="Your name" />
+      <input class="auth-field" id="regEmail" type="email" placeholder="Email address" />
+      <input class="auth-field" id="regPassword" type="password" placeholder="Password (min 6 chars)" />
+      <div class="auth-err" id="regErr"></div>
+      <button class="auth-btn" onclick="doRegister()">Create account &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentUser = null;
+
+function openAuthModal(tab) {
+  document.getElementById("authModal").classList.add("open");
+  if (tab) switchAuthTab(tab);
+  document.getElementById("loginErr").textContent = "";
+  document.getElementById("regErr").textContent   = "";
+}
+function closeAuthModal() {
+  document.getElementById("authModal").classList.remove("open");
+}
+function switchAuthTab(tab) {
+  document.getElementById("authLoginForm").style.display    = tab === "login"    ? "" : "none";
+  document.getElementById("authRegisterForm").style.display = tab === "register" ? "" : "none";
+  document.getElementById("authTabLogin").classList.toggle("active", tab === "login");
+  document.getElementById("authTabReg").classList.toggle("active",   tab === "register");
+}
+function showAuthError(id, msg) { document.getElementById(id).textContent = msg; }
+
+async function doLogin() {
+  const email    = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const rememberMe = document.getElementById("rememberMe").checked;
+  if (!email || !password) return showAuthError("loginErr", "Enter email and password");
+  try {
+    const res  = await fetch("/api/login", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email,password,rememberMe}) });
+    const data = await res.json();
+    if (!res.ok) return showAuthError("loginErr", data.error || "Login failed");
+    onAuthSuccess(data.user);
+  } catch(e) { showAuthError("loginErr", "Server error"); }
+}
+async function doRegister() {
+  const name     = document.getElementById("regName").value.trim();
+  const email    = document.getElementById("regEmail").value.trim();
+  const password = document.getElementById("regPassword").value;
+  if (!name || !email || !password) return showAuthError("regErr", "All fields required");
+  try {
+    const res  = await fetch("/api/register", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name,email,password}) });
+    const data = await res.json();
+    if (!res.ok) return showAuthError("regErr", data.error || "Registration failed");
+    onAuthSuccess(data.user);
+  } catch(e) { showAuthError("regErr", "Server error"); }
+}
+async function doLogout() {
+  await fetch("/api/logout", { method:"POST" });
+  currentUser = null;
+  updateAuthNavBtn();
+}
+function onAuthSuccess(user) {
+  currentUser = user;
+  closeAuthModal();
+  updateAuthNavBtn();
+  refreshDashboardStats();
+}
+function updateAuthNavBtn() {
+  const btn = document.getElementById("authNavBtn");
+  if (!btn) return;
+  if (currentUser) {
+    btn.textContent = "👤 " + (currentUser.name || currentUser.email).split(" ")[0];
+    btn.classList.add("signed-in");
+    btn.onclick = doLogout;
+    btn.title = "Click to logout";
+  } else {
+    btn.textContent = "Login / Register";
+    btn.classList.remove("signed-in");
+    btn.onclick = () => openAuthModal("login");
+    btn.title = "";
+  }
+}
+
+// Close modal on backdrop click
+document.getElementById("authModal").addEventListener("click", function(e) {
+  if (e.target === this) closeAuthModal();
+});
+
+// Enter key in modal
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  if (!document.getElementById("authModal").classList.contains("open")) return;
+  document.getElementById("authLoginForm").style.display !== "none" ? doLogin() : doRegister();
+});
+
+// Auto-check session silently on load
+(async function checkSession() {
+  try {
+    const res  = await fetch("/api/me");
+    const data = await res.json();
+    if (data.loggedIn) onAuthSuccess(data.user);
+    else updateAuthNavBtn();
+  } catch(e) { updateAuthNavBtn(); }
+})();
+</script>
+
 </body>
 </html>

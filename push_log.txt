@@ -1,0 +1,14 @@
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	fix-and-push.bat
+	push_log.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+Everything up-to-date
+EXIT_CODE=0 
+c281839 fix: CA undefined headline/detail - support both title/summary and headline/detail formats
+1d9ace5 fix: restore missing showToast and showError functions
+79b600d fix: restore truncated Index.html - close getCatColors and script
