@@ -191,6 +191,13 @@ input[type=text],input[type=date],select,textarea{
   border:1px solid var(--border);background:var(--bg);color:var(--text);width:100%;}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);}
 textarea{resize:vertical;min-height:70px;}
+.ca-filter-btn{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text2);}
+.ca-filter-btn:hover{background:var(--bg2);}
+.ca-filter-btn.ca-filter-on{background:var(--blue-light);border-color:var(--blue);color:var(--blue-dark);font-weight:500;}
+.ca-day-btn{width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--border);padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.ca-day-btn:hover{background:var(--bg);}
+.ca-day-btn.ca-day-active{background:var(--blue-light);border-left:3px solid var(--blue);}
+.ca-day-btn.ca-day-active .ca-day-label{color:var(--blue-dark);font-weight:500;}
 .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
 .filter-bar select{width:auto;font-size:12px;padding:6px 8px;}
 
@@ -1402,29 +1409,43 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
 <!-- ══ CURRENT AFFAIRS TAB ═══════════════════════════════════ -->
 <div class="tab" id="tab-ca">
-  <div class="today-banner">
-    <i class="ti ti-news" aria-hidden="true"></i>
-    <div>
-      <div style="font-weight:500;font-size:13px;">Today's Current Affairs — <span id="caTodayDate"></span></div>
-      <div style="font-size:12px;color:var(--pink-dark);">Highlighted by admin • <span id="caTodayCount">—</span> items today</div>
+  <!-- CA Portal: two-panel layout -->
+  <div style="display:flex;gap:0;height:calc(100vh - 160px);min-height:480px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--card-bg);">
+
+    <!-- LEFT SIDEBAR: day list -->
+    <div style="width:170px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg2);">
+      <div style="padding:10px 14px 8px;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);">By date</div>
+      <div id="caDayList"><div class="loading" style="padding:20px 14px;font-size:12px;"><i class="ti ti-loader"></i> Loading...</div></div>
+    </div>
+
+    <!-- RIGHT PANEL: stories for selected day -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      <!-- Panel header -->
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0;">
+        <div>
+          <div style="font-size:14px;font-weight:500;color:var(--text);" id="caPanelTitle">Current affairs</div>
+          <div style="font-size:11px;color:var(--text3);" id="caPanelSub">Select a date from the sidebar</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="caFilterRow">
+          <button class="ca-filter-btn ca-filter-on" onclick="setCaFilter('all',this)">All</button>
+          <button class="ca-filter-btn" onclick="setCaFilter('Polity',this)">Polity</button>
+          <button class="ca-filter-btn" onclick="setCaFilter('Economy',this)">Economy</button>
+          <button class="ca-filter-btn" onclick="setCaFilter('UP Special',this)">UP Special</button>
+          <button class="ca-filter-btn" onclick="setCaFilter('Science',this)">Science</button>
+          <button class="ca-filter-btn" onclick="setCaFilter('Environment',this)">Environment</button>
+          <input type="text" id="ca-search" placeholder="Search…" oninput="debounceCA()"
+            style="font-size:12px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg2);color:var(--text);width:130px;">
+        </div>
+      </div>
+      <!-- Story cards -->
+      <div style="flex:1;overflow-y:auto;padding:14px 16px;" id="caFeed">
+        <div style="text-align:center;padding:60px 20px;color:var(--text3);font-size:13px;">
+          <i class="ti ti-calendar" style="font-size:32px;display:block;margin-bottom:10px;" aria-hidden="true"></i>
+          Select a date from the left to see stories
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="filter-bar">
-    <select id="ca-cat" onchange="loadCA()">
-      <option value="all">All categories</option>
-      <option>Polity</option><option>International</option><option>Economy</option>
-      <option>Science</option><option>UP Special</option><option>Awards</option>
-      <option>Environment</option><option>Defence</option><option>Sports</option>
-    </select>
-    <input type="text" id="ca-search" placeholder="Search CA..." style="width:200px;font-size:12px;"
-      oninput="debounceCA()">
-    <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);cursor:pointer;">
-      <input type="checkbox" id="ca-bookmarked" onchange="loadCA()"> Bookmarked only
-    </label>
-  </div>
-
-  <div id="caFeed"><div class="loading"><i class="ti ti-loader"></i>Loading current affairs...</div></div>
 </div>
 
 <!-- ══ UPPSC DAILY NEWS TAB ══════════════════════════════════ -->
@@ -3982,82 +4003,154 @@ function endQuiz() {
 // ══════════════════════════════════════════════════════════════
 // CURRENT AFFAIRS
 // ══════════════════════════════════════════════════════════════
-function loadCA() {
-  const cat        = document.getElementById("ca-cat").value;
-  const search     = document.getElementById("ca-search").value;
-  const bkOnly     = document.getElementById("ca-bookmarked").checked;
-  document.getElementById("caFeed").innerHTML =
-    `<div class="loading"><i class="ti ti-loader"></i>Loading...</div>`;
+// ── CA state ──────────────────────────────────────────────────
+let caAllItems   = [];   // all loaded items
+let caActiveDate = null; // selected date string e.g. "24 Jun 2026"
+let caActiveFilter = 'all';
 
+function loadCA() {
+  document.getElementById("caDayList").innerHTML =
+    '<div class="loading" style="padding:20px 14px;font-size:12px;"><i class="ti ti-loader"></i> Loading...</div>';
   google.script.run
-    .withSuccessHandler(items => renderCA(items, bkOnly))
+    .withSuccessHandler(items => { caAllItems = items || []; buildCASidebar(); })
     .withFailureHandler(showError)
-    .getCurrentAffairs({ category: cat, search: search });
+    .getCurrentAffairs({ limit: 300 });
 }
 
 function debounceCA() {
   clearTimeout(caDebounce);
-  caDebounce = setTimeout(loadCA, 400);
+  caDebounce = setTimeout(renderCAPanel, 300);
 }
 
-function renderCA(items, bkOnly) {
-  const el = document.getElementById("caFeed");
-  if (!items || items.length === 0) {
-    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);">
-      No current affairs found. Admin needs to add some!</div>`;
+function buildCASidebar() {
+  // Group items by date
+  const dateMap = {};
+  caAllItems.forEach(item => {
+    const key = item.date || 'Unknown';
+    if (!dateMap[key]) dateMap[key] = [];
+    dateMap[key].push(item);
+  });
+
+  // Sort dates newest first
+  const dates = Object.keys(dateMap).sort((a, b) => {
+    const da = new Date(a), db = new Date(b);
+    return isNaN(da) || isNaN(db) ? b.localeCompare(a) : db - da;
+  });
+
+  window._caDateMap = dateMap;
+
+  if (dates.length === 0) {
+    document.getElementById("caDayList").innerHTML =
+      '<div style="padding:16px 14px;font-size:12px;color:var(--text3);">No items yet.<br>Add via Admin tab.</div>';
     return;
   }
 
-  if (bkOnly) items = items.filter(item => caBookmarks.includes(item.headline));
+  // Default: select most recent date
+  if (!caActiveDate || !dateMap[caActiveDate]) caActiveDate = dates[0];
 
-  const catColors = getCatColors();
-  const todayStr  = new Date().toDateString();
-  let   lastDate  = null;
-  let   html      = "";
+  const todayStr = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 
-  items.forEach(item => {
-    const d       = new Date(item.date);
-    const dateStr = d.toDateString();
-    if (dateStr !== lastDate) {
-      const label = dateStr === todayStr ? "Today" : item.date;
-      html += `<div class="date-divider">${label}</div>`;
-      lastDate = dateStr;
-    }
-    const isBookmarked = caBookmarks.includes(item.headline);
-    const relBadge = item.relevance === "High"
-      ? `<span class="badge badge-teal">High relevance</span>`
-      : item.relevance === "Medium"
-      ? `<span class="badge badge-amber">Medium relevance</span>`
-      : `<span class="badge badge-gray">Low relevance</span>`;
-    const mcqHtml = item.mcq
-      ? `<span class="ca-mcq"><i class="ti ti-bulb" aria-hidden="true"></i> ${item.mcq}</span>` : "";
+  document.getElementById("caDayList").innerHTML = dates.map(d => {
+    const count   = dateMap[d].length;
+    const isToday = d === todayStr;
+    const isActive = d === caActiveDate;
+    return `<button class="ca-day-btn${isActive?' ca-day-active':''}" onclick="selectCADay('${d.replace(/'/g,"\'")}')">
+      <div>
+        <div class="ca-day-label" style="font-size:12px;color:var(--text);">${isToday?'Today':d}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px;">${count} stor${count===1?'y':'ies'}</div>
+      </div>
+      <span style="font-size:10px;background:var(--bg3);color:var(--text3);padding:1px 6px;border-radius:20px;">${count}</span>
+    </button>`;
+  }).join('');
 
-    html += `
-      <div class="ca-item">
-        <div class="ca-item-header">
-          <div class="ca-item-body">
-            <div style="display:flex;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
-              <span class="badge" style="background:${catColors[item.category]||"var(--bg3)"};
-                color:${catColors[item.category+"T"]||"var(--text2)"};">${item.category}</span>
-              ${relBadge}
-            </div>
-            <div class="ca-headline">${item.headline}</div>
-            <div class="ca-detail">${item.detail||""}</div>
-            <div class="ca-footer">
-              ${item.source ? `<span class="ca-source"><i class="ti ti-link" aria-hidden="true"></i> ${item.source}</span>` : ""}
-              ${mcqHtml}
-            </div>
-          </div>
-          <button class="bookmark-btn ${isBookmarked?"active":""}"
-            onclick="toggleBookmark('${item.headline.replace(/'/g,"&#39;")}')"
-            aria-label="${isBookmarked?"Remove bookmark":"Bookmark"}">
-            <i class="ti ti-bookmark${isBookmarked?"-filled":""}" aria-hidden="true"></i>
-          </button>
-        </div>
-      </div>`;
+  renderCAPanel();
+
+  // Update today banner count
+  const todayItems = dateMap[todayStr] || [];
+  const todayCountEl = document.getElementById("caTodayCount");
+  if (todayCountEl) todayCountEl.textContent = todayItems.length;
+  const todayDateEl = document.getElementById("caTodayDate");
+  if (todayDateEl) todayDateEl.textContent = todayStr;
+}
+
+function selectCADay(date) {
+  caActiveDate = date;
+  // Update sidebar active state
+  document.querySelectorAll('.ca-day-btn').forEach(btn => {
+    const isActive = btn.textContent.trim().startsWith(date) ||
+      (date === new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) && btn.textContent.includes('Today'));
+    btn.classList.toggle('ca-day-active', false);
   });
+  // Re-render sidebar to update active
+  buildCASidebar();
+}
 
-  el.innerHTML = html;
+function setCaFilter(f, btn) {
+  caActiveFilter = f;
+  document.querySelectorAll('.ca-filter-btn').forEach(b => b.classList.remove('ca-filter-on'));
+  btn.classList.add('ca-filter-on');
+  renderCAPanel();
+}
+
+function renderCAPanel() {
+  const el       = document.getElementById("caFeed");
+  const dateMap  = window._caDateMap || {};
+  const search   = (document.getElementById("ca-search")?.value || '').toLowerCase();
+  let   items    = dateMap[caActiveDate] || [];
+
+  if (caActiveFilter !== 'all') items = items.filter(i => i.category === caActiveFilter);
+  if (search) items = items.filter(i =>
+    (i.headline||'').toLowerCase().includes(search) ||
+    (i.detail||'').toLowerCase().includes(search));
+
+  // Update panel header
+  const todayStr = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  document.getElementById("caPanelTitle").textContent =
+    caActiveDate === todayStr ? "Today's current affairs" : `Current affairs — ${caActiveDate}`;
+  document.getElementById("caPanelSub").textContent =
+    `${caActiveDate} · ${items.length} stor${items.length===1?'y':'ies'}`;
+
+  if (!caActiveDate) { el.innerHTML = ''; return; }
+  if (items.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:50px 20px;color:var(--text3);font-size:13px;">
+      <i class="ti ti-search" style="font-size:28px;display:block;margin-bottom:8px;" aria-hidden="true"></i>
+      No stories${caActiveFilter!=='all'?' in this category':''} for ${caActiveDate}</div>`;
+    return;
+  }
+
+  const relColor = { High:'var(--teal)', Medium:'var(--amber)', Low:'var(--text3)' };
+  const catColors = getCatColors();
+
+  el.innerHTML = items.map(item => {
+    const isBookmarked = caBookmarks.includes(item.headline);
+    const mcqHtml = item.mcq
+      ? `<div style="margin-top:8px;padding:7px 10px;background:var(--bg2);border-radius:6px;
+          border-left:3px solid var(--blue);font-size:12px;color:var(--text2);">
+          <i class="ti ti-bulb" aria-hidden="true" style="color:var(--amber);"></i> ${item.mcq}</div>` : '';
+    const relDot = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;
+      background:${relColor[item.relevance]||'var(--text3)'};margin-right:4px;vertical-align:middle;"></span>${item.relevance||''} relevance`;
+
+    return `<div class="ca-item" style="margin-bottom:12px;">
+      <div class="ca-item-header">
+        <div class="ca-item-body" style="flex:1;">
+          <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center;">
+            <span class="badge" style="background:${catColors[item.category]||'var(--bg3)'};
+              color:${catColors[item.category+'T']||'var(--text2)'};">${item.category||''}</span>
+            <span style="font-size:11px;color:var(--text3);">${relDot}</span>
+            ${item.source ? `<span style="font-size:11px;color:var(--text3);">· <i class="ti ti-link" aria-hidden="true"></i> ${item.source}</span>` : ''}
+          </div>
+          <div class="ca-headline">${item.headline}</div>
+          <div class="ca-detail" style="margin-top:5px;">${item.detail||''}</div>
+          ${mcqHtml}
+        </div>
+        <button class="bookmark-btn ${isBookmarked?'active':''}"
+          onclick="toggleBookmark('${item.headline.replace(/'/g,"&#39;")}')"
+          aria-label="${isBookmarked?'Remove bookmark':'Bookmark'}">
+          <i class="ti ti-bookmark${isBookmarked?'-filled':''}" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function toggleBookmark(headline) {
@@ -4065,7 +4158,7 @@ function toggleBookmark(headline) {
   if (idx === -1) caBookmarks.push(headline);
   else            caBookmarks.splice(idx, 1);
   localStorage.setItem("caBookmarks", JSON.stringify(caBookmarks));
-  loadCA();
+  renderCAPanel();
   showToast(idx === -1 ? "Bookmarked!" : "Bookmark removed");
 }
 
@@ -5052,24 +5145,4 @@ function getCatColors() {
     "Economy":         "#FAEEDA", "EconomyT":         "#412402",
     "Science":         "#EAF3DE", "ScienceT":         "#173404",
     "UP Special":      "#FAECE7", "UP SpecialT":      "#4A1B0C",
-    "Awards":          "#EEEDFE", "AwardsT":          "#26215C",
-    "Environment":     "#E1F5EE", "EnvironmentT":     "#085041",
-    "Defence":         "#FCEBEB", "DefenceT":         "#501313",
-    "Sports":          "#FAEEDA", "SportsT":          "#412402",
-  };
-}
-
-function showToast(msg, duration=2500) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), duration);
-}
-
-function showError(e) {
-  console.error(e);
-  showToast("Error: " + (e.message || e), 4000);
-}
-</script>
-</body>
-</html>
+   
