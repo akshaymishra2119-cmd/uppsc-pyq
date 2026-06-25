@@ -49,6 +49,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all 0.15s;font-weight:500;}
 .nav-btn:hover{color:#1a1a2e;background:#F9FAFB;}
 .nav-btn.active{color:#2563EB;border-bottom-color:#2563EB;font-weight:700;}
+.nav-btn.nav-teal.active{color:#1D9E75;border-bottom-color:#1D9E75;}
+.nav-btn.nav-amber.active{color:#b06d00;border-bottom-color:#EF9F27;}
 .nav-btn.admin-btn{margin-left:auto;color:#9CA3AF;}
 .nav-btn.admin-btn.active{color:#EF4444;border-bottom-color:#EF4444;}
 
@@ -193,10 +195,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);}
 textarea{resize:vertical;min-height:70px;}
 .ca-filter-btn{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text2);}
 .ca-filter-btn:hover{background:var(--bg2);}
-.ca-filter-btn.ca-filter-on{background:var(--blue-light);border-color:var(--blue);color:var(--blue-dark);font-weight:500;}
+.ca-filter-btn.ca-filter-on{background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);font-weight:500;}
 .ca-day-btn{width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--border);padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
 .ca-day-btn:hover{background:var(--bg);}
-.ca-day-btn.ca-day-active{background:var(--blue-light);border-left:3px solid var(--blue);}
+.ca-day-btn.ca-day-active{background:var(--teal-light);border-left:3px solid var(--teal);}
 .ca-day-btn.ca-day-active .ca-day-label{color:var(--blue-dark);font-weight:500;}
 .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
 .filter-bar select{width:auto;font-size:12px;padding:6px 8px;}
@@ -334,8 +336,8 @@ textarea{resize:vertical;min-height:70px;}
   border:1px solid var(--pink);border-radius:var(--radius-lg);padding:10px 14px;
   margin-bottom:12px;display:flex;align-items:center;gap:10px;}
 .today-banner i{color:var(--pink);font-size:20px;}
-.dq-count-btn:hover{border-color:var(--teal)!important;color:var(--teal)!important;background:var(--teal-light)!important;}
-.dq-count-btn.selected{border-color:var(--teal)!important;background:var(--teal)!important;color:#fff!important;}
+.dq-count-btn:hover{border-color:#2563EB!important;color:#2563EB!important;background:#E6F1FB!important;}
+.dq-count-btn.selected{border-color:#2563EB!important;background:#2563EB!important;color:#fff!important;}
 .dq-dot{width:14px;height:14px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);flex-shrink:0;transition:background 0.2s;}
 .dq-dot.correct{background:var(--teal);}
 .dq-dot.wrong{background:var(--red);}
@@ -1006,16 +1008,16 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn active" onclick="showTab('home',this)">
     <i class="ti ti-home" aria-hidden="true"></i> Home
   </button>
-  <button class="nav-btn" onclick="showTab('pyq',this)">
+  <button class="nav-btn nav-blue" onclick="showTab('pyq',this)">
     <i class="ti ti-books" aria-hidden="true"></i> PYQ Practice
   </button>
-  <button class="nav-btn" onclick="showTab('ca',this)">
+  <button class="nav-btn nav-teal" onclick="showTab('ca',this)">
     <i class="ti ti-news" aria-hidden="true"></i> Current Affairs
   </button>
-  <button class="nav-btn" onclick="showTab('uppsc-news',this)">
+  <button class="nav-btn nav-amber" onclick="showTab('uppsc-news',this)">
     <i class="ti ti-map-pin" aria-hidden="true"></i> UPPSC Daily News
   </button>
-  <button class="nav-btn" onclick="showTab('daily-quiz',this)">
+  <button class="nav-btn nav-blue" onclick="showTab('daily-quiz',this)">
     <i class="ti ti-bolt" aria-hidden="true"></i> Daily Quiz
   </button>
   <button class="nav-btn" onclick="showTab('progress',this)">
@@ -1388,6 +1390,13 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
 <!-- ══ PYQ PRACTICE TAB ══════════════════════════════════════ -->
 <div class="tab" id="tab-pyq">
+<div class="today-banner" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;margin-bottom:14px;">
+  <i class="ti ti-books" style="font-size:22px;color:#bfdbfe;"></i>
+  <div>
+    <div style="font-weight:700;font-size:13px;">PYQ Practice</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.75);">Previous Year Questions • Filter by Subject</div>
+  </div>
+</div>
 <div class="pyq-shell">
 
   <!-- ── Subject Sidebar ──────────────────────────── -->
@@ -1704,9 +1713,9 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       white-space: nowrap;
     }
     .ca-date-chip.ca-chip-active {
-      background: var(--blue-light);
-      border-color: var(--blue);
-      color: var(--blue-dark);
+      background: var(--teal-light);
+      border-color: var(--teal);
+      color: var(--teal-dark);
       font-weight: 600;
     }
     /* Right panel */
@@ -1761,6 +1770,14 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     }
   </style>
 
+  <div class="today-banner" style="background:linear-gradient(135deg,#054535,#1D9E75);color:#fff;margin-bottom:12px;">
+    <i class="ti ti-news" style="font-size:22px;color:#a7f3d0;"></i>
+    <div>
+      <div style="font-weight:700;font-size:13px;">Current Affairs</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.75);">National &amp; International • Daily Updates</div>
+    </div>
+  </div>
+
   <div class="ca-shell">
 
     <!-- LEFT SIDEBAR (desktop only) -->
@@ -1805,8 +1822,8 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
 <!-- ══ UPPSC DAILY NEWS TAB ══════════════════════════════════ -->
 <div class="tab" id="tab-uppsc-news">
-  <div class="today-banner" style="background:linear-gradient(135deg,#0d2b5e,#1a4a8a);color:#fff;">
-    <i class="ti ti-map-pin" aria-hidden="true" style="font-size:22px;color:#c9a84c;"></i>
+  <div class="today-banner" style="background:linear-gradient(135deg,#5C3200,#b06d00);color:#fff;">
+    <i class="ti ti-map-pin" aria-hidden="true" style="font-size:22px;color:#ffe066;"></i>
     <div>
       <div style="font-weight:600;font-size:13px;">UPPSC Daily News — <span id="uppscTodayDate"></span></div>
       <div style="font-size:12px;color:rgba(255,255,255,0.7);">UP State Current Affairs • <span id="uppscTodayCount">—</span> items today</div>
@@ -1841,7 +1858,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
   <!-- SETUP SCREEN -->
   <div id="dq-setup">
-    <div class="today-banner" style="background:linear-gradient(135deg,#1D9E75,#085041);color:#fff;margin-bottom:16px;">
+    <div class="today-banner" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;margin-bottom:16px;">
       <i class="ti ti-bolt" style="font-size:26px;color:#ffe066;"></i>
       <div>
         <div style="font-weight:700;font-size:15px;">Daily Quiz</div>
@@ -1850,7 +1867,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     </div>
 
     <div class="card" style="max-width:540px;margin:0 auto;">
-      <div class="card-title" style="font-size:14px;"><i class="ti ti-list-numbers" style="color:var(--teal);"></i> How many questions?</div>
+      <div class="card-title" style="font-size:14px;"><i class="ti ti-list-numbers" style="color:#2563EB;"></i> How many questions?</div>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;" id="dq-count-grid">
         <button class="dq-count-btn" onclick="selectDQCount(10,this)" style="padding:18px 0;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;background:var(--bg2);cursor:pointer;transition:all 0.15s;color:var(--text);">10</button>
         <button class="dq-count-btn" onclick="selectDQCount(20,this)" style="padding:18px 0;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:10px;background:var(--bg2);cursor:pointer;transition:all 0.15s;color:var(--text);">20</button>
