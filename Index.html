@@ -201,6 +201,56 @@ textarea{resize:vertical;min-height:70px;}
 .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
 .filter-bar select{width:auto;font-size:12px;padding:6px 8px;}
 
+/* ── PYQ SHELL (sidebar + main) ─────────────── */
+.pyq-shell{display:flex;gap:0;align-items:flex-start;}
+.pyq-sidebar{
+  width:148px;flex-shrink:0;
+  position:sticky;top:60px;max-height:calc(100vh - 80px);
+  overflow-y:auto;padding:4px 8px 16px 0;
+  border-right:1px solid var(--border);margin-right:14px;
+}
+.pyq-sidebar::-webkit-scrollbar{width:3px;}
+.pyq-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.pyq-sidebar-label{font-size:10px;font-weight:700;color:var(--text3);
+  letter-spacing:.8px;text-transform:uppercase;padding:8px 0 6px;}
+.pyq-subj-btn{
+  display:flex;align-items:center;gap:7px;width:100%;
+  padding:8px 10px;margin-bottom:3px;border-radius:8px;
+  border:none;background:transparent;cursor:pointer;
+  font-size:12.5px;color:var(--text2);text-align:left;
+  transition:background 0.12s,color 0.12s;
+  position:relative;
+}
+.pyq-subj-btn:hover{background:var(--bg3);color:var(--text);}
+.pyq-subj-btn.active{
+  background:var(--blue-light,#EBF4FF);color:var(--blue-dark,#1D4ED8);
+  font-weight:700;
+}
+.pyq-subj-btn.active::before{
+  content:'';position:absolute;left:0;top:20%;bottom:20%;
+  width:3px;border-radius:0 3px 3px 0;background:var(--blue);
+}
+.pyq-subj-icon{font-size:15px;flex-shrink:0;line-height:1;}
+.pyq-subj-count{margin-left:auto;font-size:10px;font-weight:600;
+  background:var(--bg3);border-radius:10px;padding:1px 6px;
+  color:var(--text3);flex-shrink:0;}
+.pyq-subj-btn.active .pyq-subj-count{
+  background:var(--blue);color:#fff;}
+.pyq-main{flex:1;min-width:0;}
+
+@media(max-width:640px){
+  .pyq-shell{flex-direction:column;}
+  .pyq-sidebar{
+    width:100%;position:static;max-height:none;
+    border-right:none;border-bottom:1px solid var(--border);
+    margin-right:0;margin-bottom:10px;padding:4px 0 10px;
+    display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;
+  }
+  .pyq-sidebar-label{width:100%;padding:4px 0 4px;}
+  .pyq-subj-btn{width:auto;padding:5px 10px;font-size:11px;}
+  .pyq-subj-btn.active::before{display:none;}
+}
+
 /* ── QUESTION CARD ────────────────────────────── */
 .q-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
   padding:16px;margin-bottom:10px;}
@@ -1250,10 +1300,59 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
 <!-- ══ PYQ PRACTICE TAB ══════════════════════════════════════ -->
 <div class="tab" id="tab-pyq">
+<div class="pyq-shell">
+
+  <!-- ── Subject Sidebar ──────────────────────────── -->
+  <div class="pyq-sidebar" id="pyqSidebar">
+    <div class="pyq-sidebar-label">Subjects</div>
+    <button class="pyq-subj-btn active" id="pyq-subj-all" onclick="selectPyqSubject('all',this)">
+      <span class="pyq-subj-icon">📋</span>All
+      <span class="pyq-subj-count" id="pyq-cnt-all">449</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Geography" onclick="selectPyqSubject('Geography',this)">
+      <span class="pyq-subj-icon">🗺️</span>Geography
+      <span class="pyq-subj-count" id="pyq-cnt-Geography">91</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Modern History" onclick="selectPyqSubject('Modern History',this)">
+      <span class="pyq-subj-icon">📜</span>Modern History
+      <span class="pyq-subj-count" id="pyq-cnt-Modern History">75</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Economy" onclick="selectPyqSubject('Economy',this)">
+      <span class="pyq-subj-icon">💰</span>Economy
+      <span class="pyq-subj-count" id="pyq-cnt-Economy">69</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Polity" onclick="selectPyqSubject('Polity',this)">
+      <span class="pyq-subj-icon">⚖️</span>Polity
+      <span class="pyq-subj-count" id="pyq-cnt-Polity">60</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Current Affairs" onclick="selectPyqSubject('Current Affairs',this)">
+      <span class="pyq-subj-icon">📰</span>Current Affairs
+      <span class="pyq-subj-count" id="pyq-cnt-Current Affairs">53</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Science" onclick="selectPyqSubject('Science',this)">
+      <span class="pyq-subj-icon">🔬</span>Science
+      <span class="pyq-subj-count" id="pyq-cnt-Science">44</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Environment" onclick="selectPyqSubject('Environment',this)">
+      <span class="pyq-subj-icon">🌿</span>Environment
+      <span class="pyq-subj-count" id="pyq-cnt-Environment">38</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Ancient History" onclick="selectPyqSubject('Ancient History',this)">
+      <span class="pyq-subj-icon">🏺</span>Ancient History
+      <span class="pyq-subj-count" id="pyq-cnt-Ancient History">10</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-UP Special" onclick="selectPyqSubject('UP Special',this)">
+      <span class="pyq-subj-icon">🏙️</span>UP Special
+      <span class="pyq-subj-count" id="pyq-cnt-UP Special">9</span>
+    </button>
+  </div>
+
+  <!-- ── Main PYQ Content ─────────────────────────── -->
+  <div class="pyq-main">
 
   <!-- ── Filter bar ───────────────────────────────── -->
   <div class="filter-bar" id="filterBar">
-    <select id="f-subject" onchange="applyFilters()">
+    <select id="f-subject" onchange="selectPyqSubject(this.value,null)">
       <option value="all">All subjects</option>
       <option>Polity</option><option>Modern History</option><option>Ancient History</option>
       <option>Geography</option><option>Economy</option><option>Science</option>
@@ -1334,7 +1433,10 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <div id="timerBar" style="display:none;"></div>
   <div id="qNav"     style="display:none;"></div>
   <span id="qCounter"></span><span id="liveScore"></span><div id="timerDisp"></div>
-</div>
+
+  </div><!-- /pyq-main -->
+</div><!-- /pyq-shell -->
+</div><!-- /tab-pyq -->
 
 <!-- ══ MOCK TEST SETUP MODAL ═════════════════════════════════ -->
 <div id="mockModal" class="mock-overlay" style="display:none;" onclick="if(event.target===this)closeMockModal()">
@@ -1724,6 +1826,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       <div style="margin-top:16px;font-size:11px;color:var(--text3);">Already have an account? <a href="#" onclick="openAuthModal('login');return false;" style="color:#6366f1;">Login here</a></div>
     </div>
   </div>
+  <div id="timelineContent"></div>
   <div id="progressContent"><div class="loading"><i class="ti ti-loader"></i>Loading your progress...</div></div>
 </div>
 
@@ -3030,6 +3133,7 @@ function loadQuestions() {
       allQuestions = data;
       filteredQ    = [...data];
       renderQuestions();
+      updatePyqSidebarCounts();
       renderAnswerDistHome(allQuestions);
       renderStatementAnalysis(allQuestions);
       renderWeightTrend(allQuestions);
@@ -3074,6 +3178,37 @@ function clearDrill() {
   const ind = document.getElementById('drill-indicator');
   if (ind) ind.remove();
   applyFilters();
+}
+
+function selectPyqSubject(subject, btn) {
+  // Update dropdown
+  const sel = document.getElementById("f-subject");
+  if (sel) sel.value = subject;
+  // Update active state on sidebar buttons
+  document.querySelectorAll('.pyq-subj-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const id = subject === 'all' ? 'pyq-subj-all' : 'pyq-subj-' + subject;
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+  }
+  applyFilters();
+}
+
+function updatePyqSidebarCounts() {
+  // Recount after any chip filter changes
+  const counts = { all: 0 };
+  ['Geography','Modern History','Economy','Polity','Current Affairs','Science','Environment','Ancient History','UP Special']
+    .forEach(s => counts[s] = 0);
+  (typeof allQuestions !== 'undefined' ? allQuestions : []).forEach(q => {
+    counts.all++;
+    if (counts[q.subject] !== undefined) counts[q.subject]++;
+    else counts[q.subject] = 1;
+  });
+  Object.entries(counts).forEach(([s, c]) => {
+    const el = document.getElementById('pyq-cnt-' + s);
+    if (el) el.textContent = c;
+  });
 }
 
 function applyFilters() {
@@ -4279,8 +4414,8 @@ function renderCAPanel() {
 
   if (caActiveFilter !== 'all') items = items.filter(i => i.category === caActiveFilter);
   if (search) items = items.filter(i =>
-    (i.headline||'').toLowerCase().includes(search) ||
-    (i.detail||'').toLowerCase().includes(search));
+    (i.headline||i.title||'').toLowerCase().includes(search) ||
+    (i.detail||i.summary||'').toLowerCase().includes(search));
 
   // Update panel header
   const todayStr = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
@@ -4356,18 +4491,33 @@ function loadProgress() {
   }
   if (prompt) prompt.style.display = "none";
   if (content) content.style.display = "";
-  content.innerHTML = `<div class="loading"><i class="ti ti-loader"></i>Loading your progress...</div>`;
+  const timeline = document.getElementById("timelineContent");
+
+  // If timeline already rendered, just refresh data silently (don't flash loading)
+  const alreadyRendered = timeline && timeline.querySelector('.tl-outer');
+  if (!alreadyRendered) {
+    if (timeline) timeline.innerHTML = `<div class="loading"><i class="ti ti-loader"></i>Loading timeline...</div>`;
+    content.innerHTML = `<div class="loading"><i class="ti ti-loader"></i>Loading your progress...</div>`;
+  }
   renderHeatmap();
 
-  // Load server-side stats first (real tracked data)
+  // Load server-side stats (real tracked data) — skip Google script when logged in
   fetch('/api/myStats')
     .then(r => r.json())
     .then(data => {
-      if (!data.error) renderServerProgress(data);
+      if (!data.error) {
+        renderServerProgress(data);
+        // Only fall back to Google Apps Script if no server data
+        return;
+      }
+      // No server data — use Google Apps Script fallback
+      google.script.run
+        .withSuccessHandler(prog => renderProgress(prog))
+        .withFailureHandler(() => {})
+        .getUserProgress(userName);
     })
-    .catch(() => {})
-    .finally(() => {
-      // Also load Google Apps Script progress (subject bars etc.)
+    .catch(() => {
+      // Fetch failed — use Google Apps Script fallback
       google.script.run
         .withSuccessHandler(prog => renderProgress(prog))
         .withFailureHandler(() => {})
@@ -4376,7 +4526,7 @@ function loadProgress() {
 }
 
 function renderServerProgress(data) {
-  const el = document.getElementById("progressContent");
+  const el = document.getElementById("timelineContent");
   const todayData     = data.today     || {};
   const yesterdayData = data.yesterday || {};
 
@@ -4525,6 +4675,15 @@ function renderServerProgress(data) {
 
   // Store dayMap for click handler
   window._tlDayMap = dayMap;
+
+  // Append local analytics below the timeline (into progressContent)
+  const pcEl = document.getElementById("progressContent");
+  if (pcEl) {
+    pcEl.innerHTML = '';
+    renderWeakTopicHeatmap();
+    renderSpacedRepeatDue();
+    renderDailyActivityLog();
+  }
 }
 
 function tlSelectDay(day) {
