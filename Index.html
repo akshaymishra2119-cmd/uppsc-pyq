@@ -4567,14 +4567,19 @@ function buildCASidebar() {
   // Build mobile date chip strip
   const strip = document.getElementById("caDateStrip");
   if (strip) {
-    strip.innerHTML = dates.map(d => {
-      const count = dateMap[d].length;
-      const isToday = d === todayStr;
-      const isActive = d === caActiveDate;
-      return `<button class="ca-date-chip${isActive?' ca-chip-active':''}" onclick="selectCADay('${d.replace(/'/g,"\\'")}')">
-        ${isToday?'Today':d} <span style="opacity:.6;">(${count})</span>
-      </button>`;
-    }).join('');
+    const allActiveChip = caActiveDate === 'all';
+    strip.innerHTML =
+      `<button class="ca-date-chip${allActiveChip?' ca-chip-active':''}" onclick="selectCADay('all')">
+        All <span style="opacity:.6;">(${totalCA})</span>
+      </button>` +
+      dates.map(d => {
+        const count = dateMap[d].length;
+        const isToday = d === todayStr;
+        const isActive = d === caActiveDate;
+        return `<button class="ca-date-chip${isActive?' ca-chip-active':''}" onclick="selectCADay('${d.replace(/'/g,"\\'")}')">
+          ${isToday?'Today':d} <span style="opacity:.6;">(${count})</span>
+        </button>`;
+      }).join('');
   }
 
   renderCAPanel();
