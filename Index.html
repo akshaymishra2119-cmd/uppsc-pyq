@@ -1498,23 +1498,8 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <span class="chip chip-amber" id="chip-repeat" onclick="toggleChip('repeat')">
       <i class="ti ti-repeat"></i> Repeating Topics
     </span>
-    <span class="chip chip-red" id="chip-hipri" onclick="toggleChip('hipri')" title="Questions that appeared in all 3 years">
-      <i class="ti ti-star-filled"></i> High Priority
-    </span>
-    <span class="chip chip-red" id="chip-notdone" onclick="toggleChip('notdone')">
-      <i class="ti ti-circle-dashed"></i> Not Attempted
-    </span>
     <span class="chip chip-gold" id="chip-bookmarked" onclick="toggleChip('bookmarked')">
       <i class="ti ti-bookmark"></i> Bookmarked
-    </span>
-    <span class="chip" id="chip-anspat" onclick="toggleAnsPanel()" title="See A/B/C/D and Both/Combo breakdown for filtered questions">
-      <i class="ti ti-chart-donut"></i> Answer Pattern
-    </span>
-    <span class="chip chip-red" id="chip-kwhl" onclick="toggleKeywordHighlight()" title="Highlight danger words: NOT, EXCEPT, INCORRECT…">
-      <i class="ti ti-highlight"></i> Highlight Keywords
-    </span>
-    <span class="chip" id="chip-cluster" onclick="toggleClusterView()" title="Group questions by concept">
-      <i class="ti ti-layout-grid"></i> Cluster View
     </span>
   </div>
 
@@ -1824,15 +1809,9 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
           <div style="font-size:14px;font-weight:500;color:var(--text);" id="caPanelTitle">Current affairs</div>
           <div style="font-size:11px;color:var(--text3);" id="caPanelSub">Select a date from the sidebar</div>
         </div>
-        <div class="ca-filter-row" id="caFilterRow">
-          <button class="ca-filter-btn ca-filter-on" onclick="setCaFilter('all',this)">All</button>
-          <button class="ca-filter-btn" onclick="setCaFilter('Polity',this)">Polity</button>
-          <button class="ca-filter-btn" onclick="setCaFilter('Economy',this)">Economy</button>
-          <button class="ca-filter-btn" onclick="setCaFilter('UP Special',this)">UP Special</button>
-          <button class="ca-filter-btn" onclick="setCaFilter('Science',this)">Science</button>
-          <button class="ca-filter-btn" onclick="setCaFilter('Environment',this)">Environment</button>
+        <div style="display:flex;align-items:center;">
           <input type="text" id="ca-search" placeholder="Search…" oninput="debounceCA()"
-            style="font-size:12px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg2);color:var(--text);width:130px;">
+            style="font-size:12px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg2);color:var(--text);width:150px;">
         </div>
       </div>
 
