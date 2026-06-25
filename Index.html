@@ -4546,7 +4546,17 @@ function buildCASidebar() {
 
   const todayStr = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 
-  document.getElementById("caDayList").innerHTML = dates.map(d => {
+  const totalCA = caAllItems.length;
+  const allActive = caActiveDate === 'all';
+  document.getElementById("caDayList").innerHTML =
+    `<button class="ca-day-btn${allActive?' ca-day-active':''}" onclick="selectCADay('all')">
+      <div>
+        <div class="ca-day-label" style="font-size:12px;font-weight:600;color:var(--text);">All</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px;">${totalCA} stories</div>
+      </div>
+      <span style="font-size:10px;background:var(--bg3);color:var(--text3);padding:1px 6px;border-radius:20px;">${totalCA}</span>
+    </button>` +
+  dates.map(d => {
     const count   = dateMap[d].length;
     const isToday = d === todayStr;
     const isActive = d === caActiveDate;
@@ -4599,33 +4609,38 @@ function renderCAPanel() {
   const el       = document.getElementById("caFeed");
   const dateMap  = window._caDateMap || {};
   const search   = (document.getElementById("ca-search")?.value || '').toLowerCase();
-  let   items    = dateMap[caActiveDate] || [];
+  let items = caActiveDate === 'all' ? [...caAllItems] : (dateMap[caActiveDate] || []);
+  const todayStr = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 
+  if (!caActiveDate) { el.innerHTML = ''; return; }
+
+  // Support "All" date
+  if (caActiveDate === 'all') items = caAllItems;
   if (caActiveFilter !== 'all') items = items.filter(i => i.category === caActiveFilter);
   if (search) items = items.filter(i =>
     (i.headline||i.title||'').toLowerCase().includes(search) ||
     (i.detail||i.summary||'').toLowerCase().includes(search));
 
-  // Update panel header
-  const todayStr = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
   document.getElementById("caPanelTitle").textContent =
-    caActiveDate === todayStr ? "Today's current affairs" : `Current affairs — ${caActiveDate}`;
-  document.getElementById("caPanelSub").textContent =
-    `${caActiveDate} · ${items.length} stor${items.length===1?'y':'ies'}`;
+    caActiveDate === 'all' ? "All Current Affairs" :
+    caActiveDate === new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) ? "Today's current affairs" : `Current affairs — ${caActiveDate}`;
+  document.getElementById("caPanelSub").textContent = `${items.length} stor${items.length===1?'y':'ies'}`;
 
-  if (!caActiveDate) { el.innerHTML = ''; return; }
   if (items.length === 0) {
     el.innerHTML = `<div style="text-align:center;padding:50px 20px;color:var(--text3);font-size:13px;">
       <i class="ti ti-search" style="font-size:28px;display:block;margin-bottom:8px;" aria-hidden="true"></i>
-      No stories${caActiveFilter!=='all'?' in this category':''} for ${caActiveDate}</div>`;
+      No stories${caActiveFilter!=='all'?' in this category':''}</div>`;
     return;
   }
 
   const relColor = { High:'var(--teal)', Medium:'var(--amber)', Low:'var(--text3)' };
   const catColors = getCatColors();
 
-  el.innerHTML = items.map(item => {
-    const _hl = item.headline||item.title||""; const isBookmarked = caBookmarks.includes(_hl);
+  el.innerHTML = items.map((item,idx) => {
+    const _hl = item.headline||item.title||"";
+    const isBookmarked = caBookmarks.includes(_hl);
+    const color = catColors[item.category] || 'var(--teal)';
+    const rel = item.relevance === "High" ? "🔴" : item.relevance === "Medium" ? "🟡" : "🟢";
     const mcqHtml = (() => {
       if (!item.mcq) return '';
       const parts = item.mcq.split('→');
@@ -4642,25 +4657,22 @@ function renderCAPanel() {
             <span style="font-weight:800;">→</span> ${a}</div>` : ''}
         </div>`;
     })();
-    const relDot = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;
-      background:${relColor[item.relevance]||'var(--text3)'};margin-right:4px;vertical-align:middle;"></span>${item.relevance||''} relevance`;
 
-    return `<div class="ca-item" style="margin-bottom:12px;">
-      <div class="ca-item-header">
-        <div class="ca-item-body" style="flex:1;">
-          <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center;">
-            <span class="badge" style="background:${catColors[item.category]||'var(--bg3)'};
-              color:${catColors[item.category+'T']||'var(--text2)'};">${item.category||''}</span>
-            <span style="font-size:11px;color:var(--text3);">${relDot}</span>
-            ${item.source ? `<span style="font-size:11px;color:var(--text3);">· <i class="ti ti-link" aria-hidden="true"></i> ${item.source}</span>` : ''}
+    return `<div class="card" style="border-left:3px solid ${color};margin-bottom:8px;">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+            <span style="background:${color};color:#fff;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;">${item.category||''}</span>
+            ${item.relevance ? `<span style="font-size:11px;color:var(--text3);">${rel} ${item.relevance} relevance</span>` : ''}
+            ${item.source ? `<span style="font-size:11px;color:var(--text3);margin-left:auto;">📰 ${item.source}</span>` : ''}
           </div>
-          <div class="ca-headline">${item.headline||item.title||""}</div>
-          <div class="ca-detail" style="margin-top:5px;">${item.detail||item.summary||''}</div>
+          <div style="font-weight:600;font-size:16px;color:var(--text);margin-bottom:8px;line-height:1.5;">${_hl}</div>
+          <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:8px;">${item.detail||item.summary||''}</div>
           ${mcqHtml}
         </div>
         <button class="bookmark-btn ${isBookmarked?'active':''}"
-          onclick="toggleBookmark('${(item.headline||item.title||'').replace(/'/g,"&#39;")}')"
-          aria-label="${isBookmarked?'Remove bookmark':'Bookmark'}">
+          onclick="toggleBookmark('${_hl.replace(/'/g,"&#39;")}')"
+          aria-label="${isBookmarked?'Remove bookmark':'Bookmark'}" style="flex-shrink:0;">
           <i class="ti ti-bookmark${isBookmarked?'-filled':''}" aria-hidden="true"></i>
         </button>
       </div>
