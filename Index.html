@@ -4580,8 +4580,8 @@ function renderCAPanel() {
   el.innerHTML = items.map(item => {
     const _hl = item.headline||item.title||""; const isBookmarked = caBookmarks.includes(_hl);
     const mcqHtml = item.mcq
-      ? `<div style="margin-top:8px;padding:7px 10px;background:var(--amber-light);border-radius:6px;
-          font-size:11px;color:var(--amber-dark);">
+      ? `<div style="margin-top:12px;padding:14px 16px;background:var(--amber-light);border-radius:10px;
+          font-size:14px;color:var(--amber-dark);line-height:1.7;border-left:4px solid var(--amber);">
           💡 <b>Quick MCQ:</b> ${item.mcq}</div>` : '';
     const relDot = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;
       background:${relColor[item.relevance]||'var(--text3)'};margin-right:4px;vertical-align:middle;"></span>${item.relevance||''} relevance`;
@@ -5519,8 +5519,8 @@ function renderUPPSCFeed(rows, dateFilter) {
         <div style="font-weight:600;font-size:13px;color:var(--text);margin-bottom:5px;">${r.headline}</div>
         <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:6px;">${r.detail}</div>
         ${r.tags ? `<div style="font-size:11px;color:var(--text3);">🏷 ${r.tags}</div>` : ""}
-        ${r.mcq ? `<div style="margin-top:8px;padding:7px 10px;background:var(--amber-light);border-radius:6px;
-          font-size:11px;color:var(--amber-dark);">💡 <b>Quick MCQ:</b> ${r.mcq}</div>` : ""}
+        ${r.mcq ? `<div style="margin-top:12px;padding:14px 16px;background:var(--amber-light);border-radius:10px;
+          font-size:14px;color:var(--amber-dark);line-height:1.7;border-left:4px solid var(--amber);">💡 <b>Quick MCQ:</b> ${r.mcq}</div>` : ""}
       </div>`;
     });
   });
