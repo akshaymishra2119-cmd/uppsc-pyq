@@ -204,51 +204,80 @@ textarea{resize:vertical;min-height:70px;}
 /* ── PYQ SHELL (sidebar + main) ─────────────── */
 .pyq-shell{display:flex;gap:0;align-items:flex-start;}
 .pyq-sidebar{
-  width:148px;flex-shrink:0;
+  width:168px;flex-shrink:0;
   position:sticky;top:60px;max-height:calc(100vh - 80px);
-  overflow-y:auto;padding:4px 8px 16px 0;
-  border-right:1px solid var(--border);margin-right:14px;
+  overflow-y:auto;padding:6px 10px 20px 0;
+  border-right:2px solid var(--border);margin-right:18px;
 }
 .pyq-sidebar::-webkit-scrollbar{width:3px;}
 .pyq-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
-.pyq-sidebar-label{font-size:10px;font-weight:700;color:var(--text3);
-  letter-spacing:.8px;text-transform:uppercase;padding:8px 0 6px;}
+.pyq-sidebar-label{
+  font-size:9px;font-weight:800;color:var(--text3);
+  letter-spacing:1.2px;text-transform:uppercase;
+  padding:10px 0 8px 4px;
+  display:flex;align-items:center;gap:6px;
+}
+.pyq-sidebar-label::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
 .pyq-subj-btn{
-  display:flex;align-items:center;gap:7px;width:100%;
-  padding:8px 10px;margin-bottom:3px;border-radius:8px;
-  border:none;background:transparent;cursor:pointer;
-  font-size:12.5px;color:var(--text2);text-align:left;
-  transition:background 0.12s,color 0.12s;
-  position:relative;
+  display:flex;align-items:center;gap:9px;width:100%;
+  padding:10px 12px;margin-bottom:4px;border-radius:10px;
+  border:1.5px solid transparent;background:transparent;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--text2);text-align:left;
+  transition:all 0.15s;position:relative;
 }
-.pyq-subj-btn:hover{background:var(--bg3);color:var(--text);}
+.pyq-subj-btn:hover{
+  background:var(--bg3);color:var(--text);
+  border-color:var(--border);
+  transform:translateX(2px);
+}
 .pyq-subj-btn.active{
-  background:var(--blue-light,#EBF4FF);color:var(--blue-dark,#1D4ED8);
-  font-weight:700;
+  background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);
+  color:#fff;font-weight:700;
+  border-color:#1a56db;
+  box-shadow:0 4px 12px rgba(26,86,219,0.35);
+  transform:translateX(0);
 }
-.pyq-subj-btn.active::before{
-  content:'';position:absolute;left:0;top:20%;bottom:20%;
-  width:3px;border-radius:0 3px 3px 0;background:var(--blue);
+.pyq-subj-btn.active::before{display:none;}
+.pyq-subj-icon{
+  font-size:18px;flex-shrink:0;line-height:1;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:7px;background:var(--bg3);transition:background 0.15s;
 }
-.pyq-subj-icon{font-size:15px;flex-shrink:0;line-height:1;}
-.pyq-subj-count{margin-left:auto;font-size:10px;font-weight:600;
-  background:var(--bg3);border-radius:10px;padding:1px 6px;
-  color:var(--text3);flex-shrink:0;}
+.pyq-subj-btn.active .pyq-subj-icon{
+  background:rgba(255,255,255,0.18);
+}
+.pyq-subj-label{flex:1;line-height:1.3;}
+.pyq-subj-count{
+  font-size:10px;font-weight:700;
+  background:#EF9F2722;border-radius:8px;padding:2px 7px;
+  color:#b06d00;flex-shrink:0;
+  border:1px solid #EF9F2744;
+}
 .pyq-subj-btn.active .pyq-subj-count{
-  background:var(--blue);color:#fff;}
+  background:rgba(255,255,255,0.22);color:#fff;border-color:rgba(255,255,255,0.3);
+}
+.pyq-sidebar-divider{height:1px;background:var(--border);margin:6px 0 8px;}
 .pyq-main{flex:1;min-width:0;}
 
 @media(max-width:640px){
   .pyq-shell{flex-direction:column;}
   .pyq-sidebar{
     width:100%;position:static;max-height:none;
-    border-right:none;border-bottom:1px solid var(--border);
-    margin-right:0;margin-bottom:10px;padding:4px 0 10px;
-    display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;
+    border-right:none;border-bottom:2px solid var(--border);
+    margin-right:0;margin-bottom:12px;padding:6px 0 10px;
+    display:flex;flex-direction:row;flex-wrap:wrap;gap:5px;overflow-x:auto;
   }
-  .pyq-sidebar-label{width:100%;padding:4px 0 4px;}
-  .pyq-subj-btn{width:auto;padding:5px 10px;font-size:11px;}
-  .pyq-subj-btn.active::before{display:none;}
+  .pyq-sidebar-label{width:100%;padding:2px 0 6px 0;}
+  .pyq-sidebar-label::after{display:none;}
+  .pyq-subj-btn{
+    width:auto;padding:7px 12px;font-size:12px;
+    flex-direction:row;border-radius:20px;margin-bottom:0;
+  }
+  .pyq-subj-btn:hover{transform:none;}
+  .pyq-subj-icon{width:22px;height:22px;font-size:14px;border-radius:5px;}
+  .pyq-sidebar-divider{display:none;}
 }
 
 /* ── QUESTION CARD ────────────────────────────── */
@@ -1306,43 +1335,54 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <div class="pyq-sidebar" id="pyqSidebar">
     <div class="pyq-sidebar-label">Subjects</div>
     <button class="pyq-subj-btn active" id="pyq-subj-all" onclick="selectPyqSubject('all',this)">
-      <span class="pyq-subj-icon">📋</span>All
+      <span class="pyq-subj-icon">📋</span>
+      <span class="pyq-subj-label">All</span>
       <span class="pyq-subj-count" id="pyq-cnt-all">449</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Geography" onclick="selectPyqSubject('Geography',this)">
-      <span class="pyq-subj-icon">🗺️</span>Geography
+      <span class="pyq-subj-icon">🗺️</span>
+      <span class="pyq-subj-label">Geography</span>
       <span class="pyq-subj-count" id="pyq-cnt-Geography">91</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Modern History" onclick="selectPyqSubject('Modern History',this)">
-      <span class="pyq-subj-icon">📜</span>Modern History
+      <span class="pyq-subj-icon">📜</span>
+      <span class="pyq-subj-label">Modern History</span>
       <span class="pyq-subj-count" id="pyq-cnt-Modern History">75</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Economy" onclick="selectPyqSubject('Economy',this)">
-      <span class="pyq-subj-icon">💰</span>Economy
+      <span class="pyq-subj-icon">💰</span>
+      <span class="pyq-subj-label">Economy</span>
       <span class="pyq-subj-count" id="pyq-cnt-Economy">69</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Polity" onclick="selectPyqSubject('Polity',this)">
-      <span class="pyq-subj-icon">⚖️</span>Polity
+      <span class="pyq-subj-icon">⚖️</span>
+      <span class="pyq-subj-label">Polity</span>
       <span class="pyq-subj-count" id="pyq-cnt-Polity">60</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Current Affairs" onclick="selectPyqSubject('Current Affairs',this)">
-      <span class="pyq-subj-icon">📰</span>Current Affairs
+      <span class="pyq-subj-icon">📰</span>
+      <span class="pyq-subj-label">Current Affairs</span>
       <span class="pyq-subj-count" id="pyq-cnt-Current Affairs">53</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Science" onclick="selectPyqSubject('Science',this)">
-      <span class="pyq-subj-icon">🔬</span>Science
+      <span class="pyq-subj-icon">🔬</span>
+      <span class="pyq-subj-label">Science</span>
       <span class="pyq-subj-count" id="pyq-cnt-Science">44</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Environment" onclick="selectPyqSubject('Environment',this)">
-      <span class="pyq-subj-icon">🌿</span>Environment
+      <span class="pyq-subj-icon">🌿</span>
+      <span class="pyq-subj-label">Environment</span>
       <span class="pyq-subj-count" id="pyq-cnt-Environment">38</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Ancient History" onclick="selectPyqSubject('Ancient History',this)">
-      <span class="pyq-subj-icon">🏺</span>Ancient History
+      <span class="pyq-subj-icon">🏺</span>
+      <span class="pyq-subj-label">Ancient History</span>
       <span class="pyq-subj-count" id="pyq-cnt-Ancient History">10</span>
     </button>
+    <div class="pyq-sidebar-divider"></div>
     <button class="pyq-subj-btn" id="pyq-subj-UP Special" onclick="selectPyqSubject('UP Special',this)">
-      <span class="pyq-subj-icon">🏙️</span>UP Special
+      <span class="pyq-subj-icon">🏙️</span>
+      <span class="pyq-subj-label">UP Special</span>
       <span class="pyq-subj-count" id="pyq-cnt-UP Special">9</span>
     </button>
   </div>
