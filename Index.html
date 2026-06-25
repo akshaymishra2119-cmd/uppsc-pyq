@@ -201,6 +201,8 @@ textarea{resize:vertical;min-height:70px;}
 .ca-day-btn{width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--border);padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
 .ca-day-btn:hover{background:var(--bg);}
 .ca-day-btn.ca-day-active{background:var(--teal-light);border-left:3px solid var(--teal);}
+.uppsc-day-btn:hover{background:var(--bg3);}
+.uppsc-day-btn.uppsc-day-active{background:var(--amber-light)!important;border-left:3px solid var(--amber)!important;}
 .ca-day-btn.ca-day-active .ca-day-label{color:var(--blue-dark);font-weight:500;}
 .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
 .filter-bar select{width:auto;font-size:12px;padding:6px 8px;}
@@ -1842,27 +1844,43 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     </div>
   </div>
 
-  <div class="filter-bar">
-    <select id="uppsc-cat" onchange="loadUPPSCNews()">
-      <option value="all">All categories</option>
-      <option>UP Polity</option>
-      <option>UP Economy</option>
-      <option>UP Infrastructure</option>
-      <option>UP Agriculture</option>
-      <option>UP Culture & Heritage</option>
-      <option>UP Environment</option>
-      <option>UP Law & Order</option>
-      <option>UP Schemes</option>
-      <option>PCS Exam</option>
-    </select>
-    <input type="text" id="uppsc-search" placeholder="Search UP news..."
-      style="width:200px;font-size:12px;" oninput="debounceUPPSC()">
-    <select id="uppsc-date-filter" onchange="loadUPPSCNews()" style="font-size:12px;">
-      <option value="all">All dates</option>
-    </select>
-  </div>
+  <!-- Shell: sidebar + main -->
+  <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:visible;background:var(--bg);">
 
-  <div id="uppscFeed"><div class="loading"><i class="ti ti-loader"></i> Loading UP news...</div></div>
+    <!-- Date Sidebar -->
+    <div style="width:170px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);">
+      <div style="padding:10px 14px 8px;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);">By Date</div>
+      <div id="uppscDayList">
+        <div class="loading" style="padding:20px 14px;font-size:12px;"><i class="ti ti-loader"></i> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+      <!-- Filter bar inside panel -->
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--bg);">
+        <select id="uppsc-cat" onchange="loadUPPSCNews()" style="font-size:12px;">
+          <option value="all">All categories</option>
+          <option>UP Polity</option>
+          <option>UP Economy</option>
+          <option>UP Infrastructure</option>
+          <option>UP Agriculture</option>
+          <option>UP Culture & Heritage</option>
+          <option>UP Environment</option>
+          <option>UP Law & Order</option>
+          <option>UP Schemes</option>
+          <option>PCS Exam</option>
+        </select>
+        <input type="text" id="uppsc-search" placeholder="Search UP news..."
+          style="width:180px;font-size:12px;" oninput="debounceUPPSC()">
+        <select id="uppsc-date-filter" onchange="loadUPPSCNews()" style="font-size:12px;display:none;">
+          <option value="all">All dates</option>
+        </select>
+      </div>
+      <div id="uppscFeed" style="padding:14px 16px;"><div class="loading"><i class="ti ti-loader"></i> Loading UP news...</div></div>
+    </div>
+
+  </div>
 </div>
 
 <!-- ══ DAILY QUIZ TAB ════════════════════════════════════════ -->
@@ -5498,22 +5516,49 @@ function loadUPPSCNews() {
     .getUPPSCNews({ category: cat, search });
 }
 
+let _uppscAllRows = [];
+let _uppscActiveDate = "all";
+
+function selectUPPSCDay(date, btn) {
+  _uppscActiveDate = date;
+  document.querySelectorAll('.uppsc-day-btn').forEach(b => b.classList.remove('uppsc-day-active'));
+  if (btn) btn.classList.add('uppsc-day-active');
+  renderUPPSCFeed(_uppscAllRows, date);
+}
+
 function renderUPPSCFeed(rows, dateFilter) {
+  if (!dateFilter) dateFilter = _uppscActiveDate || "all";
+  _uppscAllRows = rows;
   const feed = document.getElementById("uppscFeed");
   const countEl = document.getElementById("uppscTodayCount");
   const dateEl  = document.getElementById("uppscTodayDate");
 
-  // Populate date filter options
-  const dateSelect = document.getElementById("uppsc-date-filter");
-  const existingDates = new Set([...dateSelect.options].map(o => o.value).filter(v => v !== "all"));
-  const newDates = [...new Set(rows.map(r => r.date))].sort().reverse();
-  newDates.forEach(d => {
-    if (!existingDates.has(d)) {
-      const opt = document.createElement("option");
-      opt.value = d; opt.textContent = d;
-      dateSelect.appendChild(opt);
-    }
-  });
+  // Build sidebar
+  const dayList = document.getElementById("uppscDayList");
+  if (dayList) {
+    const dates = [...new Set(rows.map(r => r.date))].sort().reverse();
+    const totalCount = rows.length;
+    let sideHtml = `<button class="uppsc-day-btn${_uppscActiveDate==='all'?' uppsc-day-active':''}" onclick="selectUPPSCDay('all',this)" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--border);padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:13px;font-weight:600;color:var(--text);">All</div><div style="font-size:11px;color:var(--text3);">${totalCount} stories</div></div>
+      <span style="font-size:12px;color:var(--text3);font-weight:600;">${totalCount}</span>
+    </button>`;
+    dates.forEach(d => {
+      const cnt = rows.filter(r => r.date === d).length;
+      const isToday = d === rows[0]?.date;
+      const active = _uppscActiveDate === d ? ' uppsc-day-active' : '';
+      sideHtml += `<button class="uppsc-day-btn${active}" onclick="selectUPPSCDay('${d.replace(/'/g,"\\'")}',this)" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--border);padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-size:13px;font-weight:600;color:var(--text);">${isToday?'Today':d}</div><div style="font-size:11px;color:var(--text3);">${cnt} stories</div></div>
+        <span style="font-size:12px;color:var(--text3);font-weight:600;">${cnt}</span>
+      </button>`;
+    });
+    dayList.innerHTML = sideHtml;
+
+    // Apply sidebar active styles
+    document.querySelectorAll('.uppsc-day-btn.uppsc-day-active').forEach(b => {
+      b.style.background = 'var(--amber-light)';
+      b.style.borderLeft = '3px solid var(--amber)';
+    });
+  }
 
   // Filter by date
   let filtered = dateFilter && dateFilter !== "all" ? rows.filter(r => r.date === dateFilter) : rows;
