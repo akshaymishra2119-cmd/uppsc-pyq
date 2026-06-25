@@ -4579,10 +4579,22 @@ function renderCAPanel() {
 
   el.innerHTML = items.map(item => {
     const _hl = item.headline||item.title||""; const isBookmarked = caBookmarks.includes(_hl);
-    const mcqHtml = item.mcq
-      ? `<div style="margin-top:12px;padding:14px 16px;background:var(--amber-light);border-radius:10px;
-          font-size:14px;color:var(--amber-dark);line-height:1.7;border-left:4px solid var(--amber);">
-          💡 <b>Quick MCQ:</b> ${item.mcq}</div>` : '';
+    const mcqHtml = (() => {
+      if (!item.mcq) return '';
+      const parts = item.mcq.split('→');
+      const q = parts[0]?.trim() || item.mcq;
+      const a = parts[1]?.trim() || '';
+      return `<div style="margin-top:16px;padding:18px 20px;background:var(--amber-light);
+          border-radius:12px;border-left:5px solid var(--amber);">
+          <div style="font-size:12px;font-weight:800;color:var(--amber);letter-spacing:.8px;
+            text-transform:uppercase;margin-bottom:10px;">💡 Quick MCQ</div>
+          <div style="font-size:17px;font-weight:600;color:var(--amber-dark);line-height:1.7;
+            margin-bottom:12px;">${q}</div>
+          ${a ? `<div style="font-size:16px;font-weight:500;color:var(--amber-dark);
+            background:rgba(0,0,0,0.07);padding:10px 14px;border-radius:8px;line-height:1.6;">
+            <span style="font-weight:800;">→</span> ${a}</div>` : ''}
+        </div>`;
+    })();
     const relDot = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;
       background:${relColor[item.relevance]||'var(--text3)'};margin-right:4px;vertical-align:middle;"></span>${item.relevance||''} relevance`;
 
@@ -5519,8 +5531,22 @@ function renderUPPSCFeed(rows, dateFilter) {
         <div style="font-weight:600;font-size:13px;color:var(--text);margin-bottom:5px;">${r.headline}</div>
         <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:6px;">${r.detail}</div>
         ${r.tags ? `<div style="font-size:11px;color:var(--text3);">🏷 ${r.tags}</div>` : ""}
-        ${r.mcq ? `<div style="margin-top:12px;padding:14px 16px;background:var(--amber-light);border-radius:10px;
-          font-size:14px;color:var(--amber-dark);line-height:1.7;border-left:4px solid var(--amber);">💡 <b>Quick MCQ:</b> ${r.mcq}</div>` : ""}
+        ${(() => {
+          if (!r.mcq) return '';
+          const parts = r.mcq.split('→');
+          const q = parts[0]?.trim() || r.mcq;
+          const a = parts[1]?.trim() || '';
+          return `<div style="margin-top:16px;padding:18px 20px;background:var(--amber-light);
+            border-radius:12px;border-left:5px solid var(--amber);">
+            <div style="font-size:12px;font-weight:800;color:var(--amber);letter-spacing:.8px;
+              text-transform:uppercase;margin-bottom:10px;">💡 Quick MCQ</div>
+            <div style="font-size:17px;font-weight:600;color:var(--amber-dark);line-height:1.7;
+              margin-bottom:12px;">${q}</div>
+            ${a ? `<div style="font-size:16px;font-weight:500;color:var(--amber-dark);
+              background:rgba(0,0,0,0.07);padding:10px 14px;border-radius:8px;line-height:1.6;">
+              <span style="font-weight:800;">→</span> ${a}</div>` : ''}
+          </div>`;
+        })()}
       </div>`;
     });
   });
