@@ -988,11 +988,11 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       <p class="gc-tagline">UPPSC Previous Year Questions Analysis Portal &nbsp;·&nbsp; Uttar Pradesh PSC</p>
       <div class="gc-powered">powered by <span>UPPSC_FOREVER</span></div>
       <div class="gc-stats-row">
-        <div class="gc-stat-pill"><strong>450</strong> Questions</div>
-        <div class="gc-stat-pill"><strong>3</strong> Years</div>
-        <div class="gc-stat-pill"><strong>9</strong> Subjects</div>
-        <div class="gc-stat-pill"><strong>28</strong> Repeating Topics</div>
-        <div class="gc-stat-pill"><strong>~11%</strong> UP Special</div>
+        <div class="gc-stat-pill"><strong id="pill-total-q">974</strong> Questions</div>
+        <div class="gc-stat-pill"><strong id="pill-total-yr">8</strong> Years</div>
+        <div class="gc-stat-pill"><strong id="pill-total-subj">9</strong> Subjects</div>
+        <div class="gc-stat-pill"><strong id="pill-repeating">28</strong> Repeating Topics</div>
+        <div class="gc-stat-pill"><strong id="pill-up-pct">~11%</strong> UP Special</div>
       </div>
     </div>
 
@@ -1139,7 +1139,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
   <!-- ── 4 STAT CARDS ───────────────────────────────────────── -->
   <div class="gc-stat-grid" id="gcStatGrid">
-    <div class="gc-stat"><div class="gc-stat-val" id="hm-attempted">—</div><div class="gc-stat-lbl">Questions attempted</div><div class="gc-stat-sub">of 450 total</div></div>
+    <div class="gc-stat"><div class="gc-stat-val" id="hm-attempted">—</div><div class="gc-stat-lbl">Questions attempted</div><div class="gc-stat-sub">of 974 total</div></div>
     <div class="gc-stat"><div class="gc-stat-val" style="color:var(--teal);" id="hm-accuracy">—</div><div class="gc-stat-lbl">Accuracy</div><div class="gc-stat-sub">target: 88%</div></div>
     <div class="gc-stat"><div class="gc-stat-val" style="color:var(--coral);" id="hm-projected">—</div><div class="gc-stat-lbl">Projected score</div><div class="gc-stat-sub">need: 110/150</div></div>
     <div class="gc-stat"><div class="gc-stat-val" style="color:var(--pink);" id="hm-ca">0</div><div class="gc-stat-lbl">Today's CA</div><div class="gc-stat-sub">items added</div></div>
@@ -1147,28 +1147,19 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
   <!-- ── PYQ ANALYTICS HEADER STATS ────────────────────────── -->
   <div class="gc-analysis-stats" id="gcAnalysisStats">
-    <div class="gc-astat"><div class="gc-astat-val">450</div><div class="gc-astat-lbl">Total questions analysed</div><div class="gc-astat-sub">150 per year (2023–25)</div></div>
+    <div class="gc-astat"><div class="gc-astat-val" id="gcTotalQ">974</div><div class="gc-astat-lbl">Total questions analysed</div><div class="gc-astat-sub" id="gcTotalQSub">2018–2025 (8 years)</div></div>
     <div class="gc-astat"><div class="gc-astat-val" id="gcRepeating">—</div><div class="gc-astat-lbl">Repeating themes found</div><div class="gc-astat-sub">topics/concepts repeated 2+ yrs</div></div>
     <div class="gc-astat"><div class="gc-astat-val" id="gcTopSubject">—</div><div class="gc-astat-lbl">Highest weight subject</div><div class="gc-astat-sub" id="gcTopSubjectSub">~22–25 Qs per paper</div></div>
-    <div class="gc-astat"><div class="gc-astat-val">15–18</div><div class="gc-astat-lbl">UP-specific questions</div><div class="gc-astat-sub">per paper (~11%)</div></div>
+    <div class="gc-astat"><div class="gc-astat-val" id="gcUpSpecific">15–18</div><div class="gc-astat-lbl">UP-specific questions</div><div class="gc-astat-sub" id="gcUpSpecificSub">per paper (~11%)</div></div>
   </div>
 
   <!-- ── SUBJECT TABLE ─────────────────────────────────────── -->
   <div class="card" style="margin-bottom:16px;">
-    <div class="card-title"><i class="ti ti-table" style="color:var(--blue);"></i> Subject-wise distribution (2023–2025)</div>
+    <div class="card-title"><i class="ti ti-table" style="color:var(--blue);"></i> Subject-wise distribution (2018–2025)</div>
     <div style="overflow-x:auto;margin-top:10px;">
       <table class="gc-table" id="gcSubjectTable">
-        <thead>
-          <tr>
-            <th>Subject</th>
-            <th>2023</th><th>%</th>
-            <th>2024</th><th>%</th>
-            <th>2025</th><th>%</th>
-            <th>3-yr avg</th>
-            <th>Trend</th>
-          </tr>
-        </thead>
-        <tbody id="gcTableBody"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Loading…</td></tr></tbody>
+        <thead id="gcTableHead"><tr><th>Subject</th><th>Avg</th><th>Trend</th></tr></thead>
+        <tbody id="gcTableBody"><tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text3);">Loading…</td></tr></tbody>
         <tfoot id="gcTableFoot"></tfoot>
       </table>
     </div>
@@ -1176,13 +1167,13 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
   <!-- ── GROUPED BAR CHART ──────────────────────────────────── -->
   <div class="card" style="margin-bottom:16px;">
-    <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--teal);"></i> Subject-wise question distribution (2023–2025)</div>
+    <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--teal);"></i> Subject-wise question distribution (2018–2025)</div>
     <canvas id="chartYearSubject" style="margin-top:12px;" height="90"></canvas>
   </div>
 
   <!-- ── LINE CHART: TOPIC TREND ────────────────────────────── -->
   <div class="card" style="margin-bottom:16px;">
-    <div class="card-title"><i class="ti ti-trending-up" style="color:var(--coral);"></i> Topic trend across 3 years — what's rising, steady, or fading</div>
+    <div class="card-title"><i class="ti ti-trending-up" style="color:var(--coral);"></i> Topic trend across 8 years — what's rising, steady, or fading</div>
     <canvas id="chartTrend" style="margin-top:12px;" height="90"></canvas>
   </div>
 
@@ -1205,7 +1196,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       <div class="card-title">
         <i class="ti ti-circle-letter-a" style="color:var(--blue);"></i>
         Correct answer key distribution — A / B / C / D
-        <span style="font-size:11px;color:var(--text3);margin-left:auto;">all 449 questions</span>
+        <span id="gcAnsDistQ" style="font-size:11px;color:var(--text3);margin-left:auto;">all 974 questions</span>
       </div>
       <div class="ans-letter-grid" id="ansLetterGrid"></div>
       <div id="ansLetterYearTable" style="margin-top:14px;overflow-x:auto;"></div>
@@ -1422,53 +1413,58 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <button class="pyq-subj-btn active" id="pyq-subj-all" onclick="selectPyqSubject('all',this)">
       <span class="pyq-subj-icon">📋</span>
       <span class="pyq-subj-label">All</span>
-      <span class="pyq-subj-count" id="pyq-cnt-all">449</span>
+      <span class="pyq-subj-count" id="pyq-cnt-all">974</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Geography" onclick="selectPyqSubject('Geography',this)">
       <span class="pyq-subj-icon">🗺️</span>
       <span class="pyq-subj-label">Geography</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Geography">91</span>
-    </button>
-    <button class="pyq-subj-btn" id="pyq-subj-Modern History" onclick="selectPyqSubject('Modern History',this)">
-      <span class="pyq-subj-icon">📜</span>
-      <span class="pyq-subj-label">Modern History</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Modern History">75</span>
-    </button>
-    <button class="pyq-subj-btn" id="pyq-subj-Economy" onclick="selectPyqSubject('Economy',this)">
-      <span class="pyq-subj-icon">💰</span>
-      <span class="pyq-subj-label">Economy</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Economy">69</span>
+      <span class="pyq-subj-count" id="pyq-cnt-Geography">189</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Polity" onclick="selectPyqSubject('Polity',this)">
       <span class="pyq-subj-icon">⚖️</span>
       <span class="pyq-subj-label">Polity</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Polity">60</span>
+      <span class="pyq-subj-count" id="pyq-cnt-Polity">150</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Modern History" onclick="selectPyqSubject('Modern History',this)">
+      <span class="pyq-subj-icon">📜</span>
+      <span class="pyq-subj-label">Modern History</span>
+      <span class="pyq-subj-count" id="pyq-cnt-Modern History">116</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-Economy" onclick="selectPyqSubject('Economy',this)">
+      <span class="pyq-subj-icon">💰</span>
+      <span class="pyq-subj-label">Economy</span>
+      <span class="pyq-subj-count" id="pyq-cnt-Economy">106</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Current Affairs" onclick="selectPyqSubject('Current Affairs',this)">
       <span class="pyq-subj-icon">📰</span>
       <span class="pyq-subj-label">Current Affairs</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Current Affairs">53</span>
+      <span class="pyq-subj-count" id="pyq-cnt-Current Affairs">103</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Science" onclick="selectPyqSubject('Science',this)">
       <span class="pyq-subj-icon">🔬</span>
       <span class="pyq-subj-label">Science</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Science">44</span>
+      <span class="pyq-subj-count" id="pyq-cnt-Science">102</span>
+    </button>
+    <button class="pyq-subj-btn" id="pyq-subj-General Studies" onclick="selectPyqSubject('General Studies',this)">
+      <span class="pyq-subj-icon">📚</span>
+      <span class="pyq-subj-label">General Studies</span>
+      <span class="pyq-subj-count" id="pyq-cnt-General Studies">88</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Environment" onclick="selectPyqSubject('Environment',this)">
       <span class="pyq-subj-icon">🌿</span>
       <span class="pyq-subj-label">Environment</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Environment">38</span>
+      <span class="pyq-subj-count" id="pyq-cnt-Environment">77</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Ancient History" onclick="selectPyqSubject('Ancient History',this)">
       <span class="pyq-subj-icon">🏺</span>
       <span class="pyq-subj-label">Ancient History</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Ancient History">10</span>
+      <span class="pyq-subj-count" id="pyq-cnt-Ancient History">22</span>
     </button>
     <div class="pyq-sidebar-divider"></div>
     <button class="pyq-subj-btn" id="pyq-subj-UP Special" onclick="selectPyqSubject('UP Special',this)">
       <span class="pyq-subj-icon">🏙️</span>
       <span class="pyq-subj-label">UP Special</span>
-      <span class="pyq-subj-count" id="pyq-cnt-UP Special">9</span>
+      <span class="pyq-subj-count" id="pyq-cnt-UP Special">21</span>
     </button>
   </div>
 
@@ -1479,13 +1475,13 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <div class="filter-bar" id="filterBar">
     <select id="f-subject" onchange="selectPyqSubject(this.value,null)">
       <option value="all">All subjects</option>
-      <option>Polity</option><option>Modern History</option><option>Ancient History</option>
-      <option>Geography</option><option>Economy</option><option>Science</option>
-      <option>Environment</option><option>Current Affairs</option><option>UP Special</option>
+      <option>Geography</option><option>Polity</option><option>Modern History</option>
+      <option>Economy</option><option>Current Affairs</option><option>Science</option>
+      <option>General Studies</option><option>Environment</option><option>Ancient History</option><option>UP Special</option>
     </select>
     <select id="f-year" onchange="applyFilters()">
       <option value="all">All years</option>
-      <option>2023</option><option>2024</option><option>2025</option>
+      <option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option>
     </select>
     <select id="f-diff" onchange="applyFilters()">
       <option value="all">All difficulty</option>
@@ -2395,8 +2391,8 @@ function showTab(id, btn) {
 // ══════════════════════════════════════════════════════════════
 let _analyticsLoaded = false;
 const SUB_COLORS = ['#1D9E75','#378ADD','#D4537E','#EF9F27','#7F77DD','#D85A30','#E24B4A','#085041','#4B1528'];
-const YEARS = ['2023','2024','2025'];
-const YR_COLORS = ['#1D9E75','#7F77DD','#EF9F27'];
+const YEARS = ['2018','2019','2020','2021','2022','2023','2024','2025'];
+const YR_COLORS = ['#085041','#1D9E75','#378ADD','#7F77DD','#D4537E','#EF9F27','#D85A30','#E24B4A'];
 
 function loadAnalytics() {
   if (_analyticsLoaded) return;
@@ -2409,86 +2405,87 @@ function loadAnalytics() {
 function renderAnalytics(data) {
   _analyticsLoaded = true;
 
+  // ── Derive years dynamically from data ───────────────────
+  const allYears = Object.keys(data.yearSubject).sort();
+  const firstYr  = allYears[0];
+  const lastYr   = allYears[allYears.length - 1];
+  const nYears   = allYears.length;
+
   // ── Header stats ─────────────────────────────────────────
-  document.getElementById('gcRepeating').textContent = data.repeatingCount;
+  const setT = (id, v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  setT('gcRepeating', data.repeatingCount);
+  setT('pill-repeating', data.repeatingCount);
   const topSub = Object.entries(data.subjectCounts).sort((a,b)=>b[1]-a[1])[0];
   if (topSub) {
-    document.getElementById('gcTopSubject').textContent = topSub[0];
-    document.getElementById('gcTopSubjectSub').textContent = `~${topSub[1]} Qs over 3 years`;
+    setT('gcTopSubject', topSub[0]);
+    setT('gcTopSubjectSub', `~${topSub[1]} Qs over ${nYears} years`);
   }
 
-  // ── Subject table ─────────────────────────────────────────
+  // ── Subject table — fully dynamic ────────────────────────
   const subjects = Object.keys(data.subjectCounts).sort();
-  const tbody = document.getElementById('gcTableBody');
-  const tfoot = document.getElementById('gcTableFoot');
-  const totals = {2023:0, 2024:0, 2025:0};
+  const thead    = document.getElementById('gcTableHead');
+  const tbody    = document.getElementById('gcTableBody');
+  const tfoot    = document.getElementById('gcTableFoot');
+  const totals   = {};
+  allYears.forEach(y => totals[y] = 0);
+
+  // Build header dynamically
+  thead.innerHTML = '<tr><th>Subject</th>' +
+    allYears.map(y => `<th>${y}</th><th>%</th>`).join('') +
+    '<th>Avg</th><th>Trend</th></tr>';
 
   tbody.innerHTML = subjects.map(sub => {
-    const c23 = (data.yearSubject['2023']||{})[sub]||0;
-    const c24 = (data.yearSubject['2024']||{})[sub]||0;
-    const c25 = (data.yearSubject['2025']||{})[sub]||0;
-    totals[2023]+=c23; totals[2024]+=c24; totals[2025]+=c25;
-    const avg = ((c23+c24+c25)/3).toFixed(1);
-    const trend = c25>c23 ? '<span class="trend-rising">▲ Rising</span>'
-                : c25<c23 ? '<span class="trend-falling">▼ Falling</span>'
-                : '<span class="trend-stable">— Stable</span>';
-    const p23=totals[2023]?Math.round(c23/150*100)+'%':'—';
-    const p24=totals[2024]?Math.round(c24/150*100)+'%':'—';
-    const p25=totals[2025]?Math.round(c25/150*100)+'%':'—';
-    return `<tr>
-      <td><strong>${sub}</strong></td>
-      <td>${c23}</td><td style="color:var(--text3)">${Math.round(c23/150*100)}%</td>
-      <td>${c24}</td><td style="color:var(--text3)">${Math.round(c24/150*100)}%</td>
-      <td>${c25}</td><td style="color:var(--text3)">${Math.round(c25/150*100)}%</td>
-      <td><strong>${avg}</strong></td>
-      <td>${trend}</td>
-    </tr>`;
+    const counts = {};
+    allYears.forEach(y => {
+      counts[y] = (data.yearSubject[y]||{})[sub]||0;
+      totals[y] += counts[y];
+    });
+    const total = allYears.reduce((s,y) => s + counts[y], 0);
+    const avg   = (total / nYears).toFixed(1);
+    const cFirst = counts[firstYr], cLast = counts[lastYr];
+    const trend  = cLast > cFirst ? '<span class="trend-rising">▲ Rising</span>'
+                 : cLast < cFirst ? '<span class="trend-falling">▼ Falling</span>'
+                 : '<span class="trend-stable">— Stable</span>';
+    const yearCells = allYears.map(y => {
+      const t = totals[y] || data.yearCounts[y] || 1;
+      return `<td>${counts[y]}</td><td style="color:var(--text3)">${Math.round(counts[y]/t*100)}%</td>`;
+    }).join('');
+    return `<tr><td><strong>${sub}</strong></td>${yearCells}<td><strong>${avg}</strong></td><td>${trend}</td></tr>`;
   }).join('');
 
-  const t23=totals[2023]||150, t24=totals[2024]||150, t25=totals[2025]||150;
-  tfoot.innerHTML = `<tr>
-    <td>Total</td>
-    <td>${t23}</td><td>100%</td>
-    <td>${t24}</td><td>100%</td>
-    <td>${t25}</td><td>100%</td>
-    <td>${((t23+t24+t25)/3).toFixed(0)}</td><td></td>
-  </tr>`;
+  const totalCells = allYears.map(y => `<td>${totals[y]}</td><td>100%</td>`).join('');
+  const grandTotal = allYears.reduce((s,y)=>s+totals[y],0);
+  tfoot.innerHTML = `<tr><td>Total</td>${totalCells}<td>${(grandTotal/nYears).toFixed(0)}</td><td></td></tr>`;
 
-  // ── Grouped bar chart (subject × year) ───────────────────
-  const sortedYears = YEARS.filter(y => data.yearSubject[y]);
-  const datasets = subjects.map((sub,i) => ({
-    label: sub,
-    data: sortedYears.map(yr => (data.yearSubject[yr]||{})[sub]||0),
-    backgroundColor: SUB_COLORS[i%SUB_COLORS.length]+'bb',
-    borderColor:     SUB_COLORS[i%SUB_COLORS.length],
-    borderWidth:1, borderRadius:3
-  }));
+  // ── Grouped bar chart — all years as datasets ─────────────
+  const YR_PALETTE = ['#1D9E75','#7F77DD','#EF9F27','#D4537E','#378ADD','#D85A30','#E24B4A','#085041'];
   new Chart(document.getElementById('chartYearSubject'), {
     type:'bar',
-    data:{ labels: subjects, datasets:[
-      { label:'2023', data: subjects.map(s=>(data.yearSubject['2023']||{})[s]||0), backgroundColor:'#1D9E75bb', borderColor:'#1D9E75', borderWidth:1, borderRadius:3 },
-      { label:'2024', data: subjects.map(s=>(data.yearSubject['2024']||{})[s]||0), backgroundColor:'#7F77DDbb', borderColor:'#7F77DD', borderWidth:1, borderRadius:3 },
-      { label:'2025', data: subjects.map(s=>(data.yearSubject['2025']||{})[s]||0), backgroundColor:'#EF9F27bb', borderColor:'#EF9F27', borderWidth:1, borderRadius:3 },
-    ]},
+    data:{ labels: subjects, datasets: allYears.map((yr,i) => ({
+      label: yr,
+      data: subjects.map(s => (data.yearSubject[yr]||{})[s]||0),
+      backgroundColor: YR_PALETTE[i%YR_PALETTE.length]+'bb',
+      borderColor:     YR_PALETTE[i%YR_PALETTE.length],
+      borderWidth:1, borderRadius:3
+    }))},
     options:{
-      plugins:{ legend:{ position:'top', labels:{ font:{size:12}, boxWidth:14 } } },
-      scales:{ x:{ ticks:{font:{size:11}} }, y:{ beginAtZero:true } },
+      plugins:{ legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12 } } },
+      scales:{ x:{ ticks:{font:{size:10}} }, y:{ beginAtZero:true } },
       responsive:true
     }
   });
 
-  // ── Line chart: topic trend ───────────────────────────────
-  const trendSubjects = subjects.slice(0,6); // top subjects
-  const trendDatasets = trendSubjects.map((sub,i) => ({
-    label: sub,
-    data: YEARS.map(yr => (data.yearSubject[yr]||{})[sub]||0),
-    borderColor: SUB_COLORS[i%SUB_COLORS.length],
-    backgroundColor: SUB_COLORS[i%SUB_COLORS.length]+'22',
-    tension:0.4, pointRadius:5, pointHoverRadius:7, fill:false, borderWidth:2
-  }));
+  // ── Line chart: topic trend across all years ───────────────
+  const trendSubjects = subjects.slice(0,6);
   new Chart(document.getElementById('chartTrend'), {
     type:'line',
-    data:{ labels: YEARS, datasets: trendDatasets },
+    data:{ labels: allYears, datasets: trendSubjects.map((sub,i) => ({
+      label: sub,
+      data: allYears.map(yr => (data.yearSubject[yr]||{})[sub]||0),
+      borderColor: SUB_COLORS[i%SUB_COLORS.length],
+      backgroundColor: SUB_COLORS[i%SUB_COLORS.length]+'22',
+      tension:0.4, pointRadius:4, pointHoverRadius:6, fill:false, borderWidth:2
+    }))},
     options:{
       plugins:{ legend:{ position:'bottom', labels:{ font:{size:11}, boxWidth:12 } } },
       scales:{ y:{ beginAtZero:true } },
@@ -2566,8 +2563,8 @@ function updateHeroBanner(prog) {
   const caCount = document.getElementById("caTodayCount");
   if (caEl) caEl.textContent = caCount ? (caCount.textContent || "0") : "0";
 
-  // Prep progress: attempted / 449 * 100
-  const pct = Math.min(100, Math.round(attempted / 449 * 100));
+  // Prep progress: dynamic total
+  const pct = Math.min(100, Math.round(attempted / ((typeof allQuestions!=='undefined'&&allQuestions.length)||974) * 100));
   const pp = document.getElementById("heroPrepPct");
   if (pp) pp.textContent = pct + "%";
   const pb = document.getElementById("heroPrepBar");
@@ -2607,7 +2604,7 @@ function updateHomeMetricsFromLocal() {
     const firstSub = statGrid.querySelector('.gc-stat .gc-stat-sub');
     if (firstSub) firstSub.textContent = todayStats.attempted > 0
       ? `+${todayStats.attempted} today (${todayStats.correct} ✓)`
-      : "of 449 total";
+      : `of ${(typeof allQuestions!=='undefined'&&allQuestions.length)||974} total`;
   }
 }
 
@@ -2801,7 +2798,7 @@ function classifyAnswerType(q) {
 }
 
 function computeAnswerDist(questions) {
-  const YEARS   = ['2023', '2024', '2025'];
+  const YEARS   = ['2018','2019','2020','2021','2022','2023','2024','2025'];
   const letters = { A:0, B:0, C:0, D:0 };
   const byYear  = {};
   YEARS.forEach(y => { byYear[y] = { A:0, B:0, C:0, D:0 }; });
@@ -2911,7 +2908,8 @@ function renderWeightTrend(questions) {
   const el = document.getElementById('weightTrendGrid');
   if (!el) return;
 
-  const YEARS   = ['2023','2024','2025'];
+  const YEARS   = [...new Set(questions.map(q=>String(q.year)))].filter(Boolean).sort();
+  const firstYr = YEARS[0], lastYr = YEARS[YEARS.length-1];
   const subjects = [...new Set(questions.map(q => q.subject))].sort();
   const totByYear = {};
   YEARS.forEach(y => { totByYear[y] = questions.filter(q=>String(q.year)===y).length || 1; });
@@ -2922,7 +2920,7 @@ function renderWeightTrend(questions) {
       const cnt = questions.filter(q=>q.subject===sub && String(q.year)===y).length;
       share[y]  = +(cnt / totByYear[y] * 100).toFixed(1);
     });
-    const trend = share['2025'] - share['2023'];
+    const trend = (share[lastYr]||0) - (share[firstYr]||0);
     return { sub, share, trend };
   }).sort((a,b) => b.trend - a.trend);
 
@@ -2937,14 +2935,14 @@ function renderWeightTrend(questions) {
       <div class="wt-bars">
         ${YEARS.map((y,i) => {
           const w = maxShare > 0 ? (s.share[y]/maxShare*100).toFixed(0) : 0;
-          const opacity = 0.5 + i*0.17;
+          const opacity = 0.3 + (i / (YEARS.length-1)) * 0.5;
           return `<div class="wt-year-bar" title="${y}: ${s.share[y]}%">
             <div class="wt-fill" style="height:${w}%;background:var(--teal);opacity:${opacity};"></div>
             <div class="wt-ylbl">${y.slice(2)}</div>
           </div>`;
         }).join('')}
       </div>
-      <div class="wt-shares">${YEARS.map(y=>`<span>${s.share[y]}%</span>`).join('')}</div>
+      <div class="wt-shares">${YEARS.map(y=>`<span title="${y}">${s.share[y]}%</span>`).join('')}</div>
       <div class="wt-trend" style="color:${trendCol};">
         <i class="ti ${trendIcon}"></i> ${trendStr}
       </div>
@@ -2959,8 +2957,8 @@ function renderWeightTrend(questions) {
     <div class="apyq-strat" style="margin-top:12px;">
       <i class="ti ti-bulb" style="color:var(--amber);flex-shrink:0;"></i>
       <div>
-        ${rising.length  ? `📈 <strong>Rising:</strong> ${rising.join(', ')} — allocate more prep time here.` : ''}
-        ${falling.length ? `<br>📉 <strong>Declining:</strong> ${falling.join(', ')} — don't over-invest.` : ''}
+        ${rising.length  ? `📈 <strong>Rising (${firstYr}→${lastYr}):</strong> ${rising.join(', ')} — allocate more prep time here.` : ''}
+        ${falling.length ? `<br>📉 <strong>Declining (${firstYr}→${lastYr}):</strong> ${falling.join(', ')} — don't over-invest.` : ''}
       </div>
     </div>`;
 }
@@ -3047,7 +3045,7 @@ function toggleSB(header) {
 function renderAnswerDistHome(questions) {
   const d     = computeAnswerDist(questions);
   const LCOLS = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
-  const YEARS = ['2023','2024','2025'];
+  const YEARS = ['2018','2019','2020','2021','2022','2023','2024','2025'];
 
   // ── Card 1: Letter bubbles + bars ─────────────────────────
   const maxL  = Math.max(...Object.values(d.letters));
@@ -3317,7 +3315,7 @@ function loadQuestions() {
       renderSubjectBreakdown(allQuestions);
     })
     .withFailureHandler(showError)
-    .getQuestions({ shuffle: false, limit: 500 });
+    .getQuestions({ shuffle: false, limit: 2000 });
 }
 
 let drillTopic = null; // active topic drill-down from subject breakdown
@@ -3375,7 +3373,7 @@ function selectPyqSubject(subject, btn) {
 function updatePyqSidebarCounts() {
   // Recount after any chip filter changes
   const counts = { all: 0 };
-  ['Geography','Modern History','Economy','Polity','Current Affairs','Science','Environment','Ancient History','UP Special']
+  ['Geography','Modern History','Economy','Polity','Current Affairs','Science','General Studies','Environment','Ancient History','UP Special']
     .forEach(s => counts[s] = 0);
   (typeof allQuestions !== 'undefined' ? allQuestions : []).forEach(q => {
     counts.all++;
@@ -3386,6 +3384,40 @@ function updatePyqSidebarCounts() {
     const el = document.getElementById('pyq-cnt-' + s);
     if (el) el.textContent = c;
   });
+
+  // ── Update all dynamic stat pills/labels from loaded questions ──
+  const qs = (typeof allQuestions !== 'undefined') ? allQuestions : [];
+  const total = qs.length;
+  if (!total) return;
+
+  const years    = [...new Set(qs.map(q=>String(q.year)).filter(Boolean))].sort();
+  const subjects = [...new Set(qs.map(q=>q.subject).filter(Boolean))];
+  const upCount  = qs.filter(q=>q.subject==='UP Special').length;
+  const upPct    = Math.round(upCount/total*100);
+  const avgUpPer = Math.round(upCount/years.length);
+  const firstYr  = years[0], lastYr = years[years.length-1];
+  const nYears   = years.length;
+
+  // Header pills
+  const setT = (id, v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  setT('pill-total-q',    total);
+  setT('pill-total-yr',   nYears);
+  setT('pill-total-subj', subjects.length);
+  setT('pill-up-pct',     `~${upPct}%`);
+
+  // Analytics header cards
+  setT('gcTotalQ', total);
+  setT('gcTotalQSub', `${firstYr}–${lastYr} (${nYears} years)`);
+  setT('gcUpSpecific', `${avgUpPer}–${avgUpPer+3}`);
+  setT('gcUpSpecificSub', `per paper (~${upPct}%)`);
+  setT('gcAnsDistQ', `all ${total} questions`);
+
+  // "of X total" in home stat card
+  const statGrid = document.getElementById('gcStatGrid');
+  if (statGrid) {
+    const sub = statGrid.querySelector('.gc-stat .gc-stat-sub');
+    if (sub && sub.textContent.startsWith('of ')) sub.textContent = `of ${total} total`;
+  }
 }
 
 function applyFilters() {
@@ -5165,7 +5197,7 @@ function renderDailyActivityLog() {
 
   // Overall summary counts
   const totalAttempted = attemptedQIds.size;
-  const totalQ         = allQuestions.length || 449;
+  const totalQ         = allQuestions.length || 974;
   const totalUnseen    = totalQ - totalAttempted;
   const allDayTotals   = dates.reduce((acc, d) => {
     acc.correct += stats[d].correct || 0;

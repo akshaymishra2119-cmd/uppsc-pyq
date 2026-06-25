@@ -197,7 +197,7 @@ app.post('/api/getQuestions', (req, res) => {
     }
   }
 
-  rows = rows.slice(0, filters.limit || 150);
+  rows = rows.slice(0, filters.limit || 2000);
   res.json(rows);
 });
 
