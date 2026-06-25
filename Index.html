@@ -48,9 +48,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   cursor:pointer;color:#6B7280;border-bottom:2.5px solid transparent;
   white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all 0.15s;font-weight:500;}
 .nav-btn:hover{color:#1a1a2e;background:#F9FAFB;}
-.nav-btn.active{color:#2563EB;border-bottom-color:#2563EB;font-weight:700;}
-.nav-btn.nav-teal.active{color:#1D9E75;border-bottom-color:#1D9E75;}
-.nav-btn.nav-amber.active{color:#b06d00;border-bottom-color:#EF9F27;}
+.nav-btn.active{color:#2563EB;border-bottom-color:#2563EB;font-weight:700;background:#EFF6FF;}
+.nav-btn.nav-teal.active{color:#1D9E75;border-bottom-color:#1D9E75;background:#E1F5EE;}
+.nav-btn.nav-amber.active{color:#b06d00;border-bottom-color:#EF9F27;background:#FAEEDA;}
 .nav-btn.admin-btn{margin-left:auto;color:#9CA3AF;}
 .nav-btn.admin-btn.active{color:#EF4444;border-bottom-color:#EF4444;}
 
@@ -502,8 +502,7 @@ textarea{resize:vertical;min-height:70px;}
 .chip.active{background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);font-weight:600;}
 .chip.chip-gold.active{background:#fdf6e3;border-color:#c9a84c;color:#7a6010;}
 .chip.chip-red.active{background:var(--red-light);border-color:var(--red);color:var(--red-dark);}
-.chip-mock-btn{margin-left:auto;background:#0f1c2e;color:#c9a84c;border-color:#0f1c2e;font-weight:600;}
-.chip-mock-btn:hover{background:#1e3a5f;color:#e8c96d;border-color:#1e3a5f;}
+.chip-mock-btn{display:none;} /* hidden — moved to dedicated button below */
 
 /* ── BOOKMARK BUTTON ON Q-CARD ───────────────── */
 .q-card{position:relative;}
@@ -1499,9 +1498,20 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <span class="chip" id="chip-cluster" onclick="toggleClusterView()" title="Group questions by concept">
       <i class="ti ti-layout-grid"></i> Cluster View
     </span>
-    <span class="chip chip-mock-btn" onclick="openMockModal()">
-      <i class="ti ti-clock-play"></i> Start Mock Test
-    </span>
+  </div>
+
+  <!-- ── Start Mock Test CTA ────────────────────────── -->
+  <div style="margin:10px 0 12px;">
+    <button onclick="openMockModal()" style="width:100%;padding:13px 20px;
+      background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;
+      border:none;border-radius:12px;font-size:14px;font-weight:700;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+      box-shadow:0 4px 14px rgba(37,99,235,0.35);letter-spacing:0.3px;
+      transition:opacity 0.15s;">
+      <i class="ti ti-clock-play" style="font-size:18px;"></i>
+      Start Mock Test
+      <span style="font-size:11px;font-weight:500;opacity:0.8;margin-left:4px;">— Simulate Exam</span>
+    </button>
   </div>
 
   <!-- ── Answer Pattern Panel ──────────────────────── -->
