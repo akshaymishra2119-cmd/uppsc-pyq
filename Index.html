@@ -1382,6 +1382,19 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
     padding-bottom:4px;
   }
+
+  /* UPPSC News — collapse sidebar to horizontal chips */
+  .uppsc-shell{flex-direction:column !important;}
+  .uppsc-sidebar{display:none !important;}
+  .uppsc-mobile-dates{display:flex !important;gap:6px;}
+  #uppscMobileDates .uppsc-mob-chip{
+    display:inline-flex;align-items:center;padding:5px 12px;border-radius:99px;
+    font-size:12px;font-weight:600;cursor:pointer;border:none;white-space:nowrap;
+    background:var(--bg3);color:var(--text2);
+  }
+  #uppscMobileDates .uppsc-mob-chip.uppsc-day-active{
+    background:#b06d00;color:#fff;
+  }
 }
 
 /* Extra small — phones < 400px */
@@ -1844,22 +1857,25 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     </div>
   </div>
 
-  <!-- Shell: sidebar + main -->
-  <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:visible;background:var(--bg);">
+  <!-- Shell: sidebar + main (responsive) -->
+  <div class="uppsc-shell" style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:visible;background:var(--bg);">
 
-    <!-- Date Sidebar -->
-    <div style="width:170px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);">
+    <!-- Date Sidebar (desktop) / Date chips (mobile) -->
+    <div class="uppsc-sidebar" style="width:170px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);">
       <div style="padding:10px 14px 8px;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);">By Date</div>
       <div id="uppscDayList">
         <div class="loading" style="padding:20px 14px;font-size:12px;"><i class="ti ti-loader"></i> Loading...</div>
       </div>
     </div>
 
+    <!-- Mobile-only horizontal date chips row -->
+    <div class="uppsc-mobile-dates" id="uppscMobileDates" style="display:none;overflow-x:auto;white-space:nowrap;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg2);"></div>
+
     <!-- Right panel -->
     <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
       <!-- Filter bar inside panel -->
       <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--bg);">
-        <select id="uppsc-cat" onchange="loadUPPSCNews()" style="font-size:12px;">
+        <select id="uppsc-cat" onchange="loadUPPSCNews()" style="font-size:12px;max-width:140px;">
           <option value="all">All categories</option>
           <option>UP Polity</option>
           <option>UP Economy</option>
@@ -1872,7 +1888,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
           <option>PCS Exam</option>
         </select>
         <input type="text" id="uppsc-search" placeholder="Search UP news..."
-          style="width:180px;font-size:12px;" oninput="debounceUPPSC()">
+          style="flex:1;min-width:80px;font-size:12px;" oninput="debounceUPPSC()">
         <select id="uppsc-date-filter" onchange="loadUPPSCNews()" style="font-size:12px;display:none;">
           <option value="all">All dates</option>
         </select>
@@ -4541,8 +4557,8 @@ function buildCASidebar() {
     return;
   }
 
-  // Default: select most recent date
-  if (!caActiveDate || !dateMap[caActiveDate]) caActiveDate = dates[0];
+  // Default: select most recent date (preserve 'all' if already selected)
+  if (!caActiveDate || (caActiveDate !== 'all' && !dateMap[caActiveDate])) caActiveDate = dates[0];
 
   const todayStr = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 
@@ -4614,8 +4630,6 @@ function renderCAPanel() {
 
   if (!caActiveDate) { el.innerHTML = ''; return; }
 
-  // Support "All" date
-  if (caActiveDate === 'all') items = caAllItems;
   if (caActiveFilter !== 'all') items = items.filter(i => i.category === caActiveFilter);
   if (search) items = items.filter(i =>
     (i.headline||i.title||'').toLowerCase().includes(search) ||
@@ -5533,8 +5547,6 @@ let _uppscActiveDate = "all";
 
 function selectUPPSCDay(date, btn) {
   _uppscActiveDate = date;
-  document.querySelectorAll('.uppsc-day-btn').forEach(b => b.classList.remove('uppsc-day-active'));
-  if (btn) btn.classList.add('uppsc-day-active');
   renderUPPSCFeed(_uppscAllRows, date);
 }
 
@@ -5570,6 +5582,20 @@ function renderUPPSCFeed(rows, dateFilter) {
       b.style.background = 'var(--amber-light)';
       b.style.borderLeft = '3px solid var(--amber)';
     });
+
+    // Build mobile chips row (same data, different HTML)
+    const mobileRow = document.getElementById("uppscMobileDates");
+    if (mobileRow) {
+      const allActiveM = _uppscActiveDate === 'all';
+      let mobileHtml = `<button class="uppsc-mob-chip${allActiveM?' uppsc-day-active':''}" onclick="selectUPPSCDay('all',null)">All (${totalCount})</button>`;
+      dates.forEach(d => {
+        const cnt = rows.filter(r => r.date === d).length;
+        const isToday = d === rows[0]?.date;
+        const activeM = _uppscActiveDate === d ? ' uppsc-day-active' : '';
+        mobileHtml += `<button class="uppsc-mob-chip${activeM}" onclick="selectUPPSCDay('${d.replace(/'/g,"\\'")}',null)">${isToday?'Today':d} (${cnt})</button>`;
+      });
+      mobileRow.innerHTML = mobileHtml;
+    }
   }
 
   // Filter by date
