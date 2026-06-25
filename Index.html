@@ -4580,9 +4580,9 @@ function renderCAPanel() {
   el.innerHTML = items.map(item => {
     const _hl = item.headline||item.title||""; const isBookmarked = caBookmarks.includes(_hl);
     const mcqHtml = item.mcq
-      ? `<div style="margin-top:8px;padding:7px 10px;background:var(--bg2);border-radius:6px;
-          border-left:3px solid var(--blue);font-size:12px;color:var(--text2);">
-          <i class="ti ti-bulb" aria-hidden="true" style="color:var(--amber);"></i> ${item.mcq}</div>` : '';
+      ? `<div style="margin-top:8px;padding:7px 10px;background:var(--amber-light);border-radius:6px;
+          font-size:11px;color:var(--amber-dark);">
+          💡 <b>Quick MCQ:</b> ${item.mcq}</div>` : '';
     const relDot = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;
       background:${relColor[item.relevance]||'var(--text3)'};margin-right:4px;vertical-align:middle;"></span>${item.relevance||''} relevance`;
 
@@ -5513,7 +5513,7 @@ function renderUPPSCFeed(rows, dateFilter) {
           <span style="background:${color};color:#fff;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;">
             ${r.category}
           </span>
-          <span style="font-size:11px;color:var(--text3);">${rel} ${r.relevance} relevance</span>
+          ${r.relevance ? `<span style="font-size:11px;color:var(--text3);">${rel} ${r.relevance} relevance</span>` : ''}
           ${r.source ? `<span style="font-size:11px;color:var(--text3);margin-left:auto;">📰 ${r.source}</span>` : ""}
         </div>
         <div style="font-weight:600;font-size:13px;color:var(--text);margin-bottom:5px;">${r.headline}</div>
