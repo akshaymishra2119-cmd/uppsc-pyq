@@ -833,83 +833,86 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 /* ── GHATNA CHAKRA BANNER ─────────────────────── */
 .gc-banner{
   position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#1a3a6b 0%,#0d2b5e 60%,#102347 100%);
-  border-bottom:3px solid #c9a84c;
+  background:linear-gradient(160deg,#1e3a8a 0%,#1d4ed8 45%,#2563eb 100%);
+  border-bottom:4px solid #60a5fa;
 }
 .gc-banner-stripe{
-  position:absolute;top:0;left:0;right:0;height:4px;
-  background:linear-gradient(90deg,#c9a84c,#e8c96d,#c9a84c);
+  position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,#93c5fd,#60a5fa,#bfdbfe,#60a5fa,#93c5fd);
 }
 .gc-banner-dots{
   position:absolute;inset:0;
-  background-image:radial-gradient(circle,rgba(255,255,255,0.04) 1px,transparent 1px);
-  background-size:24px 24px;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(255,255,255,0.05) 1px,transparent 1px);
+  background-size:20px 20px;pointer-events:none;
 }
 .gc-banner-glow{
-  position:absolute;right:-80px;top:-80px;
-  width:300px;height:300px;border-radius:50%;
-  background:radial-gradient(circle,rgba(201,168,76,0.12) 0%,transparent 70%);
+  position:absolute;right:-60px;top:-60px;
+  width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(147,197,253,0.15) 0%,transparent 65%);
   pointer-events:none;
 }
 .gc-banner-inner{
   position:relative;display:flex;align-items:center;
-  gap:28px;max-width:1200px;margin:0 auto;padding:22px 32px 20px;
+  gap:32px;max-width:1400px;margin:0 auto;padding:30px 44px 28px;
 }
 .gc-logo-wrap{
   flex-shrink:0;
-  width:72px;height:72px;border-radius:50%;
-  background:linear-gradient(135deg,#c9a84c,#e8c96d);
+  width:90px;height:90px;border-radius:50%;
+  background:linear-gradient(135deg,#60a5fa,#bfdbfe);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 20px rgba(201,168,76,0.35);
+  box-shadow:0 4px 28px rgba(96,165,250,0.45);
 }
 .gc-logo-wrap svg{ filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
-.gc-chakra-spin{ animation:gcSpin 20s linear infinite; transform-origin:50% 50%; }
+.gc-chakra-spin{ animation:gcSpin 8s linear infinite; transform-origin:50% 50%; }
 @keyframes gcSpin{ to{ transform:rotate(360deg); } }
 .gc-divider{
-  width:1px;height:60px;
-  background:linear-gradient(to bottom,transparent,rgba(201,168,76,0.5),transparent);
+  width:1px;height:72px;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.3),transparent);
   flex-shrink:0;
 }
 .gc-title-block{ flex:1;min-width:0; }
-.gc-brand{
-  display:flex;align-items:baseline;gap:10px;
-}
+.gc-brand{ display:flex;align-items:baseline;gap:12px;flex-wrap:wrap; }
 .gc-title{
-  font-size:clamp(24px,3.5vw,42px);font-weight:800;
-  color:#ffffff;letter-spacing:-0.3px;line-height:1;
+  font-size:clamp(30px,4vw,52px);font-weight:800;
+  color:#ffffff;letter-spacing:-0.5px;line-height:1;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
-.gc-title span{ color:#c9a84c; }
+.gc-title span{ color:#bfdbfe; }
 .gc-edition{
-  font-size:11px;font-weight:600;color:#c9a84c;
-  background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);
-  border-radius:4px;padding:2px 8px;letter-spacing:0.5px;text-transform:uppercase;
-  white-space:nowrap;
+  font-size:12px;font-weight:700;color:#1e3a8a;
+  background:#bfdbfe;
+  border-radius:5px;padding:3px 11px;letter-spacing:0.5px;text-transform:uppercase;
+  white-space:nowrap;align-self:center;border:none;
 }
 .gc-tagline{
   font-size:12px;color:rgba(255,255,255,0.55);
-  margin-top:5px;letter-spacing:0.3px;font-weight:400;
+  margin-top:6px;letter-spacing:0.3px;font-weight:400;
 }
+.gc-powered{
+  font-size:10px;color:rgba(255,255,255,0.35);
+  margin-top:5px;letter-spacing:0.5px;
+}
+.gc-powered span{color:#bfdbfe;font-weight:700;letter-spacing:1.5px;}
 .gc-stats-row{
-  display:flex;gap:0;margin-top:14px;
-  border:1px solid rgba(201,168,76,0.2);border-radius:8px;overflow:hidden;
+  display:flex;gap:0;margin-top:16px;
+  border:1px solid rgba(255,255,255,0.2);border-radius:8px;overflow:hidden;
   width:fit-content;
 }
 .gc-stat-pill{
-  padding:7px 16px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);
-  border-right:1px solid rgba(201,168,76,0.15);
-  background:rgba(255,255,255,0.03);white-space:nowrap;
+  padding:8px 18px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);
+  border-right:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.07);white-space:nowrap;
 }
 .gc-stat-pill:last-child{ border-right:none; }
-.gc-stat-pill strong{ color:#c9a84c;font-size:14px; }
+.gc-stat-pill strong{ color:#bfdbfe;font-size:14px; }
 .gc-right-block{
   flex-shrink:0;text-align:right;
-  display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+  display:flex;flex-direction:column;align-items:flex-end;gap:10px;
 }
 .gc-badge-uppsc{
   font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
-  color:#0d2b5e;background:linear-gradient(135deg,#c9a84c,#e8c96d);
-  border-radius:4px;padding:4px 12px;
+  color:#1e3a8a;background:#bfdbfe;
+  border-radius:5px;padding:5px 16px;
 }
 .gc-streak-badge{
   font-size:12px;color:rgba(255,255,255,0.6);
@@ -920,23 +923,23 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 /* Countdown */
 .gc-countdown{
   flex-shrink:0;text-align:center;
-  border:1px solid rgba(201,168,76,0.35);border-radius:10px;
-  padding:10px 16px;background:rgba(201,168,76,0.07);
-  min-width:80px;
+  border:1px solid rgba(255,255,255,0.25);border-radius:12px;
+  padding:14px 24px;background:rgba(255,255,255,0.1);
+  min-width:96px;
 }
 .gc-cd-num{
-  font-size:36px;font-weight:800;line-height:1;
-  color:#c9a84c;letter-spacing:-1px;
+  font-size:46px;font-weight:800;line-height:1;
+  color:#ffffff;letter-spacing:-2px;
   font-variant-numeric:tabular-nums;
 }
 .gc-cd-lbl{
   font-size:10px;font-weight:600;color:rgba(255,255,255,0.5);
-  text-transform:uppercase;letter-spacing:1px;margin-top:2px;
+  text-transform:uppercase;letter-spacing:1px;margin-top:3px;
 }
 .gc-cd-exam{
-  font-size:10px;color:rgba(255,255,255,0.4);margin-top:6px;line-height:1.4;
+  font-size:10px;color:rgba(255,255,255,0.35);margin-top:8px;line-height:1.5;
 }
-.gc-cd-exam span{ color:rgba(255,255,255,0.25); }
+.gc-cd-exam span{ color:rgba(255,255,255,0.2); }
 </style>
 
 <div class="gc-banner">
@@ -954,22 +957,20 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
     <!-- Chakra Logo -->
     <div class="gc-logo-wrap">
-      <svg viewBox="0 0 60 60" width="44" height="44">
+      <svg viewBox="0 0 60 60" width="54" height="54">
         <g class="gc-chakra-spin">
-          <circle cx="30" cy="30" r="26" fill="none" stroke="#0f1c2e" stroke-width="1.5" opacity="0.4"/>
-          <circle cx="30" cy="30" r="18" fill="none" stroke="#0f1c2e" stroke-width="1"/>
-          <!-- 8 spokes -->
-          <line x1="30" y1="4"  x2="30" y2="14" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
-          <line x1="30" y1="46" x2="30" y2="56" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
-          <line x1="4"  y1="30" x2="14" y2="30" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
-          <line x1="46" y1="30" x2="56" y2="30" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
-          <line x1="10" y1="10" x2="17" y2="17" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
-          <line x1="43" y1="43" x2="50" y2="50" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
-          <line x1="50" y1="10" x2="43" y2="17" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
-          <line x1="10" y1="50" x2="17" y2="43" stroke="#0f1c2e" stroke-width="2" stroke-linecap="round"/>
-          <!-- Hub -->
-          <circle cx="30" cy="30" r="6" fill="#0f1c2e"/>
-          <circle cx="30" cy="30" r="3" fill="#c9a84c"/>
+          <circle cx="30" cy="30" r="26" fill="none" stroke="#1e3a8a" stroke-width="1.5" opacity="0.6"/>
+          <circle cx="30" cy="30" r="17" fill="none" stroke="#1e3a8a" stroke-width="1"/>
+          <line x1="30" y1="4"  x2="30" y2="13" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="30" y1="47" x2="30" y2="56" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4"  y1="30" x2="13" y2="30" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="47" y1="30" x2="56" y2="30" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="10" y1="10" x2="17" y2="17" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
+          <line x1="43" y1="43" x2="50" y2="50" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
+          <line x1="50" y1="10" x2="43" y2="17" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
+          <line x1="10" y1="50" x2="17" y2="43" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="30" cy="30" r="6" fill="#1e3a8a"/>
+          <circle cx="30" cy="30" r="3" fill="#bfdbfe"/>
         </g>
       </svg>
     </div>
@@ -979,10 +980,11 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <!-- Title Block -->
     <div class="gc-title-block">
       <div class="gc-brand">
-        <h1 class="gc-title">Ghatna <span>Chakra</span></h1>
-        <span class="gc-edition">2023 – 2025</span>
+        <h1 class="gc-title">Ghatnaa <span>Chakkara</span></h1>
+        <span class="gc-edition">2005 – 2025</span>
       </div>
       <p class="gc-tagline">UPPSC Previous Year Questions Analysis Portal &nbsp;·&nbsp; Uttar Pradesh PSC</p>
+      <div class="gc-powered">powered by <span>UPPSC_FOREVER</span></div>
       <div class="gc-stats-row">
         <div class="gc-stat-pill"><strong>450</strong> Questions</div>
         <div class="gc-stat-pill"><strong>3</strong> Years</div>
@@ -996,7 +998,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <div class="gc-right-block">
       <span class="gc-badge-uppsc">UPPSC PCS</span>
       <span id="streakBadge" class="gc-streak-badge">
-        <i class="ti ti-flame" style="color:#EF9F27;"></i>
+        <i class="ti ti-flame" style="color:#92400e;"></i>
         <span id="streakNum">0</span> day streak
       </span>
     </div>
