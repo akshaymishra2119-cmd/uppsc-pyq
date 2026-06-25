@@ -532,7 +532,7 @@ textarea{resize:vertical;min-height:70px;}
   background:var(--coral-light);border-radius:99px;margin-left:6px;}
 
 /* ── QUIZ REVIEW SECTION ─────────────────────── */
-.review-section{max-width:760px;margin:0 auto;padding-bottom:32px;}
+.review-section{max-width:900px;margin:0 auto;padding-bottom:32px;}
 .review-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px;}
 .review-filter-sep{font-size:11px;color:var(--text3);font-weight:600;
   text-transform:uppercase;letter-spacing:0.5px;margin:0 4px;}
@@ -545,11 +545,11 @@ textarea{resize:vertical;min-height:70px;}
 .review-filter-count{background:rgba(0,0,0,0.08);border-radius:99px;
   padding:1px 6px;font-size:11px;}
 .review-card{background:var(--bg);border:1px solid var(--border);
-  border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;}
-.review-card-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px;}
-.review-opts{display:flex;flex-direction:column;gap:6px;}
-.review-opt{padding:8px 12px;border-radius:6px;font-size:13px;
-  border:1px solid var(--border);line-height:1.4;}
+  border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:14px;}
+.review-card-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+.review-opts{display:flex;flex-direction:column;gap:8px;}
+.review-opt{padding:12px 16px;border-radius:8px;font-size:15px;
+  border:1px solid var(--border);line-height:1.6;}
 
 /* ── TOPIC HEATMAP ───────────────────────────── */
 .topic-heatmap-grid{display:flex;flex-wrap:wrap;gap:6px;}
@@ -1882,7 +1882,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   </div>
 
   <!-- QUIZ SCREEN -->
-  <div id="dq-quiz" style="display:none;max-width:680px;margin:0 auto;">
+  <div id="dq-quiz" style="display:none;max-width:900px;margin:0 auto;">
     <!-- Progress bar -->
     <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -1898,7 +1898,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   </div>
 
   <!-- RESULTS SCREEN -->
-  <div id="dq-results" style="display:none;max-width:540px;margin:0 auto;">
+  <div id="dq-results" style="display:none;max-width:900px;margin:0 auto;">
     <div class="card" style="text-align:center;padding:24px;">
       <div style="font-size:36px;margin-bottom:6px;" id="dq-result-emoji">🎉</div>
       <div style="font-size:22px;font-weight:700;margin-bottom:4px;" id="dq-score-text"></div>
@@ -4378,7 +4378,7 @@ function renderReview(filter) {
           ${statusIcon}
         </span>
       </div>
-      <div class="q-text" style="margin:10px 0;">${q.question}</div>
+      <div class="q-text" style="margin:12px 0;font-size:16px;line-height:1.7;">${q.question}</div>
       <div class="review-opts">${opts}</div>
       ${q.explanation ? `<div class="explanation" style="margin-top:10px;">
         <strong>Explanation:</strong> ${q.explanation}
