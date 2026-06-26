@@ -1272,6 +1272,54 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 }
 
 /* ── PER-YEAR DEEP DIVE ───────────────────────── */
+/* Year pill tabs — scrollable on mobile */
+.yr-pill-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+.yr-pill-tabs::-webkit-scrollbar{display:none;}
+
+/* Stat grid — 4 col desktop, 2 col mobile */
+.yr-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+
+/* Subject card header */
+.yr-subcard-header{display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:var(--bg2);flex-wrap:wrap;}
+
+/* Subject card mini-buttons */
+.yr-subcard-btn{cursor:pointer;text-align:center;padding:6px 12px;border-radius:6px;
+  background:var(--bg);min-width:52px;transition:box-shadow .15s;flex-shrink:0;}
+.yr-subcard-btn--default{border:1px solid var(--border);}
+.yr-subcard-btn--teal{border:1px solid #1D9E7555;}
+.yr-subcard-btn--amber{border:1px solid #EF9F2755;}
+.yr-subcard-num{font-size:17px;font-weight:700;color:var(--text1);line-height:1.2;}
+.yr-subcard-lbl{font-size:10px;color:var(--text3);margin-top:1px;}
+
+/* Subject name — takes remaining space */
+.yr-subcard-name{flex:1;font-size:13px;font-weight:600;color:var(--text1);
+  min-width:80px;line-height:1.3;}
+
+@media(max-width:600px){
+  /* Stat grid → 2x2 */
+  .yr-stat-grid{grid-template-columns:repeat(2,1fr);gap:6px;}
+
+  /* Year pills → horizontal scroll, no wrap */
+  .yr-pill-tabs{flex-wrap:nowrap;}
+  .yr-pill{flex-shrink:0;}
+
+  /* Subcard header: subject full-width on top, buttons below */
+  .yr-subcard-header{gap:6px;padding:9px 10px;}
+  .yr-subcard-name{width:100%;flex:unset;font-size:12px;}
+  .yr-subcard-btn{padding:5px 10px;min-width:48px;}
+  .yr-subcard-num{font-size:15px;}
+
+  /* rmc-opts: 2-col → 1-col in repeat modal */
+  .rmc-opts{grid-template-columns:1fr !important;}
+
+  /* Repeat modal padding */
+  #repeatModalBody{padding:12px !important;}
+
+  /* Question cards in panels */
+  .yr-repeat-q{font-size:11px;}
+}
 .yr-pill{padding:5px 14px;border-radius:20px;border:1px solid var(--border);
   background:transparent;font-size:12px;color:var(--text2);cursor:pointer;
   transition:all .2s;font-family:inherit;}
@@ -2056,7 +2104,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <p style="font-size:13px;color:var(--text2);margin:6px 0 14px;">
       See question distribution, subject breakdown, and repeat questions for each year.
     </p>
-    <div id="yearPillTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px;">
+    <div id="yearPillTabs" class="yr-pill-tabs">
       <span style="font-size:12px;color:var(--text3);">Loading years…</span>
     </div>
     <div id="perYearDashboard"></div>
@@ -2747,7 +2795,7 @@ function renderPerYearDashboard(yr) {
 
   // ── Stat cards ──────────────────────────────────────────
   const statCards = `
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+    <div class="yr-stat-grid">
       <div class="yr-stat-card">
         <div class="yr-stat-val">${yearQs.length}</div>
         <div class="yr-stat-lbl">Total questions</div>
@@ -2771,31 +2819,25 @@ function renderPerYearDashboard(yr) {
     const id = 'subcard_' + sub.replace(/[^a-zA-Z0-9]/g,'_') + '_' + strYr;
     return `
       <div style="border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;">
-        <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--bg2);flex-wrap:wrap;">
-          <div style="flex:1;font-size:13px;font-weight:600;color:var(--text1);min-width:100px;">${sub}</div>
-          <div onclick="showSubQs('${id}','total')"
-            style="cursor:pointer;text-align:center;padding:6px 14px;border-radius:6px;
-                   background:var(--bg);border:1px solid var(--border);min-width:54px;transition:box-shadow .15s;"
+        <div class="yr-subcard-header">
+          <div class="yr-subcard-name">${sub}</div>
+          <div onclick="showSubQs('${id}','total')" class="yr-subcard-btn yr-subcard-btn--default"
             onmouseover="this.style.boxShadow='0 0 0 2px var(--blue)'"
             onmouseout="this.style.boxShadow=''">
-            <div style="font-size:17px;font-weight:700;color:var(--text1);">${data.total.length}</div>
-            <div style="font-size:10px;color:var(--text3);">Total</div>
+            <div class="yr-subcard-num">${data.total.length}</div>
+            <div class="yr-subcard-lbl">Total</div>
           </div>
-          <div onclick="showSubQs('${id}','unique')"
-            style="cursor:pointer;text-align:center;padding:6px 14px;border-radius:6px;
-                   background:var(--bg);border:1px solid #1D9E7555;min-width:54px;transition:box-shadow .15s;"
+          <div onclick="showSubQs('${id}','unique')" class="yr-subcard-btn yr-subcard-btn--teal"
             onmouseover="this.style.boxShadow='0 0 0 2px #1D9E75'"
             onmouseout="this.style.boxShadow=''">
-            <div style="font-size:17px;font-weight:700;color:var(--teal,#1D9E75);">${data.unique.length}</div>
-            <div style="font-size:10px;color:var(--text3);">Unique</div>
+            <div class="yr-subcard-num" style="color:var(--teal,#1D9E75);">${data.unique.length}</div>
+            <div class="yr-subcard-lbl">Unique</div>
           </div>
-          <div onclick="showSubQs('${id}','repeat')"
-            style="cursor:pointer;text-align:center;padding:6px 14px;border-radius:6px;
-                   background:var(--bg);border:1px solid #EF9F2755;min-width:54px;transition:box-shadow .15s;"
+          <div onclick="showSubQs('${id}','repeat')" class="yr-subcard-btn yr-subcard-btn--amber"
             onmouseover="this.style.boxShadow='0 0 0 2px #EF9F27'"
             onmouseout="this.style.boxShadow=''">
-            <div style="font-size:17px;font-weight:700;color:var(--amber-dark,#BA7517);">${data.repeat.length}</div>
-            <div style="font-size:10px;color:var(--text3);">Repeat</div>
+            <div class="yr-subcard-num" style="color:var(--amber-dark,#BA7517);">${data.repeat.length}</div>
+            <div class="yr-subcard-lbl">Repeat</div>
           </div>
         </div>
         <div id="${id}" style="display:none;padding:0 14px;border-top:1px solid var(--border);"></div>
