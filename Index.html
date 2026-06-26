@@ -2729,13 +2729,38 @@ function renderAnalytics(data) {
   const thead    = document.getElementById('gcTableHead');
   const tbody    = document.getElementById('gcTableBody');
   const tfoot    = document.getElementById('gcTableFoot');
-  const totals   = {};
-  allYears.forEach(y => totals[y] = 0);
+
+  // ── Pre-compute correct year totals (total Qs per year) ──────
+  const yearTotals = {};
+  allYears.forEach(y => {
+    yearTotals[y] = data.yearCounts && data.yearCounts[y]
+      ? data.yearCounts[y]
+      : subjects.reduce((s, sub) => s + ((data.yearSubject[y]||{})[sub]||0), 0) || 1;
+  });
+
+  // ── Find max count per subject for heat map intensity ────────
+  const subjectCounts = {};
+  subjects.forEach(sub => {
+    const vals = allYears.map(y => (data.yearSubject[y]||{})[sub]||0);
+    subjectCounts[sub] = { max: Math.max(...vals, 1) };
+  });
+  // Global max percentage for cross-cell heat map
+  let globalMaxPct = 0;
+  subjects.forEach(sub => {
+    allYears.forEach(y => {
+      const cnt = (data.yearSubject[y]||{})[sub]||0;
+      const pct = cnt / (yearTotals[y]||1) * 100;
+      if (pct > globalMaxPct) globalMaxPct = pct;
+    });
+  });
 
   // Build header dynamically
   thead.innerHTML = '<tr><th>Subject</th>' +
-    allYears.map(y => `<th>${y}</th><th>%</th>`).join('') +
-    '<th>Avg</th><th>Trend</th></tr>';
+    allYears.map(y => `<th>${y}</th><th style="color:var(--text3);font-weight:400">%</th>`).join('') +
+    '<th>Avg/yr</th><th>Trend</th></tr>';
+
+  const totals = {};
+  allYears.forEach(y => totals[y] = 0);
 
   tbody.innerHTML = subjects.map(sub => {
     const counts = {};
@@ -2743,22 +2768,28 @@ function renderAnalytics(data) {
       counts[y] = (data.yearSubject[y]||{})[sub]||0;
       totals[y] += counts[y];
     });
-    const total = allYears.reduce((s,y) => s + counts[y], 0);
-    const avg   = (total / nYears).toFixed(1);
+    const total  = allYears.reduce((s,y) => s + counts[y], 0);
+    const avg    = (total / nYears).toFixed(1);
     const cFirst = counts[firstYr], cLast = counts[lastYr];
     const trend  = cLast > cFirst ? '<span class="trend-rising">▲ Rising</span>'
                  : cLast < cFirst ? '<span class="trend-falling">▼ Falling</span>'
                  : '<span class="trend-stable">— Stable</span>';
     const yearCells = allYears.map(y => {
-      const t = totals[y] || data.yearCounts[y] || 1;
-      return `<td>${counts[y]}</td><td style="color:var(--text3)">${Math.round(counts[y]/t*100)}%</td>`;
+      const cnt = counts[y];
+      const pct = Math.round(cnt / (yearTotals[y]||1) * 100);
+      // Heat map: intensity proportional to pct vs global max
+      const intensity = globalMaxPct > 0 ? cnt / (yearTotals[y]||1) / (globalMaxPct/100) : 0;
+      const alpha = cnt > 0 ? Math.max(0.07, Math.min(0.45, intensity * 0.45)) : 0;
+      const bgStyle = cnt > 0 ? `background:rgba(55,138,221,${alpha.toFixed(2)});` : '';
+      const cntStyle = cnt > 0 && pct >= 20 ? 'font-weight:600;' : '';
+      return `<td style="${bgStyle}${cntStyle}">${cnt}</td><td style="color:var(--text3);font-size:11px">${pct}%</td>`;
     }).join('');
     return `<tr><td><strong>${sub}</strong></td>${yearCells}<td><strong>${avg}</strong></td><td>${trend}</td></tr>`;
   }).join('');
 
-  const totalCells = allYears.map(y => `<td>${totals[y]}</td><td>100%</td>`).join('');
+  const totalCells = allYears.map(y => `<td><strong>${totals[y]}</strong></td><td style="color:var(--text3);font-size:11px">100%</td>`).join('');
   const grandTotal = allYears.reduce((s,y)=>s+totals[y],0);
-  tfoot.innerHTML = `<tr><td>Total</td>${totalCells}<td>${(grandTotal/nYears).toFixed(0)}</td><td></td></tr>`;
+  tfoot.innerHTML = `<tr><td><strong>Total</strong></td>${totalCells}<td><strong>${(grandTotal/nYears).toFixed(0)}</strong></td><td></td></tr>`;
 
   // ── Grouped bar chart — all years as datasets ─────────────
   const YR_PALETTE = ['#1D9E75','#7F77DD','#EF9F27','#D4537E','#378ADD','#D85A30','#E24B4A','#085041'];
