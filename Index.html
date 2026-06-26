@@ -1648,7 +1648,6 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
     </select>
     <select id="f-year" onchange="applyFilters()">
       <option value="all">All years</option>
-      <option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option>
     </select>
     <select id="f-diff" onchange="applyFilters()">
       <option value="all">All difficulty</option>
@@ -2695,7 +2694,7 @@ function showTab(id, btn) {
 // ══════════════════════════════════════════════════════════════
 let _analyticsLoaded = false;
 const SUB_COLORS = ['#1D9E75','#378ADD','#D4537E','#EF9F27','#7F77DD','#D85A30','#E24B4A','#085041','#4B1528'];
-const YEARS = ['2018','2019','2020','2021','2022','2023','2024','2025'];
+let YEARS = ['2014','2018','2019','2020','2021','2022','2023','2024','2025']; // updated dynamically after load
 const YR_COLORS = ['#085041','#1D9E75','#378ADD','#7F77DD','#D4537E','#EF9F27','#D85A30','#E24B4A'];
 
 function loadAnalytics() {
@@ -3363,7 +3362,7 @@ function classifyAnswerType(q) {
 }
 
 function computeAnswerDist(questions) {
-  const YEARS   = ['2018','2019','2020','2021','2022','2023','2024','2025'];
+  const YEARS   = [...new Set(questions.map(q=>String(q.year)).filter(Boolean))].sort();
   const letters = { A:0, B:0, C:0, D:0 };
   const byYear  = {};
   YEARS.forEach(y => { byYear[y] = { A:0, B:0, C:0, D:0 }; });
@@ -3610,7 +3609,7 @@ function toggleSB(header) {
 function renderAnswerDistHome(questions) {
   const d     = computeAnswerDist(questions);
   const LCOLS = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
-  const YEARS = ['2018','2019','2020','2021','2022','2023','2024','2025'];
+  const YEARS = [...new Set(questions.map(q=>String(q.year)).filter(Boolean))].sort();
 
   // ── Card 1: Letter bubbles + bars ─────────────────────────
   const maxL  = Math.max(...Object.values(d.letters));
@@ -3872,6 +3871,18 @@ function loadQuestions() {
       if (data.error) { showError(data.error); return; }
       allQuestions = data;
       filteredQ    = [...data];
+      // Update global YEARS and populate year dropdown dynamically from loaded data
+      YEARS = [...new Set(data.map(q=>String(q.year)).filter(Boolean))].sort();
+      const yrSel = document.getElementById('f-year');
+      if (yrSel) {
+        yrSel.innerHTML = '<option value="all">All years</option>' +
+          YEARS.map(y=>`<option>${y}</option>`).join('');
+      }
+      // Update hardcoded header stat
+      const gcTQ = document.getElementById('gcTotalQ');
+      if (gcTQ) gcTQ.textContent = data.length;
+      const gcTQSub = document.getElementById('gcTotalQSub');
+      if (gcTQSub) gcTQSub.textContent = `${YEARS[0]}–${YEARS[YEARS.length-1]} (${YEARS.length} years)`;
       renderQuestions();
       updatePyqSidebarCounts();
       renderAnswerDistHome(allQuestions);
