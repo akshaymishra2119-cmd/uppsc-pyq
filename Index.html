@@ -1120,18 +1120,46 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       <span id="hbCA" style="display:none;">0</span>
     </div>
 
-    <!-- Countdown card (white) -->
-    <div class="hero-countdown">
-      <div class="hcd-stripe"></div>
-      <div class="hcd-lbl">Days to Exam</div>
-      <div class="hcd-num" id="heroDaysLeft">—</div>
-      <div class="hcd-unit">Days Remaining</div>
-      <div class="hcd-bar"></div>
-      <div class="hcd-exam">UPPSC PCS Prelims 2026</div>
-      <div class="hcd-date">📅 6 December 2026</div>
-      <div class="hcd-urgent">⚠️ Less than 6 months!</div>
-      <div class="hcd-tip">~27 days per subject if you start now.</div>
-    </div>
+    <!-- Right column: Countdown + Search widget -->
+    <div class="hero-right-col">
+      <div class="hero-countdown">
+        <div class="hcd-stripe"></div>
+        <div class="hcd-lbl">Days to Exam</div>
+        <div class="hcd-num" id="heroDaysLeft">—</div>
+        <div class="hcd-unit">Days Remaining</div>
+        <div class="hcd-bar"></div>
+        <div class="hcd-exam">UPPSC PCS Prelims 2026</div>
+        <div class="hcd-date">📅 6 December 2026</div>
+        <div class="hcd-urgent">⚠️ Less than 6 months!</div>
+        <div class="hcd-tip">~27 days per subject if you start now.</div>
+      </div>
+
+      <!-- ── Search Widget ───────────────────────────── -->
+      <div class="srch-widget">
+        <div class="srch-widget-ico">🔍</div>
+        <div class="srch-widget-title">Find Any Question</div>
+        <div class="srch-widget-sub">Search 974 PYQ questions instantly — type a topic, keyword, or concept.</div>
+        <div class="srch-wrap">
+          <input class="srch-inp" id="homeSearchInp" type="text"
+            placeholder="president, parliament, river…"
+            oninput="homeSearchPreview()"
+            onkeydown="if(event.key==='Enter')doSearchFromWidget()">
+          <button class="srch-btn" onclick="doSearchFromWidget()" title="Search">
+            <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+        <div class="srch-chips-wrap">
+          <span class="srch-chip" onclick="quickSearch('parliament')">🏛 Parliament</span>
+          <span class="srch-chip" onclick="quickSearch('president')">👤 President</span>
+          <span class="srch-chip" onclick="quickSearch('river')">🌊 River</span>
+          <span class="srch-chip" onclick="quickSearch('amendment')">📜 Amendment</span>
+          <span class="srch-chip" onclick="quickSearch('high court')">⚖️ High Court</span>
+          <span class="srch-chip" onclick="quickSearch('article')">📑 Article</span>
+        </div>
+        <div class="srch-result-label" id="homeSearchLabel"></div>
+      </div>
+
+    </div><!-- /.hero-right-col -->
 
   </div>
 
@@ -1326,6 +1354,52 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 .yr-pill.active{background:var(--blue-light);border-color:var(--blue);
   color:var(--blue-dark);font-weight:600;}
 .yr-pill:hover:not(.active){background:var(--bg2);}
+
+/* ── Search Widget (home page right column) ───────────────── */
+.hero-right-col{display:flex;flex-direction:column;gap:14px;}
+.srch-widget{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
+  border-radius:16px;padding:20px;color:#fff;position:relative;overflow:hidden;flex:1;min-height:160px;}
+.srch-widget::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;
+  background:rgba(99,102,241,.25);border-radius:50%;}
+.srch-widget::after{content:'';position:absolute;bottom:-30px;left:-30px;width:90px;height:90px;
+  background:rgba(16,185,129,.2);border-radius:50%;}
+.srch-widget-ico{font-size:26px;margin-bottom:8px;}
+.srch-widget-title{font-size:14px;font-weight:800;letter-spacing:.3px;margin-bottom:3px;position:relative;z-index:1;}
+.srch-widget-sub{font-size:11px;opacity:.7;margin-bottom:12px;line-height:1.4;position:relative;z-index:1;}
+.srch-wrap{position:relative;z-index:1;}
+.srch-inp{width:100%;box-sizing:border-box;background:rgba(255,255,255,.12);
+  border:1.5px solid rgba(255,255,255,.25);border-radius:10px;
+  padding:9px 36px 9px 12px;font-size:13px;color:#fff;outline:none;
+  transition:border .2s,background .2s;}
+.srch-inp::placeholder{color:rgba(255,255,255,.5);}
+.srch-inp:focus{border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.18);}
+.srch-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  background:rgba(255,255,255,.2);border:none;border-radius:7px;
+  padding:5px 8px;color:#fff;cursor:pointer;font-size:13px;transition:background .2s;}
+.srch-btn:hover{background:rgba(255,255,255,.35);}
+.srch-chips-wrap{margin-top:9px;display:flex;flex-wrap:wrap;gap:5px;z-index:1;position:relative;}
+.srch-chip{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);
+  border-radius:20px;padding:3px 9px;font-size:11px;cursor:pointer;transition:background .2s;white-space:nowrap;}
+.srch-chip:hover{background:rgba(255,255,255,.28);}
+.srch-result-label{margin-top:8px;font-size:11px;opacity:.75;position:relative;z-index:1;min-height:15px;}
+/* Analytics search bar */
+.anl-srch-wrap{display:flex;gap:8px;margin-bottom:14px;align-items:center;}
+.anl-srch-inp{flex:1;padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;
+  background:var(--bg);color:var(--text1);font-size:13px;outline:none;transition:border .2s;}
+.anl-srch-inp:focus{border-color:var(--blue);}
+.anl-srch-clear{background:none;border:1px solid var(--border);border-radius:6px;
+  color:var(--text3);cursor:pointer;font-size:14px;padding:4px 8px;display:none;transition:color .2s;}
+.anl-srch-clear:hover{color:var(--text1);}
+/* Filter bar search */
+.srch-filter-wrap{position:relative;flex:1;min-width:140px;}
+.srch-filter-inp{width:100%;box-sizing:border-box;padding:7px 28px 7px 10px;
+  border:1.5px solid var(--border);border-radius:8px;background:var(--bg);
+  color:var(--text1);font-size:13px;outline:none;transition:border .2s;}
+.srch-filter-inp:focus{border-color:var(--blue);}
+.srch-filter-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;display:none;}
+/* Search highlight */
+mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 .yr-stat-card{background:var(--bg);border:1px solid var(--border);
   border-radius:var(--radius);padding:10px 8px;text-align:center;}
 .yr-stat-val{font-size:22px;font-weight:700;color:var(--text1);line-height:1;}
@@ -1561,6 +1635,11 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
   <!-- ── Filter bar ───────────────────────────────── -->
   <div class="filter-bar" id="filterBar">
+    <div class="srch-filter-wrap">
+      <input class="srch-filter-inp" id="f-search" type="text"
+        placeholder="🔍 Search questions…" oninput="debounceSearch()">
+      <button class="srch-filter-clear" id="f-search-clear" onclick="clearPyqSearch()">✕</button>
+    </div>
     <select id="f-subject" onchange="selectPyqSubject(this.value,null)">
       <option value="all">All subjects</option>
       <option>Geography</option><option>Polity</option><option>Modern History</option>
@@ -2104,6 +2183,13 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <p style="font-size:13px;color:var(--text2);margin:6px 0 14px;">
       See question distribution, subject breakdown, and repeat questions for each year.
     </p>
+    <!-- Analytics search -->
+    <div class="anl-srch-wrap">
+      <input class="anl-srch-inp" id="anlSearchInp" type="text"
+        placeholder="🔍  Search questions in selected year…"
+        oninput="anlSearchHandler()">
+      <button class="anl-srch-clear" id="anlSearchClear" onclick="clearAnlSearch()">✕ Clear</button>
+    </div>
     <div id="yearPillTabs" class="yr-pill-tabs">
       <span style="font-size:12px;color:var(--text3);">Loading years…</span>
     </div>
@@ -2290,6 +2376,9 @@ let filterRepeating   = false;
 let filterNotDone     = false;
 let filterBookmarked  = false;
 let filterHighPri     = false;
+let searchQuery        = "";
+let _searchDebounce    = null;
+let _anlSearchDebounce = null;
 let kwHighlightOn     = false;
 let clusterViewOn     = false;
 let pyqConfidence     = JSON.parse(localStorage.getItem("pyqConfidence") || "{}");
@@ -2308,6 +2397,14 @@ const DANGER_WORDS = /\b(NOT|INCORRECT|EXCEPT|ONLY|ALWAYS|NEVER|ALL|NONE|BOTH|CO
 function highlightDangerWords(text) {
   if (!kwHighlightOn) return text;
   return text.replace(DANGER_WORDS, w => `<mark class="kw-danger">${w}</mark>`);
+}
+
+function highlightSearch(text, term) {
+  if (!term || !text) return text || '';
+  try {
+    const esc = term.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(esc, 'gi'), m => `<mark class="srch-hi">${m}</mark>`);
+  } catch(e) { return text; }
 }
 
 function setConfidence(qId, level) {
@@ -2743,7 +2840,9 @@ function selectYear(yr, btn) {
   document.querySelectorAll('.yr-pill').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   _selectedYear = yr;
-  renderPerYearDashboard(yr);
+  const anlTerm = ((document.getElementById('anlSearchInp')||{}).value || '').trim();
+  if (anlTerm) renderPerYearDashboardWithSearch();
+  else renderPerYearDashboard(yr);
 }
 
 // stored subject data for the currently rendered year dashboard
@@ -3905,6 +4004,13 @@ function applyFilters() {
     if (filterBookmarked && !pyqBookmarks.includes(String(q.id))) return false;
     // Topic drill-down from subject breakdown
     if (drillTopic && (q.subTopic !== drillTopic && q.topic !== drillTopic)) return false;
+    // Text search
+    if (searchQuery) {
+      const sq = searchQuery.toLowerCase();
+      const hay = [q.question||'',q.optA||'',q.optB||'',q.optC||'',q.optD||'',
+                   q.subTopic||'',q.answerText||''].join(' ').toLowerCase();
+      if (!hay.includes(sq)) return false;
+    }
     return true;
   });
 
@@ -3984,7 +4090,8 @@ function renderQuestions() {
     const isBk = pyqBookmarks.includes(String(q.id));
 
     const opts = ["A","B","C","D"].map((letter,i) => {
-      const text = [q.optA,q.optB,q.optC,q.optD][i];
+      const rawOpt = [q.optA,q.optB,q.optC,q.optD][i];
+      const text = highlightSearch(rawOpt||'', searchQuery);
       let cls = "opt";
       if (shown) {
         if (letter === q.answer) cls += " reveal";
@@ -4035,7 +4142,7 @@ function renderQuestions() {
         <span style="margin-left:auto;font-size:11px;color:var(--text3);margin-right:28px;">${q.subTopic||""}</span>
       </div>
       ${confUI}
-      <div class="q-text">${highlightDangerWords(q.question)}</div>
+      <div class="q-text">${highlightSearch(highlightDangerWords(q.question), searchQuery)}</div>
       <div class="opts">${opts}</div>
       ${explanation}
       ${skipBtn}
@@ -5008,6 +5115,128 @@ function loadCA() {
     .withFailureHandler(showError)
     .getCurrentAffairs({ limit: 300 });
 }
+
+// ── SEARCH FUNCTIONS ─────────────────────────────────────────
+function debounceSearch() {
+  const inp = document.getElementById('f-search');
+  const clearBtn = document.getElementById('f-search-clear');
+  if (clearBtn) clearBtn.style.display = inp && inp.value ? 'block' : 'none';
+  clearTimeout(_searchDebounce);
+  _searchDebounce = setTimeout(() => {
+    searchQuery = inp ? inp.value.trim() : '';
+    applyFilters();
+  }, 300);
+}
+
+function clearPyqSearch() {
+  searchQuery = '';
+  const inp = document.getElementById('f-search');
+  if (inp) inp.value = '';
+  const clearBtn = document.getElementById('f-search-clear');
+  if (clearBtn) clearBtn.style.display = 'none';
+  applyFilters();
+}
+
+function homeSearchPreview() {
+  const term = ((document.getElementById('homeSearchInp')||{}).value || '').trim().toLowerCase();
+  const lbl = document.getElementById('homeSearchLabel');
+  if (!term) { if (lbl) lbl.textContent = ''; return; }
+  if (!allQuestions || !allQuestions.length) { if (lbl) lbl.textContent = 'Loading…'; return; }
+  const count = allQuestions.filter(q => {
+    const h = [q.question||'',q.optA||'',q.optB||'',q.optC||'',q.optD||'',
+               q.subTopic||'',q.answerText||''].join(' ').toLowerCase();
+    return h.includes(term);
+  }).length;
+  if (lbl) lbl.textContent = count
+    ? `✨ ${count} question${count!==1?'s':''} found — press Enter or →`
+    : '🔍 No matches found';
+}
+
+function doSearchFromWidget() {
+  const term = ((document.getElementById('homeSearchInp')||{}).value || '').trim();
+  if (!term) return;
+  quickSearch(term);
+}
+
+function quickSearch(term) {
+  searchQuery = term;
+  const filterInp = document.getElementById('f-search');
+  if (filterInp) {
+    filterInp.value = term;
+    const cb = document.getElementById('f-search-clear');
+    if (cb) cb.style.display = 'block';
+  }
+  const pyqBtn = document.querySelector('.nav-btn[onclick*="pyq"]');
+  showTab('pyq', pyqBtn);
+  applyFilters();
+}
+
+// ── ANALYTICS TAB SEARCH ─────────────────────────────────────
+function anlSearchHandler() {
+  const inp = document.getElementById('anlSearchInp');
+  const cb = document.getElementById('anlSearchClear');
+  if (cb) cb.style.display = inp && inp.value ? 'block' : 'none';
+  clearTimeout(_anlSearchDebounce);
+  _anlSearchDebounce = setTimeout(renderPerYearDashboardWithSearch, 300);
+}
+
+function clearAnlSearch() {
+  const inp = document.getElementById('anlSearchInp');
+  if (inp) inp.value = '';
+  const cb = document.getElementById('anlSearchClear');
+  if (cb) cb.style.display = 'none';
+  if (_selectedYear) renderPerYearDashboard(_selectedYear);
+}
+
+function renderPerYearDashboardWithSearch() {
+  const term = ((document.getElementById('anlSearchInp')||{}).value || '').trim().toLowerCase();
+  if (!term) {
+    if (_selectedYear) renderPerYearDashboard(_selectedYear);
+    return;
+  }
+  const matching = allQuestions.filter(q => {
+    if (_selectedYear && String(q.year) !== String(_selectedYear)) return false;
+    const h = [q.question||'',q.optA||'',q.optB||'',q.optC||'',q.optD||'',
+               q.subTopic||'',q.answerText||''].join(' ').toLowerCase();
+    return h.includes(term);
+  });
+  const dash = document.getElementById('perYearDashboard');
+  if (!dash) return;
+  const yrLabel = _selectedYear ? ` in ${_selectedYear}` : '';
+  if (!matching.length) {
+    dash.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text3);">
+      No questions found for "<strong>${term}</strong>"${yrLabel}</div>`;
+    return;
+  }
+  const preview = matching.slice(0,12).map(q => `
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;
+                padding:11px 14px;margin-bottom:8px;">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">
+        ${q.year} · ${q.subject}${q.subTopic ? ' · '+q.subTopic : ''}
+      </div>
+      <div style="font-size:13px;color:var(--text1);line-height:1.5;">
+        ${highlightSearch(q.question||'', term)}
+      </div>
+    </div>`).join('');
+  const moreMsg = matching.length > 12
+    ? `<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--text3);">
+        …and ${matching.length-12} more.
+        <a href="#" style="color:var(--blue);" onclick="anlToSearch('${term.replace(/'/g,"\'")}');return false;">
+          See all in Practice tab →</a></div>` : '';
+  dash.innerHTML = `
+    <div style="margin:4px 0 12px;font-size:13px;color:var(--text2);">
+      <strong style="color:var(--blue);">${matching.length}</strong>
+      question${matching.length!==1?'s':''} match
+      "<strong>${term}</strong>"${yrLabel}
+      &nbsp;·&nbsp;
+      <a href="#" style="color:var(--blue);text-decoration:none;font-size:12px;"
+        onclick="anlToSearch('${term.replace(/'/g,"\'")}');return false;">
+        Open all in Practice tab →</a>
+    </div>
+    ${preview}${moreMsg}`;
+}
+
+function anlToSearch(term) { quickSearch(term); }
 
 function debounceCA() {
   clearTimeout(caDebounce);
