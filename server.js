@@ -6,6 +6,7 @@
 const express      = require('express');
 const fs           = require('fs');
 const path         = require('path');
+const https        = require('https');
 const bcrypt       = require('bcryptjs');
 const jwt          = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -15,6 +16,130 @@ const PORT   = process.env.PORT || 3000;
 const DB     = path.join(__dirname, 'db.json');
 const USERS  = path.join(__dirname, 'users.json');
 const JWT_SECRET = process.env.JWT_SECRET || 'ghatna-chakra-secret-2026';
+
+// ── GOOGLE SHEETS CONFIG ──────────────────────────────────────
+const SHEET_ID  = '1K-XHrHic5of1qIp5vWCJUbYnDbzSVt4_7RZAN-yY_vw';
+const SHEET_TAB = 'QUESTION_BANK';   // exact tab name in your sheet
+const CACHE_TTL = 5 * 60 * 1000;    // 5 minutes
+
+let _sheetsCache     = null;
+let _sheetsCacheTime = 0;
+
+// Fetch and parse Google Sheets public gviz endpoint (no API key needed)
+function fetchSheetQuestions() {
+  return new Promise((resolve, reject) => {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
+    https.get(url, res => {
+      let raw = '';
+      res.on('data', chunk => raw += chunk);
+      res.on('end', () => {
+        try {
+          // Strip JSONP wrapper: /*O_o*/\ngoogle.visualization.Query.setResponse({...});
+          const jsonStr = raw.replace(/^[^{(]*\(/, '').replace(/\)[\s;]*$/, '').replace(/^[^{]*/, '');
+          const parsed  = JSON.parse(jsonStr);
+
+          console.log(`📊 Sheet rows: ${parsed.table.rows.length}, cols: ${parsed.table.cols.length}`);
+
+          // Sheet has no header row — map by column POSITION (matches Code.js column order)
+          // Col: 0=Q_ID 1=Year 2=Subject 3=Sub_Topic 4=Question 5=Opt_A 6=Opt_B 7=Opt_C
+          //      8=Opt_D 9=Correct_Answer 10=Correct_Option_Text 11=Explanation
+          //      12=Difficulty 13=Question_Type 14=Repeats_In 15=Zone
+          const v = (row, i) => {
+            const cell = row.c[i];
+            return cell && cell.v !== null && cell.v !== undefined ? String(cell.v) : '';
+          };
+
+          const rows = parsed.table.rows.filter(row => v(row, 0).trim());
+
+          // Map by column position (matches Code.js order exactly)
+          const questions = rows.map(row => ({
+            id:          v(row,  0),
+            year:        v(row,  1),
+            subject:     v(row,  2),
+            subTopic:    v(row,  3),
+            topic:       v(row,  3),
+            question:    v(row,  4),
+            optA:        v(row,  5),
+            optB:        v(row,  6),
+            optC:        v(row,  7),
+            optD:        v(row,  8),
+            answer:      v(row,  9),
+            answerText:  v(row, 10),
+            explanation: v(row, 11),
+            difficulty:  v(row, 12) || 'Medium',
+            qType:       v(row, 13),
+            repeatsIn:   v(row, 14),   // use sheet's Repeats_In column directly
+            zone:        v(row, 15),
+          }));
+
+          // repeatsIn already set from sheet col 14 — no recompute needed
+
+          // Merge with db.json for questions not yet in the sheet
+          let merged = questions;
+          try {
+            const db = loadDB();
+            const sheetIds = new Set(questions.map(q => q.id));
+            const dbOnly = (db.questions || []).filter(q => !sheetIds.has(q.id));
+            if (dbOnly.length) {
+              // db.json questions have richer 'topic' fields — prefer those
+              merged = [...questions, ...dbOnly];
+              console.log(`📦 Merged: ${questions.length} from sheet + ${dbOnly.length} from db.json`);
+            }
+          } catch(e) { /* db.json optional */ }
+
+          // ── Compute repeatsIn dynamically across ALL merged questions ──
+          // Use 'topic' if set (db.json questions), else 'subTopic' (sheet questions)
+          // Skip generic catch-all values that would cause false positives
+          const GENERIC = new Set(['general','other','unknown','','miscellaneous','mixed']);
+          const topicYears = {};
+          merged.forEach(q => {
+            const t = ((q.topic && !GENERIC.has(q.topic.toLowerCase())) ? q.topic : q.subTopic || '').trim();
+            if (!t || GENERIC.has(t.toLowerCase())) return;
+            if (!topicYears[t]) topicYears[t] = new Set();
+            topicYears[t].add(String(q.year));
+          });
+          merged.forEach(q => {
+            const t = ((q.topic && !GENERIC.has(q.topic.toLowerCase())) ? q.topic : q.subTopic || '').trim();
+            q.repeatsIn = (t && topicYears[t] && topicYears[t].size > 1)
+              ? [...topicYears[t]].sort().join(',')
+              : '';
+          });
+          const repeatCount = merged.filter(q => q.repeatsIn.includes(',')).length;
+          console.log(`🔁 Repeating topics computed: ${repeatCount} questions flagged`);
+
+          _sheetsCache     = merged;
+          _sheetsCacheTime = Date.now();
+          console.log(`✅ Sheet synced: ${merged.length} questions loaded`);
+          resolve(merged);
+        } catch (err) {
+          reject(new Error('Sheet parse error: ' + err.message));
+        }
+      });
+    }).on('error', reject);
+  });
+}
+
+// Return cached questions, fetching fresh if TTL expired
+async function getSheetQuestions() {
+  if (_sheetsCache && (Date.now() - _sheetsCacheTime) < CACHE_TTL) {
+    return _sheetsCache;
+  }
+  return fetchSheetQuestions();
+}
+
+// Load questions — sheet first, db.json fallback
+async function loadQuestions() {
+  try {
+    return await getSheetQuestions();
+  } catch (err) {
+    console.warn('⚠️  Sheet fetch failed, falling back to db.json:', err.message);
+    const db = loadDB();
+    return db.questions || [];
+  }
+}
+
+// Pre-warm cache on startup (non-blocking)
+loadQuestions().catch(err => console.warn('Startup sheet fetch failed:', err.message));
 
 app.use(express.json({ strict: false }));
 app.use(cookieParser());
@@ -179,26 +304,29 @@ app.get('/google-mock.js', (req, res) => {
 });
 
 // ── API: getQuestions ─────────────────────────────────────────
-app.post('/api/getQuestions', (req, res) => {
-  const filters = req.body || {};
-  const db      = loadDB();
-  let rows      = [...db.questions];
+app.post('/api/getQuestions', async (req, res) => {
+  try {
+    const filters = req.body || {};
+    let rows = await loadQuestions();
 
-  if (filters.subject    && filters.subject    !== 'all') rows = rows.filter(r => r.subject    === filters.subject);
-  if (filters.year       && filters.year       !== 'all') rows = rows.filter(r => String(r.year) === String(filters.year));
-  if (filters.difficulty && filters.difficulty !== 'all') rows = rows.filter(r => r.difficulty === filters.difficulty);
-  if (filters.zone       && filters.zone       !== 'all') rows = rows.filter(r => r.zone       === filters.zone);
-  if (filters.repeating) rows = rows.filter(r => String(r.repeatsIn || '').includes(','));
+    if (filters.subject    && filters.subject    !== 'all') rows = rows.filter(r => r.subject    === filters.subject);
+    if (filters.year       && filters.year       !== 'all') rows = rows.filter(r => String(r.year) === String(filters.year));
+    if (filters.difficulty && filters.difficulty !== 'all') rows = rows.filter(r => r.difficulty === filters.difficulty);
+    if (filters.zone       && filters.zone       !== 'all') rows = rows.filter(r => r.zone       === filters.zone);
+    if (filters.repeating) rows = rows.filter(r => String(r.repeatsIn || '').includes(','));
 
-  if (filters.shuffle) {
-    for (let i = rows.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [rows[i], rows[j]] = [rows[j], rows[i]];
+    if (filters.shuffle) {
+      for (let i = rows.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [rows[i], rows[j]] = [rows[j], rows[i]];
+      }
     }
-  }
 
-  rows = rows.slice(0, filters.limit || 2000);
-  res.json(rows);
+    rows = rows.slice(0, filters.limit || 2000);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── API: getCurrentAffairs ────────────────────────────────────
@@ -306,54 +434,64 @@ app.post('/api/getStats', (req, res) => {
 });
 
 // ── API: getAnalytics ─────────────────────────────────────────
-app.post('/api/getAnalytics', (req, res) => {
-  const db = loadDB();
-  const qs = db.questions;
+app.post('/api/getAnalytics', async (req, res) => {
+  try {
+    const qs = await loadQuestions();
 
-  const yearCounts     = {};
-  const subjectCounts  = {};
-  const difficulty     = { Easy: 0, Medium: 0, Hard: 0 };
-  const yearSubject    = {};   // { year: { subject: count } }
-  let repeatingCount   = 0;
+    const yearCounts     = {};
+    const subjectCounts  = {};
+    const difficulty     = { Easy: 0, Medium: 0, Hard: 0 };
+    const yearSubject    = {};
+    let repeatingCount   = 0;
 
-  qs.forEach(q => {
-    const yr  = String(q.year  || 'Unknown');
-    const sub = String(q.subject || 'Other');
-    const dif = String(q.difficulty || '');
+    qs.forEach(q => {
+      const yr  = String(q.year    || 'Unknown');
+      const sub = String(q.subject || 'Other');
+      const dif = String(q.difficulty || '');
 
-    // Year counts
-    yearCounts[yr] = (yearCounts[yr] || 0) + 1;
+      yearCounts[yr]  = (yearCounts[yr]  || 0) + 1;
+      subjectCounts[sub] = (subjectCounts[sub] || 0) + 1;
 
-    // Subject counts
-    subjectCounts[sub] = (subjectCounts[sub] || 0) + 1;
+      if (dif === 'Easy')        difficulty.Easy++;
+      else if (dif === 'Medium') difficulty.Medium++;
+      else if (dif === 'Hard')   difficulty.Hard++;
 
-    // Difficulty
-    if (dif === 'Easy')   difficulty.Easy++;
-    else if (dif === 'Medium') difficulty.Medium++;
-    else if (dif === 'Hard')   difficulty.Hard++;
+      if (!yearSubject[yr]) yearSubject[yr] = {};
+      yearSubject[yr][sub] = (yearSubject[yr][sub] || 0) + 1;
 
-    // Year × Subject matrix
-    if (!yearSubject[yr]) yearSubject[yr] = {};
-    yearSubject[yr][sub] = (yearSubject[yr][sub] || 0) + 1;
+      if (String(q.repeatsIn || '').includes(',')) repeatingCount++;
+    });
 
-    // Repeating
-    if (String(q.repeatsIn || '').includes(',')) repeatingCount++;
-  });
+    res.json({ yearCounts, subjectCounts, difficulty, yearSubject, repeatingCount, total: qs.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-  res.json({ yearCounts, subjectCounts, difficulty, yearSubject, repeatingCount, total: qs.length });
+// ── API: syncSheet — force refresh from Google Sheets ─────────
+app.post('/api/syncSheet', async (req, res) => {
+  try {
+    _sheetsCache     = null;  // invalidate cache
+    _sheetsCacheTime = 0;
+    const qs = await fetchSheetQuestions();
+    res.json({ success: true, count: qs.length, message: `Synced ${qs.length} questions from Google Sheet` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // ── API: getDailyQuiz ─────────────────────────────────────────
-app.post('/api/getDailyQuiz', (req, res) => {
+app.post('/api/getDailyQuiz', async (req, res) => {
   const { count = 10, usePYQ = true, useCA = true } = req.body || {};
   const db = loadDB();
   if (!db.dailyQuizQuestions) db.dailyQuizQuestions = [];
 
   let pool = [];
 
-  // Add PYQ questions
-  if (usePYQ && db.questions.length) {
-    const pyqPool = [...db.questions].sort(() => Math.random() - 0.5);
+  // Add PYQ questions from sheet (with db fallback)
+  if (usePYQ) {
+    const sheetQs = await loadQuestions().catch(() => db.questions || []);
+    const pyqPool = [...sheetQs].sort(() => Math.random() - 0.5);
     pool = pool.concat(pyqPool.map(q => ({ ...q, source: 'PYQ' })));
   }
 
