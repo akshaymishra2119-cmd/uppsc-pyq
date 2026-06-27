@@ -7,6 +7,7 @@ const express      = require('express');
 const fs           = require('fs');
 const path         = require('path');
 const https        = require('https');
+const http         = require('http');
 const bcrypt       = require('bcryptjs');
 const jwt          = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -719,6 +720,83 @@ function _syncLeaderboard(db, userName) {
       lastActive: formatDate(new Date())
     });
   }
+}
+
+// ── API: ingestNews — POST scraped items into db.json ─────────
+// Called by scraper.js cron or Claude scheduled task
+app.post('/api/ingestNews', (req, res) => {
+  try {
+    const { uppscNews = [], currentAffairs = [], source = 'auto-scraper' } = req.body;
+    if (!uppscNews.length && !currentAffairs.length) {
+      return res.json({ ok: false, message: 'No items provided' });
+    }
+
+    const db      = loadDB();
+    const dateStr = uppscNews[0]?.date || currentAffairs[0]?.date || '';
+
+    // Deduplicate by headline — don't re-add same day's headlines
+    const existingUP = new Set((db.uppscNews    || []).map(n => n.headline));
+    const existingCA = new Set((db.currentAffairs || []).map(n => n.headline));
+
+    const newUP = uppscNews.filter(n => !existingUP.has(n.headline));
+    const newCA = currentAffairs.filter(n => !existingCA.has(n.headline));
+
+    db.uppscNews     = [...(db.uppscNews    || []), ...newUP];
+    db.currentAffairs = [...(db.currentAffairs || []), ...newCA];
+
+    // Keep only last 90 days of news (avoid bloat)
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 90);
+    const inRange = item => { try { return new Date(item.date) >= cutoff; } catch { return true; } };
+    db.uppscNews      = db.uppscNews.filter(inRange);
+    db.currentAffairs = db.currentAffairs.filter(inRange);
+
+    saveDB(db);
+    console.log(`📥 ingestNews [${source}]: +${newUP.length} UPPSC, +${newCA.length} CA  (date: ${dateStr})`);
+    res.json({ ok: true, added: { uppsc: newUP.length, ca: newCA.length }, date: dateStr });
+  } catch (e) {
+    console.error('ingestNews error:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// ── API: scrapeStatus — last scrape summary ───────────────────
+let _lastScrapeReport = null;
+app.get('/api/scrapeStatus', (req, res) => {
+  res.json(_lastScrapeReport || { status: 'never_run', message: 'No scrape has run yet' });
+});
+
+// ── Built-in cron (Railway) — scrape at 12:00 PM & 4:00 PM IST ─
+// IST = UTC+5:30  →  12:00 IST = 06:30 UTC  |  16:00 IST = 10:30 UTC
+try {
+  const cron    = require('node-cron');
+  const scraper = require('./scraper');
+
+  async function runScrapeJob(label) {
+    console.log(`\n⏰ [${label}] Auto-scrape triggered`);
+    try {
+      const result = await scraper.scrapeAll();
+      // POST to own ingestNews endpoint
+      const payload = JSON.stringify({ uppscNews: result.uppscNews, currentAffairs: result.currentAffairs, source: label });
+      await new Promise((resolve, reject) => {
+        const req = http.request({ hostname: 'localhost', port: PORT, path: '/api/ingestNews', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, r => {
+          let d = ''; r.on('data', c => d += c); r.on('end', () => resolve(JSON.parse(d)));
+        });
+        req.on('error', reject); req.write(payload); req.end();
+      }).then(r => {
+        _lastScrapeReport = { status: 'ok', label, time: new Date().toISOString(), added: r.added, errors: result.errors };
+        console.log(`✅ [${label}] Done — +${r.added?.uppsc} UPPSC, +${r.added?.ca} CA`);
+      });
+    } catch (e) {
+      _lastScrapeReport = { status: 'error', label, time: new Date().toISOString(), error: e.message };
+      console.error(`❌ [${label}] Scrape failed: ${e.message}`);
+    }
+  }
+
+  cron.schedule('30 6 * * *',  () => runScrapeJob('12PM-IST'));   // 12:00 PM IST
+  cron.schedule('30 10 * * *', () => runScrapeJob('4PM-IST'));    // 4:00 PM IST
+  console.log('⏰ Scraper cron registered: 12:00 PM IST + 4:00 PM IST');
+} catch (e) {
+  console.warn('⚠️  node-cron not installed — run: npm install node-cron  (scraper cron disabled)');
 }
 
 // ── START ─────────────────────────────────────────────────────
