@@ -2468,7 +2468,14 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 
     <!-- ── Detail panel (shown on click) ── -->
     <div id="qtDetail" style="display:none;border-top:1px solid var(--border);margin-top:14px;padding-top:14px;">
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;" id="qtDetailTitle"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);flex:1;" id="qtDetailTitle"></div>
+        <button id="qtViewQsBtn" onclick="openQTypeDrill()"
+          style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;
+          border:none;background:var(--blue);color:#fff;cursor:pointer;">
+          📋 View Questions
+        </button>
+      </div>
 
       <!-- A/B/C/D answer dist -->
       <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Correct answer distribution</div>
@@ -4197,6 +4204,7 @@ function renderQTAnalytics(questions) {
     const d  = G.typeData[t];
     if (!d) return;
 
+    G._activeType = t;
     document.querySelectorAll('.qt-card').forEach(c=>c.classList.remove('active'));
     const ac = document.querySelector(`.qt-card[data-qtype="${t}"]`);
     if (ac) ac.classList.add('active');
@@ -4326,6 +4334,42 @@ function renderQTAnalytics(questions) {
 
     document.getElementById('qtDetail').style.display = '';
   };
+}
+
+function openQTypeDrill() {
+  const G = window._qtAll;
+  if (!G || !G._activeType) return;
+  const t   = G._activeType;
+  const qs  = G.typeData[t].questions;
+  const col = G.TYPE_COLS[t];
+  const lbl = G.TYPE_LABELS[t];
+
+  document.getElementById('sydTitle').innerHTML =
+    `<span style="color:${col};">${lbl}</span> — ${qs.length} questions`;
+
+  const LABELS   = ['A','B','C','D'];
+  const OPT_KEYS = ['optA','optB','optC','optD'];
+
+  document.getElementById('sydBody').innerHTML = qs.length
+    ? qs.map((q, i) => {
+        const opts = OPT_KEYS.map((k, j) => q[k]
+          ? `<div class="syd-opt${q.answer === LABELS[j] ? ' correct' : ''}">
+              ${LABELS[j]}. ${q[k]}${q.answer === LABELS[j] ? ' ✓' : ''}
+             </div>`
+          : '').join('');
+        const repTag = q.repeatsIn && q.repeatsIn.length
+          ? `<span style="color:var(--amber);font-size:10px;">↻ repeats</span>` : '';
+        return `<div class="syd-qblock">
+          <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''} ${repTag}</div>
+          <div class="syd-qtext">${q.question}</div>
+          ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
+          ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
+        </div>`;
+      }).join('')
+    : `<p style="color:var(--text3);padding:24px;text-align:center;">No questions found.</p>`;
+
+  document.getElementById('sydOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function renderAnswerPatternPYQ(questions) {
