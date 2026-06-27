@@ -3006,7 +3006,7 @@ function renderAnalytics(data) {
       const alpha = cnt > 0 ? Math.max(0.07, Math.min(0.45, intensity * 0.45)) : 0;
       const bgStyle = cnt > 0 ? `background:rgba(55,138,221,${alpha.toFixed(2)});` : '';
       const cntStyle = cnt > 0 && pct >= 20 ? 'font-weight:600;' : '';
-      const clickable = cnt > 0 ? `class="gc-cnt-cell" onclick="openSYD('${sub.replace(/'/g,"\\'")}','${y}')" title="View ${cnt} questions"` : '';
+      const clickable = cnt > 0 ? `class="gc-cnt-cell" data-sub="${sub.replace(/"/g,'')}" data-yr="${y}" title="View ${cnt} questions"` : '';
       return `<td ${clickable} style="${bgStyle}${cntStyle}">${cnt}</td><td style="color:var(--text3);font-size:11px">${pct}%</td>`;
     }).join('');
     return `<tr><td><strong>${sub}</strong></td>${yearCells}<td><strong>${avg}</strong></td><td>${trend}</td></tr>`;
@@ -3901,9 +3901,13 @@ function renderAnswerDistHome(questions) {
       const tot = yl.A+yl.B+yl.C+yl.D;
       const mx  = Math.max(yl.A,yl.B,yl.C,yl.D);
       return `<tr><td><strong>${y}</strong></td>
-        ${['A','B','C','D'].map(l =>
-          `<td ${yl[l]===mx?`style="font-weight:800;color:${LCOLS[l]};"`:''}>
-            ${yl[l]}</td>`).join('')}
+        ${['A','B','C','D'].map(l => {
+          const isMx = yl[l]===mx;
+          return `<td class="gc-cnt-cell" data-year="${y}" data-letter="${l}"
+               title="View ${yl[l]} questions — ${y}, answer ${l}"
+               style="${isMx ? 'font-weight:800;color:'+LCOLS[l]+';' : ''}">
+            ${yl[l]}</td>`;
+        }).join('')}
         <td style="color:var(--text3);">${tot}</td></tr>`;
     }).join('')}</tbody>
   </table>`;
@@ -7269,6 +7273,21 @@ async function _savePDF(canvas, filename) {
   pdf.save(filename + '.pdf');
 }
 
+// ── Global click delegation for analytics table cells ─────────
+document.addEventListener('click', function(e) {
+  const td = e.target.closest('td.gc-cnt-cell');
+  if (!td) return;
+  // Subject-wise table
+  if (td.dataset.sub && td.dataset.yr) {
+    openSYD(td.dataset.sub, td.dataset.yr);
+    return;
+  }
+  // Year-wise answer table
+  if (td.dataset.year && td.dataset.letter) {
+    openAnswerDrill(td.dataset.year, td.dataset.letter);
+  }
+});
+
 // ── Subject-Year Drill-down ───────────────────────────────────
 function _renderSYD(subject, year, pool) {
   const qs = pool.filter(q =>
@@ -7325,6 +7344,49 @@ async function openSYD(subject, year) {
 function closeSYD() {
   document.getElementById('sydOverlay').classList.remove('open');
   document.body.style.overflow = '';
+}
+
+async function openAnswerDrill(year, letter) {
+  document.getElementById('sydTitle').textContent = `${year} · Answer ${letter} — loading…`;
+  document.getElementById('sydBody').innerHTML = '<p style="padding:24px;text-align:center;color:var(--text3);">Loading questions…</p>';
+  document.getElementById('sydOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  let pool = allQuestions;
+  if (!pool || !pool.length) {
+    try {
+      const data = await fetch('/api/getQuestions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shuffle: false, limit: 5000 })
+      }).then(r => r.json());
+      pool = Array.isArray(data) ? data : (data.questions || []);
+      allQuestions = pool;
+    } catch(e) {
+      document.getElementById('sydBody').innerHTML =
+        `<p style="color:var(--red);padding:24px;text-align:center;">Failed to load: ${e.message}</p>`;
+      return;
+    }
+  }
+
+  const qs = pool.filter(q => String(q.year) === String(year) && q.answer === letter);
+  document.getElementById('sydTitle').textContent =
+    `${year} · Correct answer = ${letter} — ${qs.length} question${qs.length !== 1 ? 's' : ''}`;
+
+  const LABELS   = ['A','B','C','D'];
+  const OPT_KEYS = ['optA','optB','optC','optD'];
+  document.getElementById('sydBody').innerHTML = qs.length ? qs.map((q, i) => {
+    const opts = OPT_KEYS.map((k, j) => q[k]
+      ? `<div class="syd-opt${q.answer === LABELS[j] ? ' correct' : ''}">${LABELS[j]}. ${q[k]}${q.answer === LABELS[j] ? ' ✓' : ''}</div>`
+      : '').join('');
+    return `
+      <div class="syd-qblock">
+        <div class="syd-qnum">Q${i+1} · ${q.subject||''} · ${q.difficulty||'Medium'}</div>
+        <div class="syd-qtext">${q.question}</div>
+        ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
+        ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
+      </div>`;
+  }).join('') :
+    `<p style="color:var(--text3);padding:24px;text-align:center;">No questions found for ${year} with answer ${letter}.</p>`;
 }
 
 // Download the orange or blue card as PNG or PDF
