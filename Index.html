@@ -1409,11 +1409,6 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     </div>
   </div>
 
-  <!-- ── LINE CHART: TOPIC TREND ────────────────────────────── -->
-  <div class="card" style="margin-bottom:16px;">
-    <div class="card-title" id="gcTrendTitle"><i class="ti ti-trending-up" style="color:var(--coral);"></i> Topic trend across <span id="gcTrendYears">8</span> years — what's rising, steady, or fading</div>
-    <canvas id="chartTrend" style="margin-top:12px;" height="90"></canvas>
-  </div>
 
 
   <!-- ── SUBJECT BREAKDOWN ────────────────────────────────── -->
@@ -3042,23 +3037,6 @@ function renderAnalytics(data) {
   setT2('gcBarChartRange',     `${firstYr}–${lastYr}`);
   setT2('gcTrendYears',        nYears);
 
-  // ── Line chart: topic trend across all years ───────────────
-  const trendSubjects = subjects.slice(0,6);
-  new Chart(document.getElementById('chartTrend'), {
-    type:'line',
-    data:{ labels: allYears, datasets: trendSubjects.map((sub,i) => ({
-      label: sub,
-      data: allYears.map(yr => (data.yearSubject[yr]||{})[sub]||0),
-      borderColor: SUB_COLORS[i%SUB_COLORS.length],
-      backgroundColor: SUB_COLORS[i%SUB_COLORS.length]+'22',
-      tension:0.4, pointRadius:4, pointHoverRadius:6, fill:false, borderWidth:2
-    }))},
-    options:{
-      plugins:{ legend:{ position:'bottom', labels:{ font:{size:11}, boxWidth:12 } } },
-      scales:{ y:{ beginAtZero:true } },
-      responsive:true
-    }
-  });
 }
 
 // ══════════════════════════════════════════════════════════════
