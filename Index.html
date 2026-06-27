@@ -4807,9 +4807,9 @@ function _renderSGWorstMatrix(sgData, TYPE_LABELS, LCOLS) {
 
   const TYPES = ['Direct','Statement','Match','A&R','Chronology'];
   const COL   = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
-  // For avoidance: green = low % (safe to eliminate), red = high % (risky to eliminate)
-  const avoidBG     = pct => pct<=15 ? '#E6F9F2' : pct<=25 ? '#FEFBE6' : '#FEF0F0';
-  const avoidBorder = pct => pct<=15 ? '#1D9E75' : pct<=25 ? '#EF9F27' : '#E24B4A';
+  // elimination confidence = 100 - worstPct, same thresholds as Best Guess Matrix
+  const confBG     = p => p>=45 ? '#E6F9F2' : p>=35 ? '#FEFBE6' : '#FEF0F0';
+  const confBorder = p => p>=45 ? '#1D9E75' : p>=35 ? '#EF9F27' : '#E24B4A';
 
   const subjects = Object.keys(sgData)
     .filter(s => s !== 'ALL')
@@ -4825,13 +4825,13 @@ function _renderSGWorstMatrix(sgData, TYPE_LABELS, LCOLS) {
     <tbody>${subjects.map(sub => {
       const renderCell = (cell) => {
         if (!cell || cell.total < 2) return `<td><div class="bgm-empty">—</div></td>`;
-        const worst = ['A','B','C','D'].reduce((a,l)=>cell[l]<cell[a]?l:a,'A');
-        const pct   = (cell[worst]/cell.total*100).toFixed(0);
-        const p     = parseInt(pct);
+        const worst   = ['A','B','C','D'].reduce((a,l)=>cell[l]<cell[a]?l:a,'A');
+        const worstPct = (cell[worst]/cell.total*100).toFixed(0);
+        const elimConf = 100 - parseInt(worstPct); // high elimConf = safe to drop
         return `<td>
-          <div class="bgm-cell" style="background:${avoidBG(p)};border-left:3px solid ${avoidBorder(p)};">
+          <div class="bgm-cell" style="background:${confBG(elimConf)};border-left:3px solid ${confBorder(elimConf)};">
             <div class="bgm-letter" style="color:${COL[worst]};text-decoration:line-through;">${worst}</div>
-            <div class="bgm-pct" style="color:${COL[worst]};">${pct}%·${cell.total}q</div>
+            <div class="bgm-pct" style="color:${COL[worst]};">${worstPct}%·${cell.total}q</div>
           </div>
         </td>`;
       };
