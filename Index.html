@@ -1499,6 +1499,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <div class="img-fsshow" id="imgFsShow">
     <div class="img-fsshow-bar">
       <span class="img-fsshow-counter" id="imgFsCounter"></span>
+      <button class="img-fsshow-close" id="imgFsPauseBtn" onclick="toggleFsSlideshow()" title="Pause / Resume">⏸</button>
       <button class="img-fsshow-close" onclick="closeFsSlideshow()">&#x2715;</button>
     </div>
     <button class="img-fsshow-arrow left" onclick="fsSlideshowNav(-1)">&#8249;</button>
@@ -8534,13 +8535,13 @@ function _startImgScroll(strip, origCount) {
 function imgScroll(dir) { if (_imgScrollCtrl) _imgScrollCtrl.jump(dir); }
 
 // ── FULLSCREEN SLIDESHOW OVERLAY ──────────────────────────────
-let _fsIdx = 0, _fsTimer = null;
+let _fsIdx = 0, _fsTimer = null, _fsPaused = false;
 
 function openFsSlideshow(startIdx) {
   if (!_stripItems.length) return;
   _fsIdx = startIdx || 0;
+  _fsPaused = false;
 
-  // Build dots
   const dotsEl = document.getElementById('imgFsDots');
   dotsEl.innerHTML = '';
   _stripItems.forEach((_, i) => {
@@ -8552,10 +8553,26 @@ function openFsSlideshow(startIdx) {
 
   document.getElementById('imgFsShow').classList.add('open');
   document.body.style.overflow = 'hidden';
+  _fsUpdatePauseBtn();
   _fsRender();
-  _fsTimer = setInterval(() => fsGo(_fsIdx + 1), 5000);
+  _fsStartTimer();
+  document.addEventListener('keydown', _fsKey);
+}
 
-  document.getElementById('imgFsShow').addEventListener('keydown', _fsKey);
+function _fsStartTimer() {
+  clearInterval(_fsTimer);
+  if (!_fsPaused) _fsTimer = setInterval(() => fsGo(_fsIdx + 1), 5000);
+}
+
+function _fsUpdatePauseBtn() {
+  const btn = document.getElementById('imgFsPauseBtn');
+  if (btn) btn.textContent = _fsPaused ? '▶' : '⏸';
+}
+
+function toggleFsSlideshow() {
+  _fsPaused = !_fsPaused;
+  _fsUpdatePauseBtn();
+  _fsStartTimer();
 }
 
 function _fsRender() {
@@ -8576,8 +8593,7 @@ function _fsRender() {
 function fsGo(idx) {
   _fsIdx = (idx + _stripItems.length) % _stripItems.length;
   _fsRender();
-  clearInterval(_fsTimer);
-  _fsTimer = setInterval(() => fsGo(_fsIdx + 1), 5000);
+  _fsStartTimer();
 }
 
 function fsSlideshowNav(dir) { fsGo(_fsIdx + dir); }
@@ -8586,11 +8602,13 @@ function closeFsSlideshow() {
   document.getElementById('imgFsShow').classList.remove('open');
   document.body.style.overflow = '';
   clearInterval(_fsTimer);
+  document.removeEventListener('keydown', _fsKey);
 }
 
 function _fsKey(e) {
   if (e.key === 'ArrowRight') fsSlideshowNav(1);
   else if (e.key === 'ArrowLeft') fsSlideshowNav(-1);
+  else if (e.key === ' ') { e.preventDefault(); toggleFsSlideshow(); }
   else if (e.key === 'Escape') closeFsSlideshow();
 }
 
