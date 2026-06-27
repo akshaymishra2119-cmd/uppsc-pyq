@@ -887,6 +887,31 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 .qt-ar-opts b{color:var(--text);}
 .qt-tip{margin-top:10px;font-size:12px;background:var(--amber-light,#FAEEDA);color:#633806;border-left:3px solid var(--amber,#EF9F27);border-radius:0 8px 8px 0;padding:8px 12px;line-height:1.6;}
 
+/* ── QT year trend bar ───────────────────────── */
+.qt-yr-bar-wrap{display:flex;align-items:flex-end;gap:6px;height:70px;padding:0 4px;}
+.qt-yr-col{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:36px;}
+.qt-yr-bar{border-radius:4px 4px 0 0;width:28px;transition:opacity .15s;}
+.qt-yr-label{font-size:9px;color:var(--text3);}
+.qt-yr-val{font-size:9px;font-weight:700;color:var(--text2);}
+/* ── Subject matrix ──────────────────────────── */
+.qt-matrix{border-collapse:collapse;font-size:11px;width:100%;}
+.qt-matrix th{background:var(--bg3);padding:6px 10px;text-align:center;font-weight:600;
+  color:var(--text2);border:1px solid var(--border);white-space:nowrap;}
+.qt-matrix td{padding:5px 10px;border:1px solid var(--border);text-align:center;
+  font-size:12px;font-weight:600;}
+.qt-matrix td.sub-name{text-align:left;font-size:11px;font-weight:500;color:var(--text2);
+  background:var(--bg2);white-space:nowrap;padding-left:12px;}
+.qt-matrix td.heat-0{color:var(--text3);}
+.qt-matrix td.heat-1{background:#EBF5FF;color:#2563EB;}
+.qt-matrix td.heat-2{background:#DBEAFE;color:#1D4ED8;font-weight:700;}
+.qt-matrix td.heat-3{background:#BFDBFE;color:#1E40AF;font-weight:800;}
+/* ── Topic pills ─────────────────────────────── */
+.qt-topic-pill{font-size:10px;padding:3px 9px;border-radius:12px;background:var(--bg3);
+  border:1px solid var(--border);color:var(--text2);display:flex;gap:4px;align-items:center;}
+.qt-topic-pill b{color:var(--text);}
+/* ── Repeat box ──────────────────────────────── */
+.qt-repeat-box{background:var(--bg3);border-radius:8px;padding:12px 14px;font-size:12px;
+  color:var(--text2);border-left:3px solid var(--purple,#7F77DD);}
 /* ── STRATEGY CARDS ──────────────────────────── */
 #ansStrategyGrid{display:flex;flex-direction:column;gap:14px;}
 .strat-card{background:var(--bg3);border-radius:12px;padding:16px;
@@ -1455,22 +1480,6 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     </div>
 
 
-  </div>
-
-  <!-- ── QUESTION TYPE ANALYTICS ──────────────────────────── -->
-  <div class="card" style="margin-bottom:16px;" id="qtAnalyticsCard">
-    <div class="card-title">
-      <i class="ti ti-list-check" style="color:var(--purple);"></i>
-      Question type analysis
-      <span style="font-size:11px;color:var(--text3);margin-left:auto;">click a type to see answer pattern</span>
-    </div>
-    <div class="qt-grid" id="qtGrid"></div>
-    <div id="qtDetail" style="display:none;">
-      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;" id="qtDetailTitle"></div>
-      <div class="qt-ans-row" id="qtAnsRow"></div>
-      <div id="qtARopts" class="qt-ar-opts" style="display:none;"></div>
-      <div id="qtTip" class="qt-tip" style="display:none;"></div>
-    </div>
   </div>
 
   <!-- ── CA + LEADERBOARD ───────────────────────────────────── -->
@@ -2445,6 +2454,55 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
     </div>
     <div id="perYearDashboard"></div>
   </div>
+
+  <!-- ══ QUESTION TYPE ANALYTICS (full) ══════════════════════ -->
+  <div class="card" style="margin-bottom:16px;" id="qtAnalyticsCard">
+    <div class="card-title" style="font-size:15px;font-weight:700;">
+      <i class="ti ti-list-check" style="color:var(--purple);"></i>
+      Question Type Deep Analysis
+      <span style="font-size:11px;color:var(--text3);margin-left:auto;font-weight:400;">click a type card to expand</span>
+    </div>
+
+    <!-- Type count cards -->
+    <div class="qt-grid" id="qtGrid"></div>
+
+    <!-- ── Detail panel (shown on click) ── -->
+    <div id="qtDetail" style="display:none;border-top:1px solid var(--border);margin-top:14px;padding-top:14px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;" id="qtDetailTitle"></div>
+
+      <!-- A/B/C/D answer dist -->
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Correct answer distribution</div>
+      <div class="qt-ans-row" id="qtAnsRow"></div>
+
+      <!-- A&R option meanings -->
+      <div id="qtARopts" class="qt-ar-opts" style="display:none;"></div>
+
+      <!-- Strategy tip -->
+      <div id="qtTip" class="qt-tip" style="display:none;"></div>
+
+      <!-- Year-wise trend for this type -->
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 6px;">Year-wise count — this type</div>
+      <div id="qtYearTrend" style="overflow-x:auto;"></div>
+
+      <!-- Top topics for this type -->
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 6px;">Top topics in this type</div>
+      <div id="qtTopicDrill" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+
+      <!-- Repeat pattern -->
+      <div id="qtRepeatBox" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <!-- ══ SUBJECT × TYPE CROSS-TAB ════════════════════════════ -->
+  <div class="card" style="margin-bottom:16px;" id="qtSubjectCrossCard">
+    <div class="card-title" style="font-size:15px;font-weight:700;">
+      <i class="ti ti-layout-grid" style="color:var(--teal);"></i>
+      Subject × Question Type Matrix
+      <span style="font-size:11px;color:var(--text3);margin-left:auto;font-weight:400;">which subjects ask which types</span>
+    </div>
+    <div id="qtSubjectMatrix" style="overflow-x:auto;"></div>
+  </div>
+
 </div>
 
 <!-- ══ GLOBAL REPEAT QUESTION COMPARE MODAL ══════════════════ -->
@@ -4016,163 +4074,257 @@ function renderAnswerDistHome(questions) {
   }
 }
 
-// ── Question Type Analytics ──────────────────────────────────
+// ── Question Type Analytics (full) ───────────────────────────
 function renderQTAnalytics(questions) {
   const gridEl   = document.getElementById('qtGrid');
-  const detailEl = document.getElementById('qtDetail');
-  const titleEl  = document.getElementById('qtDetailTitle');
-  const ansRowEl = document.getElementById('qtAnsRow');
-  const arOptsEl = document.getElementById('qtARopts');
-  const tipEl    = document.getElementById('qtTip');
   if (!gridEl) return;
 
-  const LCOLS   = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
+  const LCOLS = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
   const TYPE_LABELS = {
-    'Direct':      'Direct',
-    'Statement':   'Statement-based',
-    'Match':       'Match the following',
-    'A&R':         'Assertion & Reason',
-    'Chronology':  'Chronological order',
-    'Unknown':     'Unknown / Other',
+    'Direct':'Direct', 'Statement':'Statement-based',
+    'Match':'Match the following', 'A&R':'Assertion & Reason',
+    'Chronology':'Chronological order', 'Unknown':'Unknown / Other',
   };
   const TYPE_ICONS = {
-    'Direct':     'ti-circle-check',
-    'Statement':  'ti-list',
-    'Match':      'ti-arrows-left-right',
-    'A&R':        'ti-help-circle',
-    'Chronology': 'ti-sort-ascending',
-    'Unknown':    'ti-question-mark',
+    'Direct':'ti-circle-check','Statement':'ti-list',
+    'Match':'ti-arrows-left-right','A&R':'ti-help-circle',
+    'Chronology':'ti-sort-ascending','Unknown':'ti-question-mark',
   };
   const TYPE_COLS = {
     'Direct':'#378ADD','Statement':'#7F77DD','Match':'#EF9F27',
     'A&R':'#1D9E75','Chronology':'#D85A30','Unknown':'#aaa',
   };
-
-  // A&R standard option text
   const AR_OPTS = [
     { letter:'A', text:'Both (A) and (R) are true and (R) is the correct explanation of (A)' },
     { letter:'B', text:'Both (A) and (R) are true but (R) is NOT the correct explanation of (A)' },
     { letter:'C', text:'(A) is true but (R) is false' },
     { letter:'D', text:'(A) is false but (R) is true' },
   ];
-
-  // Count per type + answer distribution
-  const typeData = {};
   const ORDER = ['Direct','Statement','Match','A&R','Chronology','Unknown'];
-  ORDER.forEach(t => typeData[t] = { count:0, answers:{A:0,B:0,C:0,D:0} });
+
+  // Build type data: count, answers, byYear, bySubject, topics, repeats
+  const YEARS = [...new Set(questions.map(q=>String(q.year)).filter(Boolean))].sort();
+  const typeData = {};
+  ORDER.forEach(t => typeData[t] = {
+    count:0, answers:{A:0,B:0,C:0,D:0},
+    byYear:{}, bySubject:{}, topics:{}, repeats:0, questions:[]
+  });
 
   questions.forEach(q => {
-    const t = (q.qType && typeData[q.qType]) ? q.qType : 'Unknown';
+    const t   = (q.qType && typeData[q.qType]) ? q.qType : 'Unknown';
+    const yr  = String(q.year||'');
+    const sub = (q.subject||'Other').trim();
+    const top = (q.topic||'').trim();
+    const ans = (q.answer||'').trim().toUpperCase();
+
     typeData[t].count++;
-    const a = (q.answer||'').trim().toUpperCase();
-    if ('ABCD'.includes(a)) typeData[t].answers[a]++;
+    typeData[t].questions.push(q);
+    if ('ABCD'.includes(ans)) typeData[t].answers[ans]++;
+    if (yr) {
+      typeData[t].byYear[yr] = (typeData[t].byYear[yr]||0) + 1;
+    }
+    typeData[t].bySubject[sub] = (typeData[t].bySubject[sub]||0) + 1;
+    if (top) typeData[t].topics[top] = (typeData[t].topics[top]||0) + 1;
+    if (q.repeatsIn && q.repeatsIn.length > 0) typeData[t].repeats++;
   });
+
+  // Build subject list (top 8 by total count)
+  const subjectCounts = {};
+  questions.forEach(q => {
+    const s = (q.subject||'Other').trim();
+    subjectCounts[s] = (subjectCounts[s]||0) + 1;
+  });
+  const TOP_SUBS = Object.entries(subjectCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
 
   const total = questions.length || 1;
 
-  // Render type cards
+  // ── Render type cards ────────────────────────────────────────
   gridEl.innerHTML = ORDER.map(t => {
     const d   = typeData[t];
     if (d.count === 0) return '';
     const pct = (d.count / total * 100).toFixed(1);
     const col = TYPE_COLS[t];
+    const topAns = Object.entries(d.answers).sort((a,b)=>b[1]-a[1])[0];
     return `<div class="qt-card" data-qtype="${t}" onclick="showQTDetail('${t}')">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
         <i class="ti ${TYPE_ICONS[t]}" style="font-size:17px;color:${col};"></i>
-        <span style="font-size:12px;font-weight:700;color:${col};">${TYPE_LABELS[t]}</span>
+        <span style="font-size:11px;font-weight:700;color:${col};">${TYPE_LABELS[t]}</span>
       </div>
-      <div style="font-size:26px;font-weight:800;color:var(--text);">${d.count}</div>
+      <div style="font-size:28px;font-weight:800;color:var(--text);">${d.count}</div>
       <div style="font-size:11px;color:var(--text3);">${pct}% of paper</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px;">
+        Top ans: <strong style="color:${LCOLS[topAns[0]]};">${topAns[0]}</strong>
+        &nbsp;·&nbsp; Repeats: <strong>${d.repeats}</strong>
+      </div>
       <div style="margin-top:8px;height:4px;border-radius:2px;background:var(--border);overflow:hidden;">
         <div style="width:${pct}%;height:100%;background:${col};border-radius:2px;"></div>
       </div>
     </div>`;
   }).join('');
 
-  // Expose detail renderer to global scope
-  window._qtTypeData  = typeData;
-  window._qtARopts    = AR_OPTS;
-  window._qtLcols     = LCOLS;
-  window._qtTypeCols  = TYPE_COLS;
-  window._qtTypeLabels = TYPE_LABELS;
+  // ── Subject × Type matrix ────────────────────────────────────
+  const matrixEl = document.getElementById('qtSubjectMatrix');
+  if (matrixEl) {
+    const activeTypes = ORDER.filter(t => typeData[t].count > 0 && t !== 'Unknown');
+    const maxCell = Math.max(...TOP_SUBS.flatMap(s => activeTypes.map(t => typeData[t].bySubject[s]||0)));
+    matrixEl.innerHTML = `<table class="qt-matrix">
+      <thead><tr>
+        <th style="text-align:left;">Subject</th>
+        ${activeTypes.map(t=>`<th style="color:${TYPE_COLS[t]};">${TYPE_LABELS[t]}</th>`).join('')}
+        <th>Total</th>
+      </tr></thead>
+      <tbody>${TOP_SUBS.map(sub => {
+        const rowTotal = activeTypes.reduce((s,t)=>s+(typeData[t].bySubject[sub]||0),0);
+        if (rowTotal === 0) return '';
+        return `<tr>
+          <td class="sub-name">${sub}</td>
+          ${activeTypes.map(t => {
+            const v = typeData[t].bySubject[sub]||0;
+            const heat = v===0?0:v<3?1:v<8?2:3;
+            return `<td class="heat-${heat}">${v||'—'}</td>`;
+          }).join('')}
+          <td style="font-weight:700;color:var(--text);">${rowTotal}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+
+  // ── Store globals for detail panel ───────────────────────────
+  window._qtAll        = { typeData, YEARS, LCOLS, TYPE_COLS, TYPE_LABELS, TYPE_ICONS, AR_OPTS, ORDER };
 
   window.showQTDetail = function(t) {
-    const d   = window._qtTypeData[t];
+    const G  = window._qtAll;
+    const d  = G.typeData[t];
     if (!d) return;
-    // Mark active card
-    document.querySelectorAll('.qt-card').forEach(c => c.classList.remove('active'));
-    const activeCard = document.querySelector(`.qt-card[data-qtype="${t}"]`);
-    if (activeCard) activeCard.classList.add('active');
 
-    const col = window._qtTypeCols[t];
-    const answers = d.answers;
-    const typeTotal = Object.values(answers).reduce((s,v)=>s+v,0) || 1;
-    const maxAns = Math.max(...Object.values(answers));
+    document.querySelectorAll('.qt-card').forEach(c=>c.classList.remove('active'));
+    const ac = document.querySelector(`.qt-card[data-qtype="${t}"]`);
+    if (ac) ac.classList.add('active');
+
+    const col       = G.TYPE_COLS[t];
+    const answers   = d.answers;
+    const typeTotal = Object.values(answers).reduce((s,v)=>s+v,0)||1;
+    const maxAns    = Math.max(...Object.values(answers));
     const topLetter = Object.entries(answers).sort((a,b)=>b[1]-a[1])[0];
 
-    titleEl.innerHTML = `<span style="color:${col};">${window._qtTypeLabels[t]}</span>
-      — correct answer distribution`;
+    // Title
+    const titleEl = document.getElementById('qtDetailTitle');
+    if (titleEl) titleEl.innerHTML =
+      `<span style="color:${col};">${G.TYPE_LABELS[t]}</span> — deep analysis`;
 
-    ansRowEl.innerHTML = ['A','B','C','D'].map(l => {
-      const cnt  = answers[l];
-      const pct  = (cnt / typeTotal * 100).toFixed(0);
+    // A/B/C/D dist
+    const ansRowEl = document.getElementById('qtAnsRow');
+    if (ansRowEl) ansRowEl.innerHTML = ['A','B','C','D'].map(l => {
+      const cnt   = answers[l];
+      const pct   = (cnt/typeTotal*100).toFixed(0);
       const isTop = cnt === maxAns;
-      const lcol = window._qtLcols[l];
-      return `<div class="qt-ans-cell ${isTop?'top':''}"
-          style="background:${lcol}18;border:1.5px solid ${isTop?lcol:'var(--border)'};
-          border-radius:8px;padding:10px 8px;text-align:center;">
-        <div style="font-size:18px;font-weight:800;color:${lcol};">${l}</div>
+      const lc    = G.LCOLS[l];
+      return `<div style="background:${lc}18;border:1.5px solid ${isTop?lc:'var(--border)'};
+          border-radius:8px;padding:10px 6px;text-align:center;">
+        <div style="font-size:16px;font-weight:800;color:${lc};">${l}</div>
         <div style="font-size:20px;font-weight:800;color:var(--text);">${cnt}</div>
         <div style="font-size:11px;color:var(--text3);">${pct}%</div>
-        ${isTop ? `<div style="font-size:9px;font-weight:700;color:${lcol};margin-top:3px;">MOST COMMON</div>` : ''}
+        ${isTop?`<div style="font-size:9px;font-weight:700;color:${lc};margin-top:2px;">MOST COMMON</div>`:''}
       </div>`;
     }).join('');
 
-    // A&R: show standard option meanings
-    if (t === 'A&R' && arOptsEl) {
-      arOptsEl.style.display = '';
-      arOptsEl.innerHTML = `<div style="font-size:11px;font-weight:600;color:var(--text3);
-          text-transform:uppercase;letter-spacing:0.5px;margin:14px 0 6px;">Standard A&R option meanings</div>
-        <div style="display:grid;gap:5px;">
-        ${window._qtARopts.map(o => {
-          const cnt  = answers[o.letter];
-          const pct  = (cnt / typeTotal * 100).toFixed(0);
-          const isTop = o.letter === topLetter[0];
-          const lc = window._qtLcols[o.letter];
-          return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;
-              background:${isTop ? lc+'18' : 'var(--bg3)'};border:1px solid ${isTop ? lc : 'var(--border)'};">
-            <span style="font-size:14px;font-weight:800;color:${lc};min-width:20px;">${o.letter}</span>
-            <span style="font-size:11px;color:var(--text2);flex:1;">${o.text}</span>
-            <span style="font-size:12px;font-weight:700;color:${lc};">${cnt} <span style="font-weight:400;color:var(--text3);">(${pct}%)</span></span>
+    // A&R option meanings
+    const arOptsEl = document.getElementById('qtARopts');
+    if (arOptsEl) {
+      if (t === 'A&R') {
+        arOptsEl.style.display = '';
+        arOptsEl.innerHTML = `<div style="font-size:11px;font-weight:600;color:var(--text3);
+            text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Standard A&R option meanings</div>
+          <div style="display:grid;gap:5px;">
+          ${G.AR_OPTS.map(o => {
+            const cnt   = answers[o.letter];
+            const pct   = (cnt/typeTotal*100).toFixed(0);
+            const isTop = o.letter === topLetter[0];
+            const lc    = G.LCOLS[o.letter];
+            return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;
+                border-radius:6px;background:${isTop?lc+'18':'var(--bg3)'};
+                border:1px solid ${isTop?lc:'var(--border)'};">
+              <span style="font-size:14px;font-weight:800;color:${lc};min-width:18px;">${o.letter}</span>
+              <span style="font-size:11px;color:var(--text2);flex:1;">${o.text}</span>
+              <span style="font-size:12px;font-weight:700;color:${lc};">${cnt}
+                <span style="font-weight:400;color:var(--text3);">(${pct}%)</span></span>
+            </div>`;
+          }).join('')}
           </div>`;
-        }).join('')}
-        </div>`;
-    } else if (arOptsEl) {
-      arOptsEl.style.display = 'none';
+      } else { arOptsEl.style.display='none'; }
     }
 
     // Strategy tip
+    const tipEl = document.getElementById('qtTip');
     if (tipEl) {
       tipEl.style.display = '';
-      const topPct = (topLetter[1] / typeTotal * 100).toFixed(0);
-      let tip = '';
-      if (t === 'A&R') {
-        tip = topLetter[0] === 'A'
-          ? `<strong>Tip:</strong> In A&R questions, option A (both true + R explains A) is most common (${topPct}%). When in doubt, lean towards A but verify by checking if R truly explains A.`
-          : `<strong>Tip:</strong> Option ${topLetter[0]} is the most common correct answer in A&R (${topPct}%). Study each option meaning carefully.`;
-      } else if (t === 'Statement') {
-        tip = `<strong>Tip:</strong> Statement-based questions most often have <strong>${topLetter[0]}</strong> as the correct answer (${topPct}%). Use elimination — identify the clearly wrong statements first.`;
-      } else if (t === 'Match') {
-        tip = `<strong>Tip:</strong> Match questions most commonly have <strong>${topLetter[0]}</strong> as the correct answer (${topPct}%). Fix one pair you're sure of, then eliminate options that don't include it.`;
-      } else if (t === 'Chronology') {
-        tip = `<strong>Tip:</strong> Chronology questions most often have <strong>${topLetter[0]}</strong> as the correct answer (${topPct}%). Anchor on well-known events and work outward.`;
-      } else {
-        tip = `<strong>Tip:</strong> For ${window._qtTypeLabels[t]} questions, the most common correct answer is <strong>${topLetter[0]}</strong> (${topPct}%).`;
-      }
-      tipEl.innerHTML = `<i class="ti ti-bulb" style="color:var(--amber);"></i> ${tip}`;
+      const topPct = (topLetter[1]/typeTotal*100).toFixed(0);
+      const TIPS = {
+        'A&R':        topLetter[0]==='A'
+          ? `In A&R questions, option A (both true + R explains A) is most common (${topPct}%). Lean towards A but verify R truly explains A.`
+          : `Option ${topLetter[0]} is most common in A&R (${topPct}%). Study each option meaning carefully.`,
+        'Statement':  `Statement questions most often have <strong>${topLetter[0]}</strong> as answer (${topPct}%). Use elimination — identify clearly wrong statements first.`,
+        'Match':      `Match questions most commonly have <strong>${topLetter[0]}</strong> (${topPct}%). Fix one pair you're sure of, then eliminate.`,
+        'Chronology': `Chronology questions most often have <strong>${topLetter[0]}</strong> (${topPct}%). Anchor on well-known events and work outward.`,
+        'Direct':     `Direct questions most often have <strong>${topLetter[0]}</strong> (${topPct}%). No tricks — know your facts.`,
+      };
+      tipEl.innerHTML = `<i class="ti ti-bulb" style="color:var(--amber);"></i>
+        <strong>Tip:</strong> ${TIPS[t]||`Most common answer is <strong>${topLetter[0]}</strong> (${topPct}%).`}`;
     }
 
-    detailEl.style.display = '';
+    // Year-wise trend bar chart
+    const trendEl = document.getElementById('qtYearTrend');
+    if (trendEl && G.YEARS.length) {
+      const vals  = G.YEARS.map(y => d.byYear[y]||0);
+      const maxV  = Math.max(...vals, 1);
+      trendEl.innerHTML = `<div class="qt-yr-bar-wrap">
+        ${G.YEARS.map((y,i) => {
+          const v   = vals[i];
+          const h   = Math.round((v/maxV)*60)+4;
+          return `<div class="qt-yr-col">
+            <div class="qt-yr-val">${v||''}</div>
+            <div class="qt-yr-bar" style="height:${h}px;background:${col};opacity:${v>0?1:0.15};"></div>
+            <div class="qt-yr-label">${y.slice(-2)}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+      // Trend insight
+      const first3 = vals.slice(0,3).reduce((a,b)=>a+b,0)/3||1;
+      const last3  = vals.slice(-3).reduce((a,b)=>a+b,0)/3||1;
+      const trend  = last3 > first3*1.2 ? '📈 Increasing' : last3 < first3*0.8 ? '📉 Decreasing' : '➡️ Stable';
+      trendEl.insertAdjacentHTML('afterend',
+        `<div style="font-size:11px;color:var(--text3);margin-top:4px;">
+          Trend: <strong>${trend}</strong> (avg ${first3.toFixed(1)}/yr early → ${last3.toFixed(1)}/yr recent)
+        </div>`);
+    }
+
+    // Top topics
+    const topicEl = document.getElementById('qtTopicDrill');
+    if (topicEl) {
+      const tops = Object.entries(d.topics).sort((a,b)=>b[1]-a[1]).slice(0,12);
+      topicEl.innerHTML = tops.length
+        ? tops.map(([tp,cnt]) =>
+            `<div class="qt-topic-pill"><b>${cnt}</b> ${tp}</div>`).join('')
+        : `<span style="font-size:12px;color:var(--text3);">No topic data available</span>`;
+    }
+
+    // Repeat pattern
+    const repEl = document.getElementById('qtRepeatBox');
+    if (repEl) {
+      const repPct = (d.repeats/d.count*100).toFixed(0);
+      repEl.innerHTML = `<div class="qt-repeat-box">
+        <i class="ti ti-repeat" style="color:var(--purple);"></i>
+        <strong>Repeat pattern:</strong> ${d.repeats} of ${d.count} ${G.TYPE_LABELS[t]} questions
+        (${repPct}%) have appeared in multiple years.
+        ${repPct>40
+          ? ` <strong style="color:var(--teal);">High repeat rate</strong> — revise previous ${G.TYPE_LABELS[t]} questions carefully.`
+          : repPct>20
+          ? ` Moderate repeat rate — worth revisiting.`
+          : ` Low repeat rate — focus on concept clarity over memorising repeats.`}
+      </div>`;
+    }
+
+    document.getElementById('qtDetail').style.display = '';
   };
 }
 
