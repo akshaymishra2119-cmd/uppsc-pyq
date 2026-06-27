@@ -563,6 +563,60 @@ app.post('/api/bulkAddCurrentAffairs', (req, res) => {
   res.json({ success: true, added: rows.length });
 });
 
+// ── API: getDigest — fetch DAILY_DIGEST sheet tab ────────────
+let _digestCache = null;
+let _digestCacheTime = 0;
+const DIGEST_TAB = 'DAILY_DIGEST';
+
+function fetchDigest() {
+  return new Promise((resolve, reject) => {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(DIGEST_TAB)}`;
+    https.get(url, res => {
+      let raw = '';
+      res.on('data', chunk => raw += chunk);
+      res.on('end', () => {
+        try {
+          const jsonStr = raw.replace(/^[^{(]*\(/, '').replace(/\)[\s;]*$/, '').replace(/^[^{]*/, '');
+          const parsed  = JSON.parse(jsonStr);
+          const v = (row, i) => {
+            const cell = row.c[i];
+            return cell && cell.v !== null && cell.v !== undefined ? String(cell.v).trim() : '';
+          };
+          // Cols: 0=Date 1=UPPSC_Q 2=UPPSC_Ans 3=UPPSC_Subject 4=CA_Q 5=CA_Ans 6=CA_Subject
+          const rows = parsed.table.rows
+            .filter(row => v(row, 0))
+            .map(row => ({
+              date:        v(row, 0),
+              uppscQ:      v(row, 1),
+              uppscAns:    v(row, 2),
+              uppscSub:    v(row, 3),
+              caQ:         v(row, 4),
+              caAns:       v(row, 5),
+              caSub:       v(row, 6),
+            }));
+          resolve(rows.reverse()); // newest first
+        } catch(e) { reject(e); }
+      });
+      res.on('error', reject);
+    }).on('error', reject);
+  });
+}
+
+app.get('/api/digest', async (req, res) => {
+  const now = Date.now();
+  if (_digestCache && now - _digestCacheTime < CACHE_TTL) {
+    return res.json(_digestCache);
+  }
+  try {
+    _digestCache = await fetchDigest();
+    _digestCacheTime = now;
+    res.json(_digestCache);
+  } catch(e) {
+    console.error('Digest fetch error:', e.message);
+    res.json([]);
+  }
+});
+
 // ── API: checkAdmin ───────────────────────────────────────────
 app.post('/api/checkAdmin', (req, res) => {
   // In local dev, you are always admin
