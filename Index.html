@@ -4505,34 +4505,31 @@ function initSmartGuess(questions) {
     'Chronology':'Chronological order'
   };
 
-  // Build lookup: sgData[subject][type] = {A,B,C,D,total}
+  // Build lookup: sgData[subject][type] = {A,B,C,D,total,questions:[]}
   const sgData  = {};
   const subjects = [];
+  const push = (sub, t, q, ans) => {
+    if (!sgData[sub][t]) sgData[sub][t] = {A:0,B:0,C:0,D:0,total:0,questions:[]};
+    if ('ABCD'.includes(ans)) { sgData[sub][t][ans]++; sgData[sub][t].total++; }
+    sgData[sub][t].questions.push(q);
+  };
+
   questions.forEach(q => {
     const sub = (q.subject||'Other').trim();
     const t   = TYPE_MAP[q.qType] || null;
     const ans = (q.answer||'').trim().toUpperCase();
     if (!sgData[sub]) { sgData[sub] = {}; subjects.push(sub); }
-    // All-types bucket
-    if (!sgData[sub]['ALL']) sgData[sub]['ALL'] = {A:0,B:0,C:0,D:0,total:0};
-    if ('ABCD'.includes(ans)) { sgData[sub]['ALL'][ans]++; sgData[sub]['ALL'].total++; }
-    if (t) {
-      if (!sgData[sub][t]) sgData[sub][t] = {A:0,B:0,C:0,D:0,total:0};
-      if ('ABCD'.includes(ans)) { sgData[sub][t][ans]++; sgData[sub][t].total++; }
-    }
+    push(sub, 'ALL', q, ans);
+    if (t) push(sub, t, q, ans);
   });
 
-  // Also build ALL-subject buckets
+  // ALL-subject buckets
   sgData['ALL'] = {};
   questions.forEach(q => {
     const t   = TYPE_MAP[q.qType] || null;
     const ans = (q.answer||'').trim().toUpperCase();
-    if (!sgData['ALL']['ALL']) sgData['ALL']['ALL'] = {A:0,B:0,C:0,D:0,total:0};
-    if ('ABCD'.includes(ans)) { sgData['ALL']['ALL'][ans]++; sgData['ALL']['ALL'].total++; }
-    if (t) {
-      if (!sgData['ALL'][t]) sgData['ALL'][t] = {A:0,B:0,C:0,D:0,total:0};
-      if ('ABCD'.includes(ans)) { sgData['ALL'][t][ans]++; sgData['ALL'][t].total++; }
-    }
+    push('ALL', 'ALL', q, ans);
+    if (t) push('ALL', t, q, ans);
   });
 
   window._sgData    = sgData;
@@ -4593,6 +4590,10 @@ function renderSmartGuess() {
   const typeLabel = type==='ALL' ? 'all question types'
                   : (window._sgTypeLabels[type]||type);
 
+  // Store current bucket questions for drill
+  window._sgCurrentQs  = bucket.questions || [];
+  window._sgCurrentLabel = `${subLabel} · ${typeLabel}`;
+
   el.innerHTML = `
     <div class="sg-verdict" style="background:${col}12;border:2px solid ${col}40;">
       <div class="sg-badge" style="background:${col}22;color:${col};">${topAns}</div>
@@ -4601,6 +4602,11 @@ function renderSmartGuess() {
         <div class="sg-answer" style="color:${col};">Option ${topAns} — ${topPct}% of the time</div>
         <div class="sg-conf">${conf.icon} ${conf.label} · based on ${bucket.total} questions</div>
       </div>
+      <button onclick="openSGQuestions()"
+        style="font-size:11px;font-weight:700;padding:6px 14px;border-radius:20px;
+        border:none;background:var(--blue);color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+        📋 View ${bucket.total} Questions
+      </button>
     </div>
     <div class="sg-bars">
       ${['A','B','C','D'].map(l => {
@@ -4622,6 +4628,40 @@ function renderSmartGuess() {
       This is a <strong>blind guess baseline</strong> — use only when you have zero clue.
       Elimination always beats blind guessing.
     </div>`;
+}
+
+function openSGQuestions() {
+  const qs  = window._sgCurrentQs || [];
+  const lbl = window._sgCurrentLabel || 'Questions';
+  if (!qs.length) return;
+
+  document.getElementById('sydTitle').textContent = `${lbl} — ${qs.length} questions`;
+
+  const LABELS   = ['A','B','C','D'];
+  const OPT_KEYS = ['optA','optB','optC','optD'];
+  const LCOLS    = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
+
+  document.getElementById('sydBody').innerHTML = qs.map((q, i) => {
+    const opts = OPT_KEYS.map((k, j) => q[k]
+      ? `<div class="syd-opt${q.answer === LABELS[j] ? ' correct' : ''}">
+          ${LABELS[j]}. ${q[k]}${q.answer === LABELS[j] ? ' ✓' : ''}
+         </div>` : '').join('');
+    const ansCol = LCOLS[q.answer] || '#555';
+    const rep = q.repeatsIn && q.repeatsIn.length
+      ? `<span style="color:var(--amber);font-size:10px;margin-left:6px;">↻ repeats</span>` : '';
+    return `<div class="syd-qblock">
+      <div class="syd-qnum">
+        Q${i+1} · ${q.year||''} · ${q.subject||''}
+        · <strong style="color:${ansCol};">Ans: ${q.answer||'?'}</strong>${rep}
+      </div>
+      <div class="syd-qtext">${q.question}</div>
+      ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
+      ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('sydOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function _renderSGCheatSheet(questions, TYPE_LABELS, LCOLS) {
