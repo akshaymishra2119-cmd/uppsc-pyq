@@ -936,6 +936,19 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   color:var(--text2);border:1px solid var(--border);}
 .sg-cheat td{padding:7px 12px;border:1px solid var(--border);color:var(--text2);}
 .sg-cheat td.sg-best{font-weight:800;font-size:14px;}
+/* ── Best Guess Matrix ───────────────────────── */
+.bgm-table{border-collapse:collapse;width:100%;font-size:12px;}
+.bgm-table th{background:var(--bg3);padding:7px 12px;border:1px solid var(--border);
+  font-weight:600;color:var(--text2);white-space:nowrap;text-align:center;}
+.bgm-table th.sub-h{text-align:left;}
+.bgm-table td{border:1px solid var(--border);padding:0;text-align:center;vertical-align:middle;}
+.bgm-table td.sub-name{text-align:left;padding:8px 12px;font-size:11px;
+  color:var(--text2);background:var(--bg2);font-weight:500;white-space:nowrap;}
+.bgm-cell{padding:8px 6px;cursor:pointer;transition:filter .12s;}
+.bgm-cell:hover{filter:brightness(.88);}
+.bgm-letter{font-size:18px;font-weight:900;line-height:1;}
+.bgm-pct{font-size:9px;font-weight:600;margin-top:1px;opacity:.8;}
+.bgm-empty{padding:8px;color:var(--border);font-size:11px;}
 /* ── STRATEGY CARDS ──────────────────────────── */
 #ansStrategyGrid{display:flex;flex-direction:column;gap:14px;}
 .strat-card{background:var(--bg3);border-radius:12px;padding:16px;
@@ -2572,6 +2585,19 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
       </div>
       <div id="sgCheatSheet"></div>
     </div>
+  </div>
+
+  <!-- ══ SUBJECT × TYPE BEST-ANSWER MATRIX ════════════════════ -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title" style="font-size:15px;font-weight:700;">
+      <i class="ti ti-target" style="color:var(--pink);"></i>
+      Subject × Type — Best Guess Matrix
+      <span style="font-size:11px;color:var(--text3);margin-left:auto;font-weight:400;">click any cell to see questions</span>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin:0 0 12px;">
+      For each subject + question type, the letter shown is the most common correct answer historically.
+    </p>
+    <div id="sgBestMatrix" style="overflow-x:auto;"></div>
   </div>
 
 </div>
@@ -4548,8 +4574,9 @@ function initSmartGuess(questions) {
     });
   }
 
-  // Build cheat sheet
+  // Build cheat sheet + best-guess matrix
   _renderSGCheatSheet(questions, TYPE_LABELS, LCOLS);
+  _renderSGBestMatrix(sgData, TYPE_LABELS, LCOLS);
 
   // Initial render
   renderSmartGuess();
@@ -4657,6 +4684,99 @@ function openSGQuestions() {
       <div class="syd-qtext">${q.question}</div>
       ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
       ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('sydOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function _renderSGBestMatrix(sgData, TYPE_LABELS, LCOLS) {
+  const el = document.getElementById('sgBestMatrix');
+  if (!el) return;
+
+  const TYPES   = ['Direct','Statement','Match','A&R','Chronology'];
+  const BG      = { A:'#EBF4FF', B:'#E6F9F2', C:'#F3F2FF', D:'#FEF6E6' };
+  const COL     = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
+
+  // Subjects sorted by total questions desc, exclude ALL
+  const subjects = Object.keys(sgData)
+    .filter(s => s !== 'ALL')
+    .sort((a,b) => (sgData[b]['ALL']?.total||0) - (sgData[a]['ALL']?.total||0));
+
+  // Only keep subjects with at least 5 questions
+  const rows = subjects.filter(s => (sgData[s]['ALL']?.total||0) >= 5);
+
+  el.innerHTML = `<table class="bgm-table">
+    <thead><tr>
+      <th class="sub-h">Subject</th>
+      ${TYPES.map(t => `<th>${TYPE_LABELS[t]||t}</th>`).join('')}
+      <th>Overall</th>
+    </tr></thead>
+    <tbody>${rows.map(sub => {
+      return `<tr>
+        <td class="sub-name">${sub}</td>
+        ${TYPES.map(t => {
+          const cell = sgData[sub]?.[t];
+          if (!cell || cell.total < 2) return `<td><div class="bgm-empty">—</div></td>`;
+          const best = ['A','B','C','D'].reduce((a,l)=>cell[l]>cell[a]?l:a,'A');
+          const pct  = (cell[best]/cell.total*100).toFixed(0);
+          const safeT = t.replace(/&/g,'__AMP__');
+          const safeSub = sub.replace(/'/g,"\\'");
+          return `<td>
+            <div class="bgm-cell" style="background:${BG[best]};"
+              onclick="openSGMatrixDrill('${safeSub}','${safeT}','${best}')">
+              <div class="bgm-letter" style="color:${COL[best]};">${best}</div>
+              <div class="bgm-pct" style="color:${COL[best]};">${pct}%·${cell.total}q</div>
+            </div>
+          </td>`;
+        }).join('')}
+        ${(() => {
+          const all  = sgData[sub]?.['ALL'];
+          if (!all || all.total < 2) return `<td><div class="bgm-empty">—</div></td>`;
+          const best = ['A','B','C','D'].reduce((a,l)=>all[l]>all[a]?l:a,'A');
+          const pct  = (all[best]/all.total*100).toFixed(0);
+          return `<td>
+            <div class="bgm-cell" style="background:${BG[best]};">
+              <div class="bgm-letter" style="color:${COL[best]};">${best}</div>
+              <div class="bgm-pct" style="color:${COL[best]};">${pct}%·${all.total}q</div>
+            </div>
+          </td>`;
+        })()}
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+function openSGMatrixDrill(sub, typeRaw, bestAns) {
+  const t    = typeRaw.replace(/__AMP__/g, '&');
+  const cell = window._sgData?.[sub]?.[t];
+  if (!cell || !cell.questions.length) return;
+
+  const LCOLS  = window._sgLcols;
+  const lbl    = window._sgTypeLabels?.[t] || t;
+  const col    = LCOLS[bestAns] || '#555';
+
+  document.getElementById('sydTitle').innerHTML =
+    `${sub} · <span style="color:${col};">${lbl}</span> — ${cell.questions.length} questions
+     <span style="font-size:11px;color:var(--text3);margin-left:8px;">Best guess: <strong style="color:${col};">${bestAns}</strong></span>`;
+
+  const LABELS   = ['A','B','C','D'];
+  const OPT_KEYS = ['optA','optB','optC','optD'];
+
+  document.getElementById('sydBody').innerHTML = cell.questions.map((q,i) => {
+    const opts = OPT_KEYS.map((k,j) => q[k]
+      ? `<div class="syd-opt${q.answer===LABELS[j]?' correct':''}">
+          ${LABELS[j]}. ${q[k]}${q.answer===LABELS[j]?' ✓':''}
+         </div>` : '').join('');
+    const ansCol = LCOLS[q.answer]||'#555';
+    const rep = q.repeatsIn&&q.repeatsIn.length
+      ? `<span style="color:var(--amber);font-size:10px;margin-left:6px;">↻ repeats</span>` : '';
+    return `<div class="syd-qblock">
+      <div class="syd-qnum">Q${i+1} · ${q.year||''} · <strong style="color:${ansCol};">Ans: ${q.answer||'?'}</strong>${rep}</div>
+      <div class="syd-qtext">${q.question}</div>
+      ${opts?`<div class="syd-opts">${opts}</div>`:''}
+      ${q.explanation?`<div class="syd-exp">💡 ${q.explanation}</div>`:''}
     </div>`;
   }).join('');
 
