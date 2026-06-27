@@ -912,6 +912,30 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 /* ── Repeat box ──────────────────────────────── */
 .qt-repeat-box{background:var(--bg3);border-radius:8px;padding:12px 14px;font-size:12px;
   color:var(--text2);border-left:3px solid var(--purple,#7F77DD);}
+/* ── Smart Guess ─────────────────────────────── */
+.sg-verdict{display:flex;align-items:center;gap:18px;padding:18px 20px;
+  border-radius:12px;margin-bottom:12px;}
+.sg-badge{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:36px;font-weight:900;flex-shrink:0;}
+.sg-meta{flex:1;}
+.sg-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:4px;}
+.sg-answer{font-size:22px;font-weight:800;color:var(--text);margin-bottom:2px;}
+.sg-conf{font-size:12px;color:var(--text2);}
+.sg-bars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px;}
+.sg-bar-col{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.sg-bar-track{width:100%;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.sg-bar-fill{height:100%;border-radius:4px;transition:width .3s;}
+.sg-bar-label{font-size:10px;font-weight:700;}
+.sg-bar-val{font-size:10px;color:var(--text3);}
+.sg-warn{font-size:11px;color:var(--text3);padding:8px 12px;background:var(--bg3);
+  border-radius:6px;border-left:3px solid var(--amber);}
+/* cheat sheet table */
+.sg-cheat{border-collapse:collapse;width:100%;font-size:12px;}
+.sg-cheat th{background:var(--bg3);padding:6px 12px;text-align:left;font-weight:600;
+  color:var(--text2);border:1px solid var(--border);}
+.sg-cheat td{padding:7px 12px;border:1px solid var(--border);color:var(--text2);}
+.sg-cheat td.sg-best{font-weight:800;font-size:14px;}
 /* ── STRATEGY CARDS ──────────────────────────── */
 #ansStrategyGrid{display:flex;flex-direction:column;gap:14px;}
 .strat-card{background:var(--bg3);border-radius:12px;padding:16px;
@@ -2500,6 +2524,54 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
       <span style="font-size:11px;color:var(--text3);margin-left:auto;font-weight:400;">which subjects ask which types</span>
     </div>
     <div id="qtSubjectMatrix" style="overflow-x:auto;"></div>
+  </div>
+
+  <!-- ══ SMART GUESS STRATEGY ══════════════════════════════════ -->
+  <div class="card" style="margin-bottom:16px;" id="smartGuessCard">
+    <div class="card-title" style="font-size:15px;font-weight:700;">
+      <i class="ti ti-brain" style="color:var(--amber);"></i>
+      Smart Guess Strategy
+      <span style="font-size:11px;color:var(--text3);margin-left:auto;font-weight:400;">data-backed answer when you're stuck</span>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin:0 0 14px;">
+      Select the subject and question type you're stuck on — see what UPPSC historically picks as the correct answer.
+    </p>
+
+    <!-- Selectors -->
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px;align-items:flex-end;">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Subject</div>
+        <select id="sgSubject" onchange="renderSmartGuess()"
+          style="font-size:12px;padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);
+          background:var(--bg2);color:var(--text);cursor:pointer;min-width:160px;">
+          <option value="ALL">All Subjects</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Question Type</div>
+        <select id="sgType" onchange="renderSmartGuess()"
+          style="font-size:12px;padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);
+          background:var(--bg2);color:var(--text);cursor:pointer;min-width:180px;">
+          <option value="ALL">All Types</option>
+          <option value="Direct">Direct</option>
+          <option value="Statement">Statement-based</option>
+          <option value="Match">Match the following</option>
+          <option value="A&R">Assertion &amp; Reason</option>
+          <option value="Chronology">Chronological order</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Result panel -->
+    <div id="sgResult"></div>
+
+    <!-- Quick reference cheat sheet -->
+    <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">
+        Quick reference — safest guess by type
+      </div>
+      <div id="sgCheatSheet"></div>
+    </div>
   </div>
 
 </div>
@@ -4420,6 +4492,181 @@ function openQTypeDrill() {
   document.body.style.overflow = 'hidden';
 }
 
+// ── Smart Guess Strategy ─────────────────────────────────────
+function initSmartGuess(questions) {
+  const LCOLS = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
+  const TYPE_MAP = {
+    'Direct':'Direct','Statement':'Statement','Match':'Match',
+    'A&R':'A&R','Chronology':'Chronology'
+  };
+  const TYPE_LABELS = {
+    'Direct':'Direct','Statement':'Statement-based',
+    'Match':'Match the following','A&R':'Assertion & Reason',
+    'Chronology':'Chronological order'
+  };
+
+  // Build lookup: sgData[subject][type] = {A,B,C,D,total}
+  const sgData  = {};
+  const subjects = [];
+  questions.forEach(q => {
+    const sub = (q.subject||'Other').trim();
+    const t   = TYPE_MAP[q.qType] || null;
+    const ans = (q.answer||'').trim().toUpperCase();
+    if (!sgData[sub]) { sgData[sub] = {}; subjects.push(sub); }
+    // All-types bucket
+    if (!sgData[sub]['ALL']) sgData[sub]['ALL'] = {A:0,B:0,C:0,D:0,total:0};
+    if ('ABCD'.includes(ans)) { sgData[sub]['ALL'][ans]++; sgData[sub]['ALL'].total++; }
+    if (t) {
+      if (!sgData[sub][t]) sgData[sub][t] = {A:0,B:0,C:0,D:0,total:0};
+      if ('ABCD'.includes(ans)) { sgData[sub][t][ans]++; sgData[sub][t].total++; }
+    }
+  });
+
+  // Also build ALL-subject buckets
+  sgData['ALL'] = {};
+  questions.forEach(q => {
+    const t   = TYPE_MAP[q.qType] || null;
+    const ans = (q.answer||'').trim().toUpperCase();
+    if (!sgData['ALL']['ALL']) sgData['ALL']['ALL'] = {A:0,B:0,C:0,D:0,total:0};
+    if ('ABCD'.includes(ans)) { sgData['ALL']['ALL'][ans]++; sgData['ALL']['ALL'].total++; }
+    if (t) {
+      if (!sgData['ALL'][t]) sgData['ALL'][t] = {A:0,B:0,C:0,D:0,total:0};
+      if ('ABCD'.includes(ans)) { sgData['ALL'][t][ans]++; sgData['ALL'][t].total++; }
+    }
+  });
+
+  window._sgData    = sgData;
+  window._sgLcols   = LCOLS;
+  window._sgTypeLabels = TYPE_LABELS;
+
+  // Populate subject dropdown
+  const sel = document.getElementById('sgSubject');
+  if (sel) {
+    const sorted = Object.keys(sgData).filter(s=>s!=='ALL')
+      .sort((a,b) => (sgData[b]['ALL']?.total||0) - (sgData[a]['ALL']?.total||0));
+    sorted.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = s;
+      sel.appendChild(o);
+    });
+  }
+
+  // Build cheat sheet
+  _renderSGCheatSheet(questions, TYPE_LABELS, LCOLS);
+
+  // Initial render
+  renderSmartGuess();
+}
+
+function renderSmartGuess() {
+  const sub    = document.getElementById('sgSubject')?.value || 'ALL';
+  const typeRaw = document.getElementById('sgType')?.value   || 'ALL';
+  const type   = typeRaw === 'ALL' ? 'ALL' : typeRaw;
+
+  const el     = document.getElementById('sgResult');
+  if (!el || !window._sgData) return;
+
+  const LCOLS  = window._sgLcols;
+  const bucket = window._sgData[sub]?.[type];
+
+  if (!bucket || bucket.total < 3) {
+    el.innerHTML = `<div class="sg-warn">
+      ⚠️ Not enough data for this combination (${bucket?.total||0} questions).
+      Try a broader subject or type filter.
+    </div>`;
+    return;
+  }
+
+  const topAns   = ['A','B','C','D'].reduce((a,l)=>bucket[l]>bucket[a]?l:a,'A');
+  const topCount = bucket[topAns];
+  const topPct   = (topCount/bucket.total*100).toFixed(0);
+  const col      = LCOLS[topAns];
+  const maxV     = Math.max(bucket.A,bucket.B,bucket.C,bucket.D,1);
+
+  // Confidence label
+  const conf = topPct>=45 ? { label:'High confidence', icon:'🎯' }
+             : topPct>=35 ? { label:'Moderate confidence', icon:'⚡' }
+             : { label:'Low confidence — coin flip territory', icon:'🎲' };
+
+  // Insight text
+  const subLabel  = sub==='ALL' ? 'all subjects' : sub;
+  const typeLabel = type==='ALL' ? 'all question types'
+                  : (window._sgTypeLabels[type]||type);
+
+  el.innerHTML = `
+    <div class="sg-verdict" style="background:${col}12;border:2px solid ${col}40;">
+      <div class="sg-badge" style="background:${col}22;color:${col};">${topAns}</div>
+      <div class="sg-meta">
+        <div class="sg-label">Safest guess · ${subLabel} · ${typeLabel}</div>
+        <div class="sg-answer" style="color:${col};">Option ${topAns} — ${topPct}% of the time</div>
+        <div class="sg-conf">${conf.icon} ${conf.label} · based on ${bucket.total} questions</div>
+      </div>
+    </div>
+    <div class="sg-bars">
+      ${['A','B','C','D'].map(l => {
+        const pct  = (bucket[l]/bucket.total*100).toFixed(0);
+        const barW = (bucket[l]/maxV*100).toFixed(0);
+        const isTop = l===topAns;
+        return `<div class="sg-bar-col">
+          <div class="sg-bar-label" style="color:${LCOLS[l]};${isTop?'font-size:13px;':'opacity:.7;'}">${l}</div>
+          <div class="sg-bar-track">
+            <div class="sg-bar-fill" style="width:${barW}%;background:${LCOLS[l]};opacity:${isTop?1:.55};"></div>
+          </div>
+          <div class="sg-bar-val">${bucket[l]} (${pct}%)</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text3);padding:8px 12px;
+        background:var(--bg3);border-radius:6px;">
+      <i class="ti ti-info-circle"></i>
+      This is a <strong>blind guess baseline</strong> — use only when you have zero clue.
+      Elimination always beats blind guessing.
+    </div>`;
+}
+
+function _renderSGCheatSheet(questions, TYPE_LABELS, LCOLS) {
+  const el = document.getElementById('sgCheatSheet');
+  if (!el) return;
+
+  const TYPES = ['Direct','Statement','Match','A&R','Chronology'];
+  const dist  = {};
+  TYPES.forEach(t => dist[t] = {A:0,B:0,C:0,D:0,total:0});
+
+  questions.forEach(q => {
+    const t   = q.qType;
+    const ans = (q.answer||'').trim().toUpperCase();
+    if (dist[t] && 'ABCD'.includes(ans)) { dist[t][ans]++; dist[t].total++; }
+  });
+
+  el.innerHTML = `<table class="sg-cheat">
+    <thead><tr>
+      <th>Question Type</th>
+      <th style="color:${LCOLS.A}">A</th>
+      <th style="color:${LCOLS.B}">B</th>
+      <th style="color:${LCOLS.C}">C</th>
+      <th style="color:${LCOLS.D}">D</th>
+      <th>Best Guess</th>
+      <th>Confidence</th>
+    </tr></thead>
+    <tbody>${TYPES.filter(t=>dist[t].total>0).map(t => {
+      const d      = dist[t];
+      const topAns = ['A','B','C','D'].reduce((a,l)=>d[l]>d[a]?l:a,'A');
+      const topPct = d.total > 0 ? (d[topAns]/d.total*100).toFixed(0) : 0;
+      const conf   = topPct>=45?'🎯 High':topPct>=35?'⚡ Moderate':'🎲 Low';
+      return `<tr>
+        <td style="font-weight:600;color:var(--text);">${TYPE_LABELS[t]||t}</td>
+        ${['A','B','C','D'].map(l => {
+          const pct  = d.total>0?(d[l]/d.total*100).toFixed(0):0;
+          const isTop = l===topAns;
+          return `<td style="${isTop?`font-weight:800;color:${LCOLS[l]};`:''}">${d[l]} (${pct}%)</td>`;
+        }).join('')}
+        <td class="sg-best" style="color:${LCOLS[topAns]};">${topAns} · ${topPct}%</td>
+        <td style="font-size:11px;">${conf}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
 function renderAnswerPatternPYQ(questions) {
   const el = document.getElementById('ansPatternContent');
   if (!el || questions.length === 0) return;
@@ -4563,6 +4810,7 @@ function loadQuestions() {
       updatePyqSidebarCounts();
       renderAnswerDistHome(allQuestions);
       renderQTAnalytics(allQuestions);
+      initSmartGuess(allQuestions);
       renderStatementAnalysis(allQuestions);
       renderWeightTrend(allQuestions);
       renderSubjectBreakdown(allQuestions);
