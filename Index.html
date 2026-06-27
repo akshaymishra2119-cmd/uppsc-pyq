@@ -257,11 +257,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .dc-brand{font-size:7.5px;font-weight:600;}
 .news-cards-row .day-card.orange .dc-brand{color:#633806;}
 .news-cards-row .day-card.blue   .dc-brand{color:#0C447C;}
+.dc-dl-group{display:flex;gap:4px;}
 .dc-dl{font-size:8.5px;font-weight:600;border:none;border-radius:4px;padding:3px 9px;
   cursor:pointer;display:flex;align-items:center;gap:3px;}
 .news-cards-row .day-card.orange .dc-dl{background:#854F0B;color:#FAEEDA;}
 .news-cards-row .day-card.blue   .dc-dl{background:#185FA5;color:#E6F1FB;}
 .dc-dl:hover{opacity:.88;}
+/* Digest-thumb download button */
+.digest-thumb .dth-dl-group{position:absolute;bottom:28px;right:6px;display:none;gap:3px;}
+.digest-thumb:hover .dth-dl-group{display:flex;}
+.dth-dl-btn{font-size:7.5px;font-weight:700;border:none;border-radius:3px;padding:2px 7px;
+  cursor:pointer;background:rgba(59,109,17,0.85);color:#fff;display:flex;align-items:center;gap:2px;}
+.dth-dl-btn:hover{background:#3B6D11;}
 
 /* ── MAIN CONTENT ─────────────────────────────── */
 .main{max-width:1100px;margin:0 auto;padding:16px;}
@@ -7060,12 +7067,21 @@ async function initDigest() {
       el.className = 'digest-thumb';
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', '0');
+      const qs = [q1, q2].filter(Boolean);
       el.innerHTML = `
         <div class="digest-thumb-date">${label}</div>
         <div class="digest-thumb-body">${itemsHtml}</div>
+        <div class="dth-dl-group">
+          <button class="dth-dl-btn" onclick="event.stopPropagation();downloadDigestThumb(${JSON.stringify(label)},${JSON.stringify(qs)},'png')">
+            <i class="ti ti-photo" style="font-size:8px;"></i> IMG
+          </button>
+          <button class="dth-dl-btn" onclick="event.stopPropagation();downloadDigestThumb(${JSON.stringify(label)},${JSON.stringify(qs)},'pdf')">
+            <i class="ti ti-file-type-pdf" style="font-size:8px;"></i> PDF
+          </button>
+        </div>
         <div class="digest-thumb-brand">SimpleSensePCS</div>`;
-      el.onclick   = () => openPYQModal([q1, q2].filter(Boolean), label);
-      el.onkeydown = e => { if (e.key === 'Enter') openPYQModal([q1, q2].filter(Boolean), label); };
+      el.onclick   = () => openPYQModal(qs, label);
+      el.onkeydown = e => { if (e.key === 'Enter') openPYQModal(qs, label); };
       strip.appendChild(el);
     }
     document.getElementById('digestSection').style.display = '';
@@ -7126,9 +7142,14 @@ function _buildNewsCard(day, type) {
       <div class="dc-items">${itemsHtml || '<p style="padding:12px;font-size:11px;opacity:.6;">No items yet</p>'}</div>
       <div class="dc-footer">
         <span class="dc-brand">SimpleSensePCS</span>
-        <button class="dc-dl" id="${btnId}" onclick="downloadNewsCard('${type}','${day.date}')">
-          <i class="ti ti-download" style="font-size:10px;" aria-hidden="true"></i> PNG
-        </button>
+        <div class="dc-dl-group">
+          <button class="dc-dl" id="${btnId}-png" onclick="downloadNewsCard('${type}','${day.date}','png')">
+            <i class="ti ti-photo" style="font-size:10px;" aria-hidden="true"></i> IMG
+          </button>
+          <button class="dc-dl" id="${btnId}-pdf" onclick="downloadNewsCard('${type}','${day.date}','pdf')">
+            <i class="ti ti-file-type-pdf" style="font-size:10px;" aria-hidden="true"></i> PDF
+          </button>
+        </div>
       </div>
     </div>`;
 }
@@ -7184,8 +7205,41 @@ function closeDigestForce() {
   document.body.style.overflow = '';
 }
 
-// Download the orange or blue card as PNG
-async function downloadNewsCard(type, date) {
+// ── SHARED DOWNLOAD HELPERS ──────────────────────────────────────
+
+async function _loadLib(url, check) {
+  if (window[check]) return;
+  await new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = url; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function _captureCard(card) {
+  await _loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'html2canvas');
+  return html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null });
+}
+
+async function _savePNG(canvas, filename) {
+  const link = document.createElement('a');
+  link.download = filename + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+async function _savePDF(canvas, filename) {
+  await _loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', 'jspdf');
+  const { jsPDF } = window.jspdf;
+  const imgW = canvas.width / 3;   // scale:3 was used
+  const imgH = canvas.height / 3;
+  const pdf = new jsPDF({ orientation: imgW > imgH ? 'l' : 'p', unit: 'px', format: [imgW, imgH] });
+  pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgW, imgH);
+  pdf.save(filename + '.pdf');
+}
+
+// Download the orange or blue card as PNG or PDF
+async function downloadNewsCard(type, date, format = 'png') {
   const day      = _digestData.find(d => d.date === date);
   if (!day) return;
   const items    = day[type] || [];
@@ -7197,8 +7251,10 @@ async function downloadNewsCard(type, date) {
   const textClr  = isOrange ? '#412402' : '#042C53';
   const darkClr  = isOrange ? '#633806' : '#0C447C';
   const footBg   = isOrange ? '#FAC775' : '#B5D4F4';
-  const btn      = document.getElementById(`nc-dl-${type}`);
-  if (btn) { btn.textContent = '…'; btn.disabled = true; }
+  const btnPng   = document.getElementById(`nc-dl-${type}-png`);
+  const btnPdf   = document.getElementById(`nc-dl-${type}-pdf`);
+  const activeBtn = format === 'pdf' ? btnPdf : btnPng;
+  if (activeBtn) { activeBtn.textContent = '…'; activeBtn.disabled = true; }
 
   const itemsHtml = items.map(item => `
     <div style="border-bottom:1px solid rgba(0,0,0,.1);padding:8px 14px;">
@@ -7221,30 +7277,52 @@ async function downloadNewsCard(type, date) {
     </div>`;
   document.body.appendChild(card);
 
+  const fname = `SimpleSensePCS_${label.replace(/\s/g,'_')}_${date.replace(/\s/g,'_')}`;
   try {
-    if (!window.html2canvas) {
-      await new Promise((res, rej) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-      });
-    }
-    const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null });
+    const canvas = await _captureCard(card);
     document.body.removeChild(card);
-    const link = document.createElement('a');
-    link.download = `SimpleSensePCS_${label.replace(/\s/g,'_')}_${date.replace(/\s/g,'_')}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    if (format === 'pdf') await _savePDF(canvas, fname);
+    else                  await _savePNG(canvas, fname);
   } catch(e) {
     if (card.parentNode) document.body.removeChild(card);
     showToast('Download failed: ' + e.message, 3000);
   }
-  if (btn) { btn.innerHTML = '<i class="ti ti-download" style="font-size:10px;"></i> PNG'; btn.disabled = false; }
+  if (btnPng) { btnPng.innerHTML = '<i class="ti ti-photo" style="font-size:10px;"></i> IMG'; btnPng.disabled = false; }
+  if (btnPdf) { btnPdf.innerHTML = '<i class="ti ti-file-type-pdf" style="font-size:10px;"></i> PDF'; btnPdf.disabled = false; }
 }
 
-// Download button in modal — not used for PYQ digest (modal is read-only)
-async function downloadDigestCard() { /* no-op for PYQ modal */ }
+// Download a green digest PYQ card as PNG or PDF
+async function downloadDigestThumb(label, questions, format = 'png') {
+  const card = document.createElement('div');
+  card.style.cssText = 'position:fixed;left:-9999px;top:0;width:260px;font-family:sans-serif;background:linear-gradient(160deg,#3B6D11 0%,#639922 100%);border-radius:14px;overflow:hidden;padding:0 0 8px;';
+  const itemsInner = questions.map(q => `
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:8px;font-weight:700;background:#C0DD97;color:#27500A;padding:2px 6px;border-radius:3px;">${q.subject||'PYQ'}</span>
+        <span style="font-size:8px;color:rgba(255,255,255,.55);">↻ ${(q.repeatsIn||'').split(',').length} yrs</span>
+      </div>
+      <p style="font-size:10px;font-weight:600;color:#fff;margin:0 0 4px;line-height:1.4;">${q.question||''}</p>
+      <p style="font-size:9px;color:rgba(255,255,255,.7);margin:0;padding-left:7px;border-left:2px solid #C0DD97;line-height:1.4;">${q.answerText||q.answer||''}</p>
+    </div>`).join('');
+  card.innerHTML = `
+    <div style="background:rgba(0,0,0,.25);padding:6px 10px;font-size:9px;font-weight:700;color:#C0DD97;letter-spacing:.8px;text-transform:uppercase;">${label} · PYQ Digest</div>
+    <div style="padding:10px 12px 4px;">${itemsInner}</div>
+    <div style="padding:4px 12px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,.12);margin-top:4px;">
+      <span style="font-size:7.5px;font-weight:700;color:rgba(255,255,255,.55);">SimpleSensePCS</span>
+      <span style="font-size:7.5px;color:rgba(255,255,255,.4);">simplesensepcs.in</span>
+    </div>`;
+  document.body.appendChild(card);
+  const fname = `SimpleSensePCS_PYQ_${label.replace(/\s/g,'_')}`;
+  try {
+    const canvas = await _captureCard(card);
+    document.body.removeChild(card);
+    if (format === 'pdf') await _savePDF(canvas, fname);
+    else                  await _savePNG(canvas, fname);
+  } catch(e) {
+    if (card.parentNode) document.body.removeChild(card);
+    showToast('Download failed: ' + e.message, 3000);
+  }
+}
 
 // ── NEWS IMAGE STRIP ──────────────────────────────────────────
 let _imgScrollCtrl = null;
