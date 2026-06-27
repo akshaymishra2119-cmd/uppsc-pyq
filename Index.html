@@ -154,34 +154,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
 .digest-thumb-brand{font-size:8px;color:#3B6D11;font-weight:600;
   position:absolute;bottom:9px;right:11px;}
+/* carousel arrow buttons */
+.digest-carousel{position:relative;}
+.digest-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:10;
+  width:36px;height:36px;border-radius:50%;border:2px solid #3B6D11;
+  background:#fff;color:#3B6D11;font-size:18px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);transition:background .15s,color .15s;line-height:1;}
+.digest-arrow:hover{background:#3B6D11;color:#fff;}
+.digest-arrow.left{left:-18px;}
+.digest-arrow.right{right:-18px;}
 /* modal overlay */
-.digest-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
-  z-index:9999;align-items:center;justify-content:center;}
+.digest-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+  z-index:9999;align-items:center;justify-content:center;padding:16px;}
 .digest-overlay.open{display:flex;}
-.digest-modal{background:#fff;border-radius:14px;border:2.5px solid #3B6D11;
-  width:340px;max-width:92vw;overflow:hidden;font-family:inherit;}
-.dm-header{background:#3B6D11;padding:10px 14px;display:flex;
-  align-items:center;justify-content:space-between;}
-.dm-brand{color:#EAF3DE;font-size:13px;font-weight:600;letter-spacing:.02em;}
-.dm-badge{background:#EAF3DE;color:#27500A;font-size:9px;font-weight:600;
-  padding:2px 8px;border-radius:4px;}
-.dm-body{padding:14px 16px;max-height:60vh;overflow-y:auto;}
-.dm-block{margin-bottom:12px;}
+.digest-modal{background:#fff;border-radius:16px;border:2.5px solid #3B6D11;
+  width:580px;max-width:95vw;max-height:88vh;overflow:hidden;font-family:inherit;
+  display:flex;flex-direction:column;}
+.dm-header{background:#3B6D11;padding:14px 18px;display:flex;
+  align-items:center;justify-content:space-between;flex-shrink:0;}
+.dm-brand{color:#EAF3DE;font-size:15px;font-weight:700;letter-spacing:.02em;}
+.dm-badge{background:#EAF3DE;color:#27500A;font-size:10px;font-weight:600;
+  padding:3px 10px;border-radius:5px;}
+.dm-body{padding:20px 22px;overflow-y:auto;flex:1;}
+.dm-block{margin-bottom:16px;}
 .dm-block:last-of-type{margin-bottom:0;}
-.dm-tag{display:inline-block;font-size:9px;font-weight:600;border-radius:4px;
-  padding:2px 8px;margin-bottom:6px;}
+.dm-tag{display:inline-block;font-size:10px;font-weight:600;border-radius:5px;
+  padding:3px 10px;margin-bottom:8px;}
 .dm-tag.u{background:#E6F1FB;color:#0C447C;}
 .dm-tag.ca{background:#FAECE7;color:#712B13;}
-.dm-q{font-size:10.5px;color:#27500A;font-weight:600;margin-bottom:4px;line-height:1.45;}
-.dm-a{font-size:9.5px;color:#3B6D11;line-height:1.5;
-  border-left:2.5px solid #97C459;padding-left:8px;}
-.dm-divider{border:none;border-top:1px solid #C0DD97;margin:10px 0;}
-.dm-footer{background:#EAF3DE;padding:8px 16px;display:flex;
-  align-items:center;justify-content:space-between;}
-.dm-date{font-size:9px;color:#27500A;}
-.dm-dl{font-size:9px;font-weight:600;color:#3B6D11;background:#fff;
-  border:1.5px solid #3B6D11;border-radius:5px;padding:4px 12px;
-  cursor:pointer;display:flex;align-items:center;gap:4px;}
+.dm-q{font-size:13px;color:#1a2e0a;font-weight:600;margin-bottom:8px;line-height:1.55;}
+.dm-a{font-size:12px;color:#3B6D11;line-height:1.6;
+  border-left:3px solid #97C459;padding-left:10px;}
+.dm-divider{border:none;border-top:1px solid #C0DD97;margin:14px 0;}
+.dm-footer{background:#EAF3DE;padding:10px 18px;display:flex;
+  align-items:center;justify-content:space-between;flex-shrink:0;}
+.dm-date{font-size:10px;color:#27500A;font-weight:500;}
+.dm-dl{font-size:10px;font-weight:600;color:#3B6D11;background:#fff;
+  border:1.5px solid #3B6D11;border-radius:6px;padding:6px 14px;
+  cursor:pointer;display:flex;align-items:center;gap:5px;}
 .dm-dl:hover{background:#EAF3DE;}
 .dm-close{background:none;border:none;cursor:pointer;color:#EAF3DE;
   font-size:18px;line-height:1;padding:0;}
@@ -1277,7 +1288,11 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       <span class="digest-hdr-title">SimpleSensePCS — Daily Digest</span>
       <span class="digest-hdr-badge">LIVE</span>
     </div>
-    <div class="digest-strip" id="digestStrip"></div>
+    <div class="digest-carousel" style="padding:0 22px;">
+      <button class="digest-arrow left" onclick="digestScroll(-1)" aria-label="Previous">&#8249;</button>
+      <div class="digest-strip" id="digestStrip"></div>
+      <button class="digest-arrow right" onclick="digestScroll(1)" aria-label="Next">&#8250;</button>
+    </div>
   </div>
 
   <!-- digest modal (fixed overlay) -->
@@ -6886,32 +6901,47 @@ function showError(e) {
 let _digestData = [];
 let _digestActive = null;
 
+let _digestScrollCtrl = null; // expose scroll controller for arrow buttons
+
 function _startDigestScroll(strip) {
   // Duplicate cards so it loops seamlessly
   const origCards = [...strip.children];
   origCards.forEach(c => strip.appendChild(c.cloneNode(true)));
 
-  let pos       = 0;
-  let paused    = false;
-  const speed   = 0.5; // px per frame — tweak for faster/slower
-  const cardW   = 240 + 14; // width + gap
+  let pos     = 0;
+  let paused  = false;
+  const speed = 0.5;
+  const cardW = 240 + 14;
+  const total = origCards.length * cardW;
 
   function step() {
     if (!paused) {
       pos += speed;
-      // When we've scrolled past the original set, jump back silently
-      if (pos >= origCards.length * cardW) pos = 0;
+      if (pos >= total) pos = 0;
       strip.scrollLeft = pos;
     }
     requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 
-  // Pause on hover or drag
+  // Expose control for arrow buttons
+  _digestScrollCtrl = {
+    jump(dir) {
+      // Snap to nearest card in direction, then resume
+      paused = true;
+      pos += dir * cardW;
+      if (pos < 0) pos = total - cardW;
+      if (pos >= total) pos = 0;
+      strip.scrollLeft = pos;
+      setTimeout(() => { paused = false; }, 800);
+    }
+  };
+
+  // Pause on hover
   strip.addEventListener('mouseenter', () => paused = true);
   strip.addEventListener('mouseleave', () => paused = false);
 
-  // Allow manual drag
+  // Manual drag
   let isDragging = false, startX = 0, startScroll = 0;
   strip.addEventListener('mousedown', e => {
     isDragging = true; paused = true;
@@ -6926,6 +6956,10 @@ function _startDigestScroll(strip) {
   window.addEventListener('mouseup', () => {
     if (isDragging) { isDragging = false; paused = false; strip.classList.remove('grabbing'); }
   });
+}
+
+function digestScroll(dir) {
+  if (_digestScrollCtrl) _digestScrollCtrl.jump(dir);
 }
 
 async function initDigest() {
