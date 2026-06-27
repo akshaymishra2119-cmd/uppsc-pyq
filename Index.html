@@ -198,16 +198,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   font-size:18px;line-height:1;padding:0;}
 /* today's UPPSC + CA news cards */
 .news-cards-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
-/* news image strip */
-.img-strip-section{margin-bottom:16px;}
-.img-strip-wrap{position:relative;padding:0 22px;}
-.img-strip{display:flex;gap:12px;overflow-x:hidden;padding:4px 0 8px;}
-.img-strip-item{flex-shrink:0;height:260px;border-radius:12px;overflow:hidden;
-  cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.15);transition:transform .15s,box-shadow .15s;}
-.img-strip-item:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.22);}
-.img-strip-item img{height:100%;width:auto;display:block;object-fit:cover;}
+/* news image slideshow */
+.img-slideshow-section{margin-bottom:16px;}
+.img-slideshow{position:relative;width:100%;height:380px;border-radius:14px;
+  overflow:hidden;background:#111;box-shadow:0 4px 20px rgba(0,0,0,.25);}
+.img-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease;cursor:pointer;}
+.img-slide.active{opacity:1;}
+.img-slide img{width:100%;height:100%;object-fit:cover;display:block;}
+.img-slide-caption{position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.65));
+  color:#fff;font-size:11.5px;font-weight:500;padding:28px 14px 10px;line-height:1.4;}
+/* arrows */
+.img-sl-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:10;
+  width:34px;height:34px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.22);backdrop-filter:blur(4px);
+  color:#fff;font-size:20px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;line-height:1;
+  transition:background .15s;}
+.img-sl-arrow:hover{background:rgba(255,255,255,.45);}
+.img-sl-arrow.left{left:10px;}
+.img-sl-arrow.right{right:10px;}
+/* dots */
+.img-sl-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;z-index:10;}
+.img-sl-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45);
+  cursor:pointer;transition:background .2s,transform .2s;}
+.img-sl-dot.active{background:#fff;transform:scale(1.35);}
 /* lightbox */
-.img-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+.img-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
   z-index:9999;align-items:center;justify-content:center;padding:20px;}
 .img-lightbox.open{display:flex;}
 .img-lightbox img{max-height:90vh;max-width:92vw;border-radius:12px;
@@ -216,14 +234,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   border:none;color:#fff;font-size:26px;width:40px;height:40px;border-radius:50%;
   cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
 .img-lb-close:hover{background:rgba(255,255,255,.3);}
-.img-strip-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:10;
-  width:36px;height:36px;border-radius:50%;border:2px solid #3B6D11;
-  background:#fff;color:#3B6D11;font-size:20px;font-weight:700;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);transition:background .15s,color .15s;line-height:1;}
-.img-strip-arrow:hover{background:#3B6D11;color:#fff;}
-.img-strip-arrow.left{left:0;}
-.img-strip-arrow.right{right:0;}
 .digest-cards,.news-cards-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .news-cards-row .day-card{border-radius:11px;overflow:hidden;border:1.5px solid transparent;}
 .news-cards-row .day-card.orange{border-color:#854F0B;background:#FAEEDA;}
@@ -244,6 +254,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .news-cards-row .day-card.orange .dc-items::-webkit-scrollbar-thumb{background:#EF9F27;}
 .news-cards-row .day-card.blue   .dc-items::-webkit-scrollbar-thumb{background:#378ADD;}
 .dc-items::-webkit-scrollbar{width:3px;}
+/* ticker scroll */
+.dc-ticker-wrap{overflow:hidden;height:280px;padding:0;}
+.dc-ticker{will-change:transform;}
 .dc-item{border-bottom:1px solid rgba(0,0,0,.08);padding:10px 14px;display:flex;align-items:flex-start;gap:8px;}
 .dc-item:last-child{border-bottom:none;}
 .dc-item-link{cursor:pointer;transition:background .12s;}
@@ -1443,16 +1456,16 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <div class="news-cards-row" id="newsCardsRow"></div>
   </div>
 
-  <!-- ── NEWS IMAGE STRIP ───────────────────────────────────── -->
-  <div class="img-strip-section" id="imgStripSection" style="display:none;">
+  <!-- ── NEWS IMAGE SLIDESHOW ─────────────────────────────── -->
+  <div class="img-slideshow-section" id="imgStripSection" style="display:none;">
     <div class="digest-hdr">
       <i class="ti ti-photo" style="color:#27500A;font-size:14px;" aria-hidden="true"></i>
       <span class="digest-hdr-title">News Visuals</span>
     </div>
-    <div class="img-strip-wrap">
-      <button class="img-strip-arrow left" onclick="imgScroll(-1)" aria-label="Previous">&#8249;</button>
-      <div class="img-strip" id="imgStrip"></div>
-      <button class="img-strip-arrow right" onclick="imgScroll(1)" aria-label="Next">&#8250;</button>
+    <div class="img-slideshow" id="imgSlideshow">
+      <button class="img-sl-arrow left" onclick="imgSlideNav(-1)" aria-label="Previous">&#8249;</button>
+      <button class="img-sl-arrow right" onclick="imgSlideNav(1)" aria-label="Next">&#8250;</button>
+      <div class="img-sl-dots" id="imgSlDots"></div>
     </div>
   </div>
 
@@ -8024,6 +8037,7 @@ async function initDigest() {
       document.getElementById('newsCardsRow').innerHTML =
         _buildNewsCard(fakeDay, 'uppsc') + _buildNewsCard(fakeDay, 'ca');
       document.getElementById('newsCardsSection').style.display = '';
+      initNewsTickers();
     }
   } catch(e) {
     console.warn('Digest load failed:', e.message);
@@ -8048,11 +8062,7 @@ function _buildNewsCard(day, type) {
       <i class="ti ti-arrow-right dc-item-arrow" aria-hidden="true"></i>
     </div>`).join('');
   return `
-    <div class="day-card ${cls}" draggable="true"
-         ondragstart="ncDragStart(event,'${type}')"
-         ondragover="event.preventDefault()"
-         ondrop="ncDrop(event,'${type}')"
-         style="cursor:grab;">
+    <div class="day-card ${cls}">
       <div class="dc-header" onclick="gotoNewsTab('${tabTarget}')" style="cursor:pointer;"
            title="Go to ${label} tab">
         <span class="dc-title">
@@ -8062,7 +8072,11 @@ function _buildNewsCard(day, type) {
         </span>
         <span class="dc-date-badge">${day.date} <i class="ti ti-arrow-right" style="font-size:9px;"></i></span>
       </div>
-      <div class="dc-items">${itemsHtml || '<p style="padding:12px;font-size:11px;opacity:.6;">No items yet</p>'}</div>
+      <div class="dc-items dc-ticker-wrap">
+        <div class="dc-ticker" id="dc-ticker-${type}">
+          ${itemsHtml}${itemsHtml}
+        </div>
+      </div>
       <div class="dc-footer">
         <span class="dc-brand">SimpleSensePCS</span>
         <div class="dc-dl-group">
@@ -8083,23 +8097,27 @@ function gotoNewsTab(tabId) {
   showTab(tabId, btn || null);
 }
 
-// Drag-to-swap news cards
-let _ncDragging = null;
-function ncDragStart(event, type) {
-  _ncDragging = type;
-  event.dataTransfer.effectAllowed = 'move';
-}
-function ncDrop(event, dropType) {
-  event.preventDefault();
-  if (!_ncDragging || _ncDragging === dropType) return;
-  const row = document.querySelector('.news-cards-row');
-  if (!row) return;
-  const cards = [...row.children];
-  // swap DOM order
-  if (cards.length === 2) {
-    row.appendChild(cards[0]); // moves first to end → swapped
-  }
-  _ncDragging = null;
+// News card ticker scroll
+function initNewsTickers() {
+  ['uppsc','ca'].forEach(type => {
+    const ticker = document.getElementById(`dc-ticker-${type}`);
+    if (!ticker) return;
+    const half = ticker.scrollHeight / 2;
+    if (half < 10) return;
+    let pos = 0;
+    let paused = false;
+    ticker.parentElement.addEventListener('mouseenter', () => paused = true);
+    ticker.parentElement.addEventListener('mouseleave', () => paused = false);
+    function step() {
+      if (!paused) {
+        pos += 0.4; // px per frame — adjust for speed
+        if (pos >= half) pos = 0; // seamless loop
+        ticker.style.transform = `translateY(-${pos}px)`;
+      }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
 }
 
 // Open modal showing PYQ questions for a digest card
@@ -8388,93 +8406,61 @@ async function downloadDigestThumb(label, questions, format = 'png') {
   }
 }
 
-// ── NEWS IMAGE STRIP ──────────────────────────────────────────
-let _imgScrollCtrl = null;
+// ── NEWS IMAGE SLIDESHOW ──────────────────────────────────────
+let _slideItems = [], _slideIdx = 0, _slideTimer = null, _slidePaused = false;
 
 async function initImgStrip() {
   try {
     const items = await fetch('/api/newsImages').then(r => r.json());
     if (!items || items.length === 0) return;
+    _slideItems = items;
 
-    const strip = document.getElementById('imgStrip');
-    strip.innerHTML = '';
+    const box  = document.getElementById('imgSlideshow');
+    const dots = document.getElementById('imgSlDots');
 
-    // Build items (duplicate for seamless loop)
-    const makeItem = item => {
-      const el = document.createElement('div');
-      el.className = 'img-strip-item';
-      el.innerHTML = `<img src="${item.url}" alt="${item.caption || 'News visual'}" loading="lazy">`;
-      el.onclick = () => openImgLightbox(item.url, item.caption);
-      return el;
-    };
+    // Build slides (insert before arrows)
+    const arrowL = box.querySelector('.img-sl-arrow.left');
+    items.forEach((item, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'img-slide' + (i === 0 ? ' active' : '');
+      slide.innerHTML = `<img src="${item.url}" alt="${item.caption || ''}" loading="lazy">
+        ${item.caption ? `<div class="img-slide-caption">${item.caption}</div>` : ''}`;
+      slide.onclick = () => openImgLightbox(item.url, item.caption);
+      box.insertBefore(slide, arrowL);
 
-    items.forEach(item => strip.appendChild(makeItem(item)));
-    // Duplicate for seamless loop
-    items.forEach(item => strip.appendChild(makeItem(item)));
+      // dot
+      const dot = document.createElement('span');
+      dot.className = 'img-sl-dot' + (i === 0 ? ' active' : '');
+      dot.onclick = e => { e.stopPropagation(); imgSlideGo(i); };
+      dots.appendChild(dot);
+    });
 
     document.getElementById('imgStripSection').style.display = '';
-    _startImgScroll(strip, items.length);
+    _slideTimer = setInterval(() => { if (!_slidePaused) imgSlideNext(); }, 5000);
+    box.addEventListener('mouseenter', () => _slidePaused = true);
+    box.addEventListener('mouseleave', () => _slidePaused = false);
   } catch(e) {
-    console.warn('Image strip load failed:', e.message);
+    console.warn('Slideshow load failed:', e.message);
   }
 }
 
-function _startImgScroll(strip, origCount) {
-  let pos    = 0;
-  let paused = false;
-  const speed = 0.6;
-
-  // Measure item width dynamically after first image loads
-  let itemW = 0;
-  const firstImg = strip.querySelector('img');
-  const measure = () => {
-    const item = strip.querySelector('.img-strip-item');
-    if (item) itemW = item.offsetWidth + 12; // 12 = gap
-  };
-  if (firstImg.complete) measure();
-  else firstImg.addEventListener('load', measure, { once: true });
-
-  function step() {
-    if (!paused && itemW > 0) {
-      pos += speed;
-      const loopAt = itemW * origCount;
-      if (pos >= loopAt) pos = 0;
-      strip.scrollLeft = pos;
-    }
-    requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-
-  _imgScrollCtrl = {
-    jump(dir) {
-      paused = true;
-      if (itemW > 0) {
-        pos += dir * itemW;
-        if (pos < 0) pos = itemW * origCount - itemW;
-        strip.scrollLeft = pos;
-      }
-      setTimeout(() => { paused = false; }, 900);
-    }
-  };
-
-  strip.addEventListener('mouseenter', () => paused = true);
-  strip.addEventListener('mouseleave', () => paused = false);
-
-  let isDragging = false, startX = 0, startScroll = 0;
-  strip.addEventListener('mousedown', e => {
-    isDragging = true; paused = true; startX = e.pageX; startScroll = pos;
-  });
-  window.addEventListener('mousemove', e => {
-    if (!isDragging) return;
-    pos = startScroll - (e.pageX - startX);
-    strip.scrollLeft = pos;
-  });
-  window.addEventListener('mouseup', () => {
-    if (isDragging) { isDragging = false; paused = false; }
-  });
+function imgSlideGo(idx) {
+  const slides = document.querySelectorAll('.img-slide');
+  const dots   = document.querySelectorAll('.img-sl-dot');
+  if (!slides.length) return;
+  slides[_slideIdx].classList.remove('active');
+  dots[_slideIdx].classList.remove('active');
+  _slideIdx = (idx + slides.length) % slides.length;
+  slides[_slideIdx].classList.add('active');
+  dots[_slideIdx].classList.add('active');
 }
-
-function imgScroll(dir) { if (_imgScrollCtrl) _imgScrollCtrl.jump(dir); }
+function imgSlideNext() { imgSlideGo(_slideIdx + 1); }
+function imgSlideNav(dir) {
+  imgSlideGo(_slideIdx + dir);
+  // Reset timer so manual nav doesn't fight auto-advance
+  clearInterval(_slideTimer);
+  _slideTimer = setInterval(() => { if (!_slidePaused) imgSlideNext(); }, 5000);
+}
 
 function openImgLightbox(url, caption) {
   document.getElementById('imgLightboxImg').src = url;
