@@ -227,6 +227,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .digest-cards,.news-cards-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .news-cards-row .day-card{border-radius:11px;overflow:hidden;border:1.5px solid transparent;}
 .news-cards-row .day-card.orange{border-color:#854F0B;background:#FAEEDA;}
+.news-cards-row .day-card[draggable]:active{cursor:grabbing;opacity:.85;}
 .news-cards-row .day-card.blue{border-color:#185FA5;background:#E6F1FB;}
 .dc-header{padding:9px 13px;display:flex;align-items:center;justify-content:space-between;}
 .news-cards-row .day-card.orange .dc-header{background:#854F0B;}
@@ -8037,24 +8038,29 @@ function _buildNewsCard(day, type) {
   const cls      = isOrange ? 'orange' : 'blue';
   const btnId    = `nc-dl-${type}`;
   const tabTarget = isOrange ? 'uppsc-news' : 'ca';
-  const navSel    = isOrange ? '.nav-btn[onclick*="uppsc-news"]' : '.nav-btn[onclick*="\'ca\'"]';
+  const navBtn    = isOrange ? 'navBtnUPPSC' : 'navBtnCA';
   const itemsHtml = items.map(item => `
     <div class="dc-item dc-item-link" role="button" tabindex="0"
-         onclick="showTab('${tabTarget}',document.querySelector('${navSel}'))"
-         onkeydown="if(event.key==='Enter')showTab('${tabTarget}',document.querySelector('${navSel}'))">
+         onclick="gotoNewsTab('${tabTarget}')"
+         onkeydown="if(event.key==='Enter')gotoNewsTab('${tabTarget}')">
       ${item.sub ? `<span class="dc-sub">${item.sub}</span>` : ''}
       <span class="dc-headline">${item.q}</span>
       <i class="ti ti-arrow-right dc-item-arrow" aria-hidden="true"></i>
     </div>`).join('');
   return `
-    <div class="day-card ${cls}">
-      <div class="dc-header">
+    <div class="day-card ${cls}" draggable="true"
+         ondragstart="ncDragStart(event,'${type}')"
+         ondragover="event.preventDefault()"
+         ondrop="ncDrop(event,'${type}')"
+         style="cursor:grab;">
+      <div class="dc-header" onclick="gotoNewsTab('${tabTarget}')" style="cursor:pointer;"
+           title="Go to ${label} tab">
         <span class="dc-title">
           <i class="ti ti-${isOrange ? 'book-2' : 'news'}" style="font-size:14px;" aria-hidden="true"></i>
           ${label}
           <span class="dc-count">${items.length} items</span>
         </span>
-        <span class="dc-date-badge">${day.date}</span>
+        <span class="dc-date-badge">${day.date} <i class="ti ti-arrow-right" style="font-size:9px;"></i></span>
       </div>
       <div class="dc-items">${itemsHtml || '<p style="padding:12px;font-size:11px;opacity:.6;">No items yet</p>'}</div>
       <div class="dc-footer">
@@ -8069,6 +8075,31 @@ function _buildNewsCard(day, type) {
         </div>
       </div>
     </div>`;
+}
+
+// Navigate to news tab
+function gotoNewsTab(tabId) {
+  const btn = document.querySelector(`.nav-btn[onclick*="${tabId}"]`);
+  showTab(tabId, btn || null);
+}
+
+// Drag-to-swap news cards
+let _ncDragging = null;
+function ncDragStart(event, type) {
+  _ncDragging = type;
+  event.dataTransfer.effectAllowed = 'move';
+}
+function ncDrop(event, dropType) {
+  event.preventDefault();
+  if (!_ncDragging || _ncDragging === dropType) return;
+  const row = document.querySelector('.news-cards-row');
+  if (!row) return;
+  const cards = [...row.children];
+  // swap DOM order
+  if (cards.length === 2) {
+    row.appendChild(cards[0]); // moves first to end → swapped
+  }
+  _ncDragging = null;
 }
 
 // Open modal showing PYQ questions for a digest card
