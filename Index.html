@@ -897,14 +897,14 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 .qt-matrix{border-collapse:collapse;font-size:11px;width:100%;}
 .qt-matrix th{background:var(--bg3);padding:6px 10px;text-align:center;font-weight:600;
   color:var(--text2);border:1px solid var(--border);white-space:nowrap;}
-.qt-matrix td{padding:5px 10px;border:1px solid var(--border);text-align:center;
-  font-size:12px;font-weight:600;}
+.qt-matrix td{padding:5px 8px;border:1px solid var(--border);text-align:center;
+  font-size:11px;font-weight:600;vertical-align:middle;}
 .qt-matrix td.sub-name{text-align:left;font-size:11px;font-weight:500;color:var(--text2);
   background:var(--bg2);white-space:nowrap;padding-left:12px;}
-.qt-matrix td.heat-0{color:var(--text3);}
-.qt-matrix td.heat-1{background:#EBF5FF;color:#2563EB;}
-.qt-matrix td.heat-2{background:#DBEAFE;color:#1D4ED8;font-weight:700;}
-.qt-matrix td.heat-3{background:#BFDBFE;color:#1E40AF;font-weight:800;}
+.qt-matrix td.qt-cell{cursor:pointer;transition:background .12s;}
+.qt-matrix td.qt-cell:hover{background:var(--bg3) !important;outline:2px solid var(--blue);}
+.qt-abcd{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;}
+.qt-abcd-pill{font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;}
 /* ── Topic pills ─────────────────────────────── */
 .qt-topic-pill{font-size:10px;padding:3px 9px;border-radius:12px;background:var(--bg3);
   border:1px solid var(--border);color:var(--text2);display:flex;gap:4px;align-items:center;}
@@ -2486,17 +2486,6 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 
       <!-- Strategy tip -->
       <div id="qtTip" class="qt-tip" style="display:none;"></div>
-
-      <!-- Year-wise trend for this type -->
-      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 6px;">Year-wise count — this type</div>
-      <div id="qtYearTrend" style="overflow-x:auto;"></div>
-
-      <!-- Top topics for this type -->
-      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 6px;">Top topics in this type</div>
-      <div id="qtTopicDrill" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-
-      <!-- Repeat pattern -->
-      <div id="qtRepeatBox" style="margin-top:14px;"></div>
     </div>
   </div>
 
@@ -4169,11 +4158,25 @@ function renderQTAnalytics(questions) {
     </div>`;
   }).join('');
 
-  // ── Subject × Type matrix ────────────────────────────────────
+  // ── Subject × Type matrix (A/B/C/D per cell, clickable) ─────
   const matrixEl = document.getElementById('qtSubjectMatrix');
   if (matrixEl) {
+    // Build per-subject per-type answer dist
+    const cellData = {}; // cellData[sub][type] = {A,B,C,D,total,questions:[]}
+    questions.forEach(q => {
+      const sub = (q.subject||'Other').trim();
+      const t   = (q.qType && typeData[q.qType]) ? q.qType : 'Unknown';
+      const ans = (q.answer||'').trim().toUpperCase();
+      if (!cellData[sub]) cellData[sub] = {};
+      if (!cellData[sub][t]) cellData[sub][t] = {A:0,B:0,C:0,D:0,total:0,questions:[]};
+      if ('ABCD'.includes(ans)) cellData[sub][t][ans]++;
+      cellData[sub][t].total++;
+      cellData[sub][t].questions.push(q);
+    });
+
     const activeTypes = ORDER.filter(t => typeData[t].count > 0 && t !== 'Unknown');
-    const maxCell = Math.max(...TOP_SUBS.flatMap(s => activeTypes.map(t => typeData[t].bySubject[s]||0)));
+    const APILL = {A:'#378ADD',B:'#1D9E75',C:'#7F77DD',D:'#EF9F27'};
+
     matrixEl.innerHTML = `<table class="qt-matrix">
       <thead><tr>
         <th style="text-align:left;">Subject</th>
@@ -4181,23 +4184,38 @@ function renderQTAnalytics(questions) {
         <th>Total</th>
       </tr></thead>
       <tbody>${TOP_SUBS.map(sub => {
-        const rowTotal = activeTypes.reduce((s,t)=>s+(typeData[t].bySubject[sub]||0),0);
+        const rowTotal = activeTypes.reduce((s,t)=>s+(cellData[sub]?.[t]?.total||0),0);
         if (rowTotal === 0) return '';
         return `<tr>
           <td class="sub-name">${sub}</td>
           ${activeTypes.map(t => {
-            const v = typeData[t].bySubject[sub]||0;
-            const heat = v===0?0:v<3?1:v<8?2:3;
-            return `<td class="heat-${heat}">${v||'—'}</td>`;
+            const cell = cellData[sub]?.[t];
+            if (!cell || cell.total === 0) return `<td style="color:var(--text3);">—</td>`;
+            const topAns = ['A','B','C','D'].reduce((a,l)=>cell[l]>cell[a]?l:a,'A');
+            const pills  = ['A','B','C','D'].map(l => cell[l]>0
+              ? `<span class="qt-abcd-pill" style="background:${APILL[l]}22;color:${APILL[l]};">${l}:${cell[l]}</span>`
+              : '').join('');
+            const safeT  = t.replace(/&/g,'__AMP__');
+            const safeSub = sub.replace(/'/g,"\\'");
+            return `<td class="qt-cell"
+              onclick="openQTMatrixDrill('${safeSub}','${safeT}')"
+              title="${sub} · ${TYPE_LABELS[t]} · ${cell.total} questions — click to view">
+              <div style="font-size:12px;font-weight:800;color:${TYPE_COLS[t]};margin-bottom:3px;">${cell.total}</div>
+              <div class="qt-abcd">${pills}</div>
+            </td>`;
           }).join('')}
           <td style="font-weight:700;color:var(--text);">${rowTotal}</td>
         </tr>`;
       }).join('')}</tbody>
     </table>`;
+
+    // Store cellData for drill
+    window._qtCellData = cellData;
+    window._qtActiveTypes = activeTypes;
   }
 
   // ── Store globals for detail panel ───────────────────────────
-  window._qtAll        = { typeData, YEARS, LCOLS, TYPE_COLS, TYPE_LABELS, TYPE_ICONS, AR_OPTS, ORDER };
+  window._qtAll = { typeData, YEARS, LCOLS, TYPE_COLS, TYPE_LABELS, TYPE_ICONS, AR_OPTS, ORDER };
 
   window.showQTDetail = function(t) {
     const G  = window._qtAll;
@@ -4280,60 +4298,42 @@ function renderQTAnalytics(questions) {
         <strong>Tip:</strong> ${TIPS[t]||`Most common answer is <strong>${topLetter[0]}</strong> (${topPct}%).`}`;
     }
 
-    // Year-wise trend bar chart
-    const trendEl = document.getElementById('qtYearTrend');
-    if (trendEl && G.YEARS.length) {
-      const vals  = G.YEARS.map(y => d.byYear[y]||0);
-      const maxV  = Math.max(...vals, 1);
-      trendEl.innerHTML = `<div class="qt-yr-bar-wrap">
-        ${G.YEARS.map((y,i) => {
-          const v   = vals[i];
-          const h   = Math.round((v/maxV)*60)+4;
-          return `<div class="qt-yr-col">
-            <div class="qt-yr-val">${v||''}</div>
-            <div class="qt-yr-bar" style="height:${h}px;background:${col};opacity:${v>0?1:0.15};"></div>
-            <div class="qt-yr-label">${y.slice(-2)}</div>
-          </div>`;
-        }).join('')}
-      </div>`;
-      // Trend insight
-      const first3 = vals.slice(0,3).reduce((a,b)=>a+b,0)/3||1;
-      const last3  = vals.slice(-3).reduce((a,b)=>a+b,0)/3||1;
-      const trend  = last3 > first3*1.2 ? '📈 Increasing' : last3 < first3*0.8 ? '📉 Decreasing' : '➡️ Stable';
-      trendEl.insertAdjacentHTML('afterend',
-        `<div style="font-size:11px;color:var(--text3);margin-top:4px;">
-          Trend: <strong>${trend}</strong> (avg ${first3.toFixed(1)}/yr early → ${last3.toFixed(1)}/yr recent)
-        </div>`);
-    }
-
-    // Top topics
-    const topicEl = document.getElementById('qtTopicDrill');
-    if (topicEl) {
-      const tops = Object.entries(d.topics).sort((a,b)=>b[1]-a[1]).slice(0,12);
-      topicEl.innerHTML = tops.length
-        ? tops.map(([tp,cnt]) =>
-            `<div class="qt-topic-pill"><b>${cnt}</b> ${tp}</div>`).join('')
-        : `<span style="font-size:12px;color:var(--text3);">No topic data available</span>`;
-    }
-
-    // Repeat pattern
-    const repEl = document.getElementById('qtRepeatBox');
-    if (repEl) {
-      const repPct = (d.repeats/d.count*100).toFixed(0);
-      repEl.innerHTML = `<div class="qt-repeat-box">
-        <i class="ti ti-repeat" style="color:var(--purple);"></i>
-        <strong>Repeat pattern:</strong> ${d.repeats} of ${d.count} ${G.TYPE_LABELS[t]} questions
-        (${repPct}%) have appeared in multiple years.
-        ${repPct>40
-          ? ` <strong style="color:var(--teal);">High repeat rate</strong> — revise previous ${G.TYPE_LABELS[t]} questions carefully.`
-          : repPct>20
-          ? ` Moderate repeat rate — worth revisiting.`
-          : ` Low repeat rate — focus on concept clarity over memorising repeats.`}
-      </div>`;
-    }
-
     document.getElementById('qtDetail').style.display = '';
   };
+}
+
+function openQTMatrixDrill(sub, typeRaw) {
+  const t   = typeRaw.replace(/__AMP__/g,'&');
+  const G   = window._qtAll;
+  const cd  = window._qtCellData;
+  if (!G || !cd) return;
+  const cell = cd[sub]?.[t];
+  if (!cell || !cell.questions.length) return;
+
+  const col = G.TYPE_COLS[t] || '#555';
+  const lbl = G.TYPE_LABELS[t] || t;
+  document.getElementById('sydTitle').innerHTML =
+    `<span style="color:${col};">${lbl}</span> · ${sub} — ${cell.questions.length} questions`;
+
+  const LABELS   = ['A','B','C','D'];
+  const OPT_KEYS = ['optA','optB','optC','optD'];
+  document.getElementById('sydBody').innerHTML = cell.questions.map((q,i) => {
+    const opts = OPT_KEYS.map((k,j) => q[k]
+      ? `<div class="syd-opt${q.answer===LABELS[j]?' correct':''}">
+          ${LABELS[j]}. ${q[k]}${q.answer===LABELS[j]?' ✓':''}
+         </div>` : '').join('');
+    const rep = q.repeatsIn && q.repeatsIn.length
+      ? `<span style="color:var(--amber);font-size:10px;">↻ repeats</span>` : '';
+    return `<div class="syd-qblock">
+      <div class="syd-qnum">Q${i+1} · ${q.year||''} ${rep}</div>
+      <div class="syd-qtext">${q.question}</div>
+      ${opts?`<div class="syd-opts">${opts}</div>`:''}
+      ${q.explanation?`<div class="syd-exp">💡 ${q.explanation}</div>`:''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('sydOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function openQTypeDrill() {
