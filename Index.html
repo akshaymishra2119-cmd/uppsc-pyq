@@ -7270,36 +7270,56 @@ async function _savePDF(canvas, filename) {
 }
 
 // ── Subject-Year Drill-down ───────────────────────────────────
-function openSYD(subject, year) {
-  const qs = allQuestions.filter(q =>
-    q.subject === subject && String(q.year) === String(year)
+function _renderSYD(subject, year, pool) {
+  const qs = pool.filter(q =>
+    String(q.subject||'').trim() === String(subject).trim() &&
+    String(q.year).trim() === String(year).trim()
   );
   document.getElementById('sydTitle').textContent =
     `${subject} · ${year} — ${qs.length} question${qs.length !== 1 ? 's' : ''}`;
 
-  const LABELS = ['A','B','C','D'];
+  const LABELS   = ['A','B','C','D'];
   const OPT_KEYS = ['optA','optB','optC','optD'];
 
-  if (!qs.length) {
-    document.getElementById('sydBody').innerHTML =
-      `<p style="color:var(--text3);padding:20px 0;text-align:center;">No questions found for ${subject} ${year}.<br><small>Questions may not be loaded yet — open PYQ Practice tab first.</small></p>`;
-  } else {
-    document.getElementById('sydBody').innerHTML = qs.map((q, i) => {
-      const opts = OPT_KEYS.map((k, j) => q[k]
-        ? `<div class="syd-opt${q.answer === LABELS[j] ? ' correct' : ''}">${LABELS[j]}. ${q[k]}${q.answer === LABELS[j] ? ' ✓' : ''}</div>`
-        : '').join('');
-      return `
-        <div class="syd-qblock">
-          <div class="syd-qnum">Q${i+1} · ${q.id || ''} · ${q.difficulty || 'Medium'}${q.repeatsIn ? ' · ↻ ' + q.repeatsIn.split(',').length + ' yrs' : ''}</div>
-          <div class="syd-qtext">${q.question}</div>
-          ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
-          ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
-        </div>`;
-    }).join('');
-  }
+  document.getElementById('sydBody').innerHTML = qs.length ? qs.map((q, i) => {
+    const opts = OPT_KEYS.map((k, j) => q[k]
+      ? `<div class="syd-opt${q.answer === LABELS[j] ? ' correct' : ''}">${LABELS[j]}. ${q[k]}${q.answer === LABELS[j] ? ' ✓' : ''}</div>`
+      : '').join('');
+    return `
+      <div class="syd-qblock">
+        <div class="syd-qnum">Q${i+1} · ${q.id||''} · ${q.difficulty||'Medium'}${q.repeatsIn?` · ↻ ${q.repeatsIn.split(',').length} yrs`:''}</div>
+        <div class="syd-qtext">${q.question}</div>
+        ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
+        ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
+      </div>`;
+  }).join('') : `<p style="color:var(--text3);padding:24px 0;text-align:center;">No questions found for ${subject} ${year}.</p>`;
+}
 
+async function openSYD(subject, year) {
+  // Show modal immediately with loading state
+  document.getElementById('sydTitle').textContent = `${subject} · ${year} — loading…`;
+  document.getElementById('sydBody').innerHTML = '<p style="padding:24px;text-align:center;color:var(--text3);">Loading questions…</p>';
   document.getElementById('sydOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Use already-loaded questions if available, else fetch
+  if (allQuestions && allQuestions.length > 0) {
+    _renderSYD(subject, year, allQuestions);
+  } else {
+    try {
+      const data = await fetch('/api/getQuestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shuffle: false, limit: 5000 })
+      }).then(r => r.json());
+      const pool = Array.isArray(data) ? data : (data.questions || []);
+      allQuestions = pool; // cache for future use
+      _renderSYD(subject, year, pool);
+    } catch(e) {
+      document.getElementById('sydBody').innerHTML =
+        `<p style="color:var(--red);padding:24px;text-align:center;">Failed to load questions: ${e.message}</p>`;
+    }
+  }
 }
 
 function closeSYD() {
