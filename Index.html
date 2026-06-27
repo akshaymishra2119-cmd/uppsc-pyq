@@ -4806,9 +4806,7 @@ function _renderSGWorstMatrix(sgData, TYPE_LABELS, LCOLS) {
 
   const TYPES = ['Direct','Statement','Match','A&R','Chronology'];
   const COL   = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
-  // elimination confidence = 100 - worstPct, same thresholds as Best Guess Matrix
-  const confBG     = p => p>=45 ? '#E6F9F2' : p>=35 ? '#FEFBE6' : '#FEF0F0';
-  const confBorder = p => p>=45 ? '#1D9E75' : p>=35 ? '#EF9F27' : '#E24B4A';
+  const BG    = { A:'#EBF4FF', B:'#E6F9F2', C:'#F3F2FF', D:'#FEF6E6' };
 
   const subjects = Object.keys(sgData)
     .filter(s => s !== 'ALL')
