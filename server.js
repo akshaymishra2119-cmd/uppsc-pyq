@@ -291,6 +291,28 @@ function formatDate(d) {
   return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
+// ── SERVE STATIC NEWS IMAGES ──────────────────────────────────
+const NEWS_IMAGES_DIR = path.join(__dirname, 'news_images');
+if (!fs.existsSync(NEWS_IMAGES_DIR)) fs.mkdirSync(NEWS_IMAGES_DIR);
+app.use('/news_images', express.static(NEWS_IMAGES_DIR));
+
+// Return list of all image filenames in the folder
+app.get('/api/newsImages', (req, res) => {
+  try {
+    const files = fs.readdirSync(NEWS_IMAGES_DIR)
+      .filter(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f))
+      .sort((a, b) => {
+        // Newest first by file modified time
+        const ta = fs.statSync(path.join(NEWS_IMAGES_DIR, a)).mtimeMs;
+        const tb = fs.statSync(path.join(NEWS_IMAGES_DIR, b)).mtimeMs;
+        return tb - ta;
+      });
+    res.json(files.map(f => `/news_images/${f}`));
+  } catch(e) {
+    res.json([]);
+  }
+});
+
 // ── SERVE HTML WITH INJECTED MOCK ─────────────────────────────
 app.get('/', (req, res) => {
   let html = fs.readFileSync(path.join(__dirname, 'Index.html'), 'utf8');

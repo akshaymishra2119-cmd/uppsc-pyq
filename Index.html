@@ -198,6 +198,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   font-size:18px;line-height:1;padding:0;}
 /* today's UPPSC + CA news cards */
 .news-cards-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+/* news image strip */
+.img-strip-section{margin-bottom:16px;}
+.img-strip-wrap{position:relative;padding:0 22px;}
+.img-strip{display:flex;gap:12px;overflow-x:hidden;padding:4px 0 8px;}
+.img-strip-item{flex-shrink:0;height:260px;border-radius:12px;overflow:hidden;
+  cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.15);transition:transform .15s,box-shadow .15s;}
+.img-strip-item:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.22);}
+.img-strip-item img{height:100%;width:auto;display:block;object-fit:cover;}
+/* lightbox */
+.img-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+  z-index:9999;align-items:center;justify-content:center;padding:20px;}
+.img-lightbox.open{display:flex;}
+.img-lightbox img{max-height:90vh;max-width:92vw;border-radius:12px;
+  box-shadow:0 8px 40px rgba(0,0,0,.6);}
+.img-lb-close{position:fixed;top:18px;right:22px;background:rgba(255,255,255,.15);
+  border:none;color:#fff;font-size:26px;width:40px;height:40px;border-radius:50%;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.img-lb-close:hover{background:rgba(255,255,255,.3);}
+.img-strip-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:10;
+  width:36px;height:36px;border-radius:50%;border:2px solid #3B6D11;
+  background:#fff;color:#3B6D11;font-size:20px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);transition:background .15s,color .15s;line-height:1;}
+.img-strip-arrow:hover{background:#3B6D11;color:#fff;}
+.img-strip-arrow.left{left:0;}
+.img-strip-arrow.right{right:0;}
 .digest-cards,.news-cards-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .news-cards-row .day-card{border-radius:11px;overflow:hidden;border:1.5px solid transparent;}
 .news-cards-row .day-card.orange{border-color:#854F0B;background:#FAEEDA;}
@@ -1322,6 +1348,25 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       <span class="digest-hdr-title">Today's News</span>
     </div>
     <div class="news-cards-row" id="newsCardsRow"></div>
+  </div>
+
+  <!-- ── NEWS IMAGE STRIP ───────────────────────────────────── -->
+  <div class="img-strip-section" id="imgStripSection" style="display:none;">
+    <div class="digest-hdr">
+      <i class="ti ti-photo" style="color:#27500A;font-size:14px;" aria-hidden="true"></i>
+      <span class="digest-hdr-title">News Visuals</span>
+    </div>
+    <div class="img-strip-wrap">
+      <button class="img-strip-arrow left" onclick="imgScroll(-1)" aria-label="Previous">&#8249;</button>
+      <div class="img-strip" id="imgStrip"></div>
+      <button class="img-strip-arrow right" onclick="imgScroll(1)" aria-label="Next">&#8250;</button>
+    </div>
+  </div>
+
+  <!-- image lightbox -->
+  <div class="img-lightbox" id="imgLightbox" onclick="closeImgLightbox(event)">
+    <button class="img-lb-close" onclick="closeImgLightbox()" aria-label="Close">&#x2715;</button>
+    <img id="imgLightboxImg" src="" alt="News visual">
   </div>
 
   <!-- ── 4 STAT CARDS ───────────────────────────────────────── -->
@@ -2702,6 +2747,7 @@ window.onload = function() {
   setInterval(updateCountdown, 60000); // refresh every minute
   initPortal();
   initDigest();
+  initImgStrip();
 };
 
 function startPortal() { initPortal(); }
@@ -7199,6 +7245,106 @@ async function downloadNewsCard(type, date) {
 
 // Download button in modal — not used for PYQ digest (modal is read-only)
 async function downloadDigestCard() { /* no-op for PYQ modal */ }
+
+// ── NEWS IMAGE STRIP ──────────────────────────────────────────
+let _imgScrollCtrl = null;
+
+async function initImgStrip() {
+  try {
+    const urls = await fetch('/api/newsImages').then(r => r.json());
+    if (!urls || urls.length === 0) return;
+
+    const strip = document.getElementById('imgStrip');
+    strip.innerHTML = '';
+
+    // Build items (duplicate for seamless loop)
+    const makeItem = url => {
+      const el = document.createElement('div');
+      el.className = 'img-strip-item';
+      el.innerHTML = `<img src="${url}" alt="News visual" loading="lazy">`;
+      el.onclick = () => openImgLightbox(url);
+      return el;
+    };
+
+    urls.forEach(url => strip.appendChild(makeItem(url)));
+    // Duplicate for seamless loop
+    urls.forEach(url => strip.appendChild(makeItem(url)));
+
+    document.getElementById('imgStripSection').style.display = '';
+    _startImgScroll(strip, urls.length);
+  } catch(e) {
+    console.warn('Image strip load failed:', e.message);
+  }
+}
+
+function _startImgScroll(strip, origCount) {
+  let pos    = 0;
+  let paused = false;
+  const speed = 0.6;
+
+  // Measure item width dynamically after first image loads
+  let itemW = 0;
+  const firstImg = strip.querySelector('img');
+  const measure = () => {
+    const item = strip.querySelector('.img-strip-item');
+    if (item) itemW = item.offsetWidth + 12; // 12 = gap
+  };
+  if (firstImg.complete) measure();
+  else firstImg.addEventListener('load', measure, { once: true });
+
+  function step() {
+    if (!paused && itemW > 0) {
+      pos += speed;
+      const loopAt = itemW * origCount;
+      if (pos >= loopAt) pos = 0;
+      strip.scrollLeft = pos;
+    }
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  _imgScrollCtrl = {
+    jump(dir) {
+      paused = true;
+      if (itemW > 0) {
+        pos += dir * itemW;
+        if (pos < 0) pos = itemW * origCount - itemW;
+        strip.scrollLeft = pos;
+      }
+      setTimeout(() => { paused = false; }, 900);
+    }
+  };
+
+  strip.addEventListener('mouseenter', () => paused = true);
+  strip.addEventListener('mouseleave', () => paused = false);
+
+  let isDragging = false, startX = 0, startScroll = 0;
+  strip.addEventListener('mousedown', e => {
+    isDragging = true; paused = true; startX = e.pageX; startScroll = pos;
+  });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    pos = startScroll - (e.pageX - startX);
+    strip.scrollLeft = pos;
+  });
+  window.addEventListener('mouseup', () => {
+    if (isDragging) { isDragging = false; paused = false; }
+  });
+}
+
+function imgScroll(dir) { if (_imgScrollCtrl) _imgScrollCtrl.jump(dir); }
+
+function openImgLightbox(url) {
+  document.getElementById('imgLightboxImg').src = url;
+  document.getElementById('imgLightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeImgLightbox(e) {
+  if (e && e.target !== document.getElementById('imgLightbox') &&
+      e.target !== document.querySelector('.img-lb-close')) return;
+  document.getElementById('imgLightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
 
 </script>
 
