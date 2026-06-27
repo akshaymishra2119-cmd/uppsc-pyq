@@ -578,9 +578,16 @@ function fetchDigest() {
         try {
           const jsonStr = raw.replace(/^[^{(]*\(/, '').replace(/\)[\s;]*$/, '').replace(/^[^{]*/, '');
           const parsed  = JSON.parse(jsonStr);
+          const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
           const v = (row, i) => {
             const cell = row.c[i];
-            return cell && cell.v !== null && cell.v !== undefined ? String(cell.v).trim() : '';
+            if (!cell || cell.v === null || cell.v === undefined) return '';
+            // gviz returns dates as "Date(YYYY,M,D)" with 0-indexed month
+            const dm = String(cell.v).match(/^Date\((\d+),(\d+),(\d+)\)$/);
+            if (dm) return `${parseInt(dm[3])} ${MONTHS[parseInt(dm[2])]} ${dm[1]}`;
+            // Use formatted value if available (already a nice string)
+            if (cell.f) return String(cell.f).trim();
+            return String(cell.v).trim();
           };
           // New schema: 0=Date 1=Type(UPPSC|CA) 2=Question 3=Answer 4=Subject
           const rows = parsed.table.rows.filter(row => v(row, 0) && v(row, 1) && v(row, 2));
