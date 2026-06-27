@@ -136,22 +136,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .digest-hdr-badge{font-size:9px;font-weight:600;background:#C0DD97;color:#27500A;
   padding:2px 8px;border-radius:99px;}
 /* strip (date thumbnails) */
-.digest-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;}
+.digest-strip{display:flex;gap:12px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;}
 .digest-strip::-webkit-scrollbar{display:none;}
-.digest-thumb{min-width:120px;max-width:120px;height:154px;border-radius:10px;
+.digest-thumb{min-width:180px;max-width:180px;height:220px;border-radius:12px;
   border:2px solid #3B6D11;background:#EAF3DE;cursor:pointer;overflow:hidden;
   position:relative;flex-shrink:0;transition:border-color .15s,transform .12s;}
 .digest-thumb:hover{border-color:#639922;transform:translateY(-2px);}
-.digest-thumb-date{font-size:8.5px;font-weight:600;color:#27500A;background:#C0DD97;
-  padding:2px 7px;position:absolute;top:7px;left:7px;border-radius:4px;}
-.digest-thumb-body{padding:26px 8px 4px;display:flex;flex-direction:column;gap:5px;}
-.dth-tag{font-size:7px;font-weight:600;border-radius:3px;padding:1px 5px;width:fit-content;}
-.dth-tag.u{background:#B5D4F4;color:#0C447C;}
-.dth-tag.ca{background:#F5C4B3;color:#712B13;}
-.dth-line{font-size:7px;color:#27500A;line-height:1.4;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.digest-thumb-brand{font-size:7px;color:#3B6D11;font-weight:600;
-  position:absolute;bottom:5px;right:7px;}
+.digest-thumb-date{font-size:9px;font-weight:600;color:#27500A;background:#C0DD97;
+  padding:3px 9px;position:absolute;top:8px;left:8px;border-radius:5px;}
+.digest-thumb-body{padding:34px 10px 6px;display:flex;flex-direction:column;gap:8px;}
+.dth-pyq-item{display:flex;flex-direction:column;gap:3px;}
+.dth-tag{font-size:8px;font-weight:600;border-radius:3px;padding:2px 6px;width:fit-content;}
+.dth-tag.pyq{background:#C0DD97;color:#27500A;}
+.dth-repeat{font-size:7.5px;color:#639922;font-weight:600;}
+.dth-line{font-size:8px;color:#27500A;line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.digest-thumb-brand{font-size:7.5px;color:#3B6D11;font-weight:600;
+  position:absolute;bottom:7px;right:9px;}
 /* modal overlay */
 .digest-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
   z-index:9999;align-items:center;justify-content:center;}
@@ -200,27 +201,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .dc-count{font-size:8px;font-weight:600;padding:2px 7px;border-radius:99px;}
 .news-cards-row .day-card.orange .dc-count{background:#EF9F27;color:#412402;}
 .news-cards-row .day-card.blue   .dc-count{background:#378ADD;color:#042C53;}
-.dc-items{padding:4px 0;max-height:300px;overflow-y:auto;scrollbar-width:thin;}
+.dc-items{padding:4px 0;max-height:340px;overflow-y:auto;scrollbar-width:thin;}
 .news-cards-row .day-card.orange .dc-items::-webkit-scrollbar-thumb{background:#EF9F27;}
 .news-cards-row .day-card.blue   .dc-items::-webkit-scrollbar-thumb{background:#378ADD;}
 .dc-items::-webkit-scrollbar{width:3px;}
-.dc-item{border-bottom:1px solid rgba(0,0,0,.08);cursor:pointer;}
+.dc-item{border-bottom:1px solid rgba(0,0,0,.08);padding:10px 14px;display:flex;align-items:flex-start;gap:8px;}
 .dc-item:last-child{border-bottom:none;}
-.dc-item-top{padding:8px 13px;display:flex;align-items:flex-start;gap:7px;}
-.dc-sub{font-size:7.5px;font-weight:600;border-radius:3px;padding:2px 5px;flex-shrink:0;margin-top:2px;}
+.dc-sub{font-size:8px;font-weight:600;border-radius:3px;padding:2px 6px;flex-shrink:0;margin-top:2px;}
 .news-cards-row .day-card.orange .dc-sub{background:#EF9F27;color:#412402;}
 .news-cards-row .day-card.blue   .dc-sub{background:#378ADD;color:#042C53;}
-.dc-headline{font-size:10.5px;font-weight:500;line-height:1.4;flex:1;}
+.dc-headline{font-size:12px;font-weight:500;line-height:1.5;flex:1;}
 .news-cards-row .day-card.orange .dc-headline{color:#412402;}
 .news-cards-row .day-card.blue   .dc-headline{color:#042C53;}
-.dc-chev{font-size:12px;flex-shrink:0;margin-top:1px;transition:transform .2s;}
-.news-cards-row .day-card.orange .dc-chev{color:#854F0B;}
-.news-cards-row .day-card.blue   .dc-chev{color:#185FA5;}
-.dc-detail{max-height:0;overflow:hidden;transition:max-height .3s ease;}
-.dc-detail.open{max-height:180px;}
-.dc-detail-inner{padding:0 13px 10px 13px;font-size:10px;line-height:1.6;border-left:3px solid transparent;margin-left:13px;border-radius:0;}
-.news-cards-row .day-card.orange .dc-detail-inner{color:#633806;border-color:#EF9F27;}
-.news-cards-row .day-card.blue   .dc-detail-inner{color:#0C447C;border-color:#378ADD;}
 .dc-footer{padding:6px 13px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(0,0,0,.1);}
 .news-cards-row .day-card.orange .dc-footer{background:#FAC775;}
 .news-cards-row .day-card.blue   .dc-footer{background:#B5D4F4;}
@@ -6895,47 +6887,68 @@ let _digestActive = null;
 
 async function initDigest() {
   try {
-    const rows = await fetch('/api/digest').then(r => r.json());
-    if (!rows || rows.length === 0) return;
-    _digestData = rows;
+    // ── 1. Daily Digest strip — top repeating PYQs from question bank ─
+    const allQs = await fetch('/api/getQuestions', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ limit: 2000 })
+    }).then(r => r.json());
 
-    // ── 1. Restore original date-thumbnail strip ──────────────
+    // Score each question by number of years its topic repeats
+    const repeaters = allQs
+      .filter(q => q.repeatsIn && q.repeatsIn.includes(','))
+      .map(q => ({ ...q, repeatCount: q.repeatsIn.split(',').length }))
+      .sort((a, b) => b.repeatCount - a.repeatCount);
+
+    // Build 14 days worth of digest cards (rotate by day offset from epoch)
     const strip = document.getElementById('digestStrip');
     strip.innerHTML = '';
-    rows.slice(0, 14).forEach((d, i) => {
+    const today = new Date();
+    for (let offset = 0; offset < 14; offset++) {
+      const cardDate = new Date(today);
+      cardDate.setDate(today.getDate() - offset);
+      const dayNum  = Math.floor(cardDate.getTime() / 86400000);
+      // Pick 2 questions by rotating through pool using day number
+      const pool = repeaters.length;
+      const q1   = pool > 0 ? repeaters[dayNum % pool]         : null;
+      const q2   = pool > 1 ? repeaters[(dayNum + 1) % pool]   : null;
+      const label = offset === 0 ? 'Today' : cardDate.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+
+      const itemsHtml = [q1, q2].filter(Boolean).map(q => `
+        <div class="dth-pyq-item">
+          <span class="dth-tag pyq">${q.subject || 'PYQ'}</span>
+          <span class="dth-repeat">↻ ${q.repeatsIn.split(',').length} yrs</span>
+          <p class="dth-line">${q.question}</p>
+        </div>`).join('');
+
       const el = document.createElement('div');
       el.className = 'digest-thumb';
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', '0');
-      el.setAttribute('aria-label', `Daily digest ${d.date}`);
-      const uppscQ = (d.uppsc && d.uppsc[0]) ? d.uppsc[0].q : '';
-      const caQ    = (d.ca    && d.ca[0])    ? d.ca[0].q    : '';
       el.innerHTML = `
-        <div class="digest-thumb-date">${d.date}</div>
-        <div class="digest-thumb-body">
-          <span class="dth-tag u">UPPSC</span>
-          <p class="dth-line">${uppscQ}</p>
-          <span class="dth-tag ca" style="margin-top:4px;">CA</span>
-          <p class="dth-line">${caQ}</p>
-        </div>
+        <div class="digest-thumb-date">${label}</div>
+        <div class="digest-thumb-body">${itemsHtml}</div>
         <div class="digest-thumb-brand">SimpleSensePCS</div>`;
-      el.onclick     = () => openDigest(i);
-      el.onkeydown   = e => { if (e.key === 'Enter') openDigest(i); };
+      el.onclick   = () => openPYQModal([q1, q2].filter(Boolean), label);
+      el.onkeydown = e => { if (e.key === 'Enter') openPYQModal([q1, q2].filter(Boolean), label); };
       strip.appendChild(el);
-    });
+    }
     document.getElementById('digestSection').style.display = '';
 
-    // ── 2. Render orange + blue news cards below the strip ────
-    const day = rows[0]; // most recent
-    document.getElementById('newsCardsRow').innerHTML =
-      _buildNewsCard(day, 'uppsc') + _buildNewsCard(day, 'ca');
-    document.getElementById('newsCardsSection').style.display = '';
+    // ── 2. UPPSC + CA one-liner news cards ────────────────────
+    const rows = await fetch('/api/digest').then(r => r.json());
+    if (rows && rows.length > 0) {
+      _digestData = rows;
+      const day = rows[0];
+      document.getElementById('newsCardsRow').innerHTML =
+        _buildNewsCard(day, 'uppsc') + _buildNewsCard(day, 'ca');
+      document.getElementById('newsCardsSection').style.display = '';
+    }
   } catch(e) {
     console.warn('Digest load failed:', e.message);
   }
 }
 
-// Build one orange (UPPSC) or blue (CA) multi-item card
+// Build one orange (UPPSC) or blue (CA) one-liner card — no expand
 function _buildNewsCard(day, type) {
   const isOrange = type === 'uppsc';
   const items    = day[type] || [];
@@ -6944,14 +6957,8 @@ function _buildNewsCard(day, type) {
   const btnId    = `nc-dl-${type}`;
   const itemsHtml = items.map(item => `
     <div class="dc-item">
-      <div class="dc-item-top" onclick="toggleNewsItem(this)">
-        ${item.sub ? `<span class="dc-sub">${item.sub}</span>` : ''}
-        <span class="dc-headline">${item.q}</span>
-        <i class="ti ti-chevron-down dc-chev" aria-hidden="true"></i>
-      </div>
-      <div class="dc-detail">
-        <div class="dc-detail-inner">${item.ans || ''}</div>
-      </div>
+      ${item.sub ? `<span class="dc-sub">${item.sub}</span>` : ''}
+      <span class="dc-headline">${item.q}</span>
     </div>`).join('');
   return `
     <div class="day-card ${cls}">
@@ -6973,11 +6980,19 @@ function _buildNewsCard(day, type) {
     </div>`;
 }
 
-function toggleNewsItem(top) {
-  const detail  = top.nextElementSibling;
-  const chevron = top.querySelector('.dc-chev');
-  const isOpen  = detail.classList.toggle('open');
-  chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+// Open modal showing PYQ questions for a digest card
+function openPYQModal(questions, label) {
+  _digestActive = 0;
+  document.getElementById('digestModalDate').innerHTML =
+    `<i class="ti ti-calendar" style="font-size:10px;vertical-align:-1px;margin-right:3px;"></i>${label}`;
+  document.getElementById('digestModalBody').innerHTML = questions.map((q, i) => `
+    <div class="dm-block">
+      <span class="dm-tag u">${q.subject || 'PYQ'} · ${q.year} · ↻ ${q.repeatsIn.split(',').length} yrs</span>
+      <p class="dm-q">${q.question}</p>
+      <p class="dm-a"><strong>Answer:</strong> ${q.answerText || q.answer}</p>
+    </div>${i < questions.length - 1 ? '<hr class="dm-divider">' : ''}`).join('');
+  document.getElementById('digestOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 // Open modal showing ALL items for a given date (clicking a thumbnail)
@@ -7075,12 +7090,8 @@ async function downloadNewsCard(type, date) {
   if (btn) { btn.innerHTML = '<i class="ti ti-download" style="font-size:10px;"></i> PNG'; btn.disabled = false; }
 }
 
-// Download modal card (old behaviour, kept for strip thumbnails)
-async function downloadDigestCard() {
-  const d = _digestData[_digestActive];
-  if (!d) return;
-  downloadNewsCard('uppsc', d.date); // download UPPSC card when triggered from modal
-}
+// Download button in modal — not used for PYQ digest (modal is read-only)
+async function downloadDigestCard() { /* no-op for PYQ modal */ }
 
 </script>
 
