@@ -291,25 +291,64 @@ function formatDate(d) {
   return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-// ── SERVE STATIC NEWS IMAGES ──────────────────────────────────
+// ── NEWS IMAGES — read from Google Sheet tab NEWS_IMAGES ──────
+// Sheet columns: 0=URL  1=Caption(optional)
+// On local dev, also serves files from ./news_images/ folder as fallback
 const NEWS_IMAGES_DIR = path.join(__dirname, 'news_images');
 if (!fs.existsSync(NEWS_IMAGES_DIR)) fs.mkdirSync(NEWS_IMAGES_DIR);
 app.use('/news_images', express.static(NEWS_IMAGES_DIR));
 
-// Return list of all image filenames in the folder
-app.get('/api/newsImages', (req, res) => {
-  try {
-    const files = fs.readdirSync(NEWS_IMAGES_DIR)
-      .filter(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f))
-      .sort((a, b) => {
-        // Newest first by file modified time
-        const ta = fs.statSync(path.join(NEWS_IMAGES_DIR, a)).mtimeMs;
-        const tb = fs.statSync(path.join(NEWS_IMAGES_DIR, b)).mtimeMs;
-        return tb - ta;
+let _imgCache = null;
+let _imgCacheTime = 0;
+
+function fetchNewsImagesFromSheet() {
+  return new Promise((resolve, reject) => {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=NEWS_IMAGES`;
+    https.get(url, res => {
+      let raw = '';
+      res.on('data', chunk => raw += chunk);
+      res.on('end', () => {
+        try {
+          const jsonStr = raw.replace(/^[^{(]*\(/, '').replace(/\)[\s;]*$/, '').replace(/^[^{]*/, '');
+          const parsed  = JSON.parse(jsonStr);
+          const v = (row, i) => {
+            const cell = row.c[i];
+            return cell && cell.v !== null ? String(cell.v).trim() : '';
+          };
+          const urls = parsed.table.rows
+            .map(row => ({ url: v(row, 0), caption: v(row, 1) }))
+            .filter(r => r.url && r.url.startsWith('http'));
+          resolve(urls);
+        } catch(e) { reject(e); }
       });
-    res.json(files.map(f => `/news_images/${f}`));
+      res.on('error', reject);
+    }).on('error', reject);
+  });
+}
+
+app.get('/api/newsImages', async (req, res) => {
+  const now = Date.now();
+  if (_imgCache && now - _imgCacheTime < CACHE_TTL) return res.json(_imgCache);
+  try {
+    const sheetImgs = await fetchNewsImagesFromSheet();
+    // Also include local folder images as fallback / supplement
+    let localImgs = [];
+    try {
+      localImgs = fs.readdirSync(NEWS_IMAGES_DIR)
+        .filter(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f))
+        .map(f => ({ url: `/news_images/${f}`, caption: '' }));
+    } catch(e) {}
+    _imgCache = [...sheetImgs, ...localImgs];
+    _imgCacheTime = now;
+    res.json(_imgCache);
   } catch(e) {
-    res.json([]);
+    // Sheet failed — fall back to local folder only
+    try {
+      const localImgs = fs.readdirSync(NEWS_IMAGES_DIR)
+        .filter(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f))
+        .map(f => ({ url: `/news_images/${f}`, caption: '' }));
+      res.json(localImgs);
+    } catch(e2) { res.json([]); }
   }
 });
 

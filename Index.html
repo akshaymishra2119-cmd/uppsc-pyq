@@ -7251,27 +7251,27 @@ let _imgScrollCtrl = null;
 
 async function initImgStrip() {
   try {
-    const urls = await fetch('/api/newsImages').then(r => r.json());
-    if (!urls || urls.length === 0) return;
+    const items = await fetch('/api/newsImages').then(r => r.json());
+    if (!items || items.length === 0) return;
 
     const strip = document.getElementById('imgStrip');
     strip.innerHTML = '';
 
     // Build items (duplicate for seamless loop)
-    const makeItem = url => {
+    const makeItem = item => {
       const el = document.createElement('div');
       el.className = 'img-strip-item';
-      el.innerHTML = `<img src="${url}" alt="News visual" loading="lazy">`;
-      el.onclick = () => openImgLightbox(url);
+      el.innerHTML = `<img src="${item.url}" alt="${item.caption || 'News visual'}" loading="lazy">`;
+      el.onclick = () => openImgLightbox(item.url, item.caption);
       return el;
     };
 
-    urls.forEach(url => strip.appendChild(makeItem(url)));
+    items.forEach(item => strip.appendChild(makeItem(item)));
     // Duplicate for seamless loop
-    urls.forEach(url => strip.appendChild(makeItem(url)));
+    items.forEach(item => strip.appendChild(makeItem(item)));
 
     document.getElementById('imgStripSection').style.display = '';
-    _startImgScroll(strip, urls.length);
+    _startImgScroll(strip, items.length);
   } catch(e) {
     console.warn('Image strip load failed:', e.message);
   }
@@ -7334,8 +7334,9 @@ function _startImgScroll(strip, origCount) {
 
 function imgScroll(dir) { if (_imgScrollCtrl) _imgScrollCtrl.jump(dir); }
 
-function openImgLightbox(url) {
+function openImgLightbox(url, caption) {
   document.getElementById('imgLightboxImg').src = url;
+  document.getElementById('imgLightboxImg').alt = caption || '';
   document.getElementById('imgLightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
