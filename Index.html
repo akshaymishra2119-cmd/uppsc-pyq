@@ -2463,6 +2463,9 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
       <span style="font-size:11px;color:var(--text3);margin-left:auto;font-weight:400;">click a type card to expand</span>
     </div>
 
+    <!-- Year filter pills -->
+    <div id="qtYearPills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
+
     <!-- Type count cards -->
     <div class="qt-grid" id="qtGrid"></div>
 
@@ -4072,7 +4075,7 @@ function renderAnswerDistHome(questions) {
 
 // ── Question Type Analytics (full) ───────────────────────────
 function renderQTAnalytics(questions) {
-  const gridEl   = document.getElementById('qtGrid');
+  const gridEl = document.getElementById('qtGrid');
   if (!gridEl) return;
 
   const LCOLS = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
@@ -4098,7 +4101,52 @@ function renderQTAnalytics(questions) {
   ];
   const ORDER = ['Direct','Statement','Match','A&R','Chronology','Unknown'];
 
-  // Build type data: count, answers, byYear, bySubject, topics, repeats
+  // All years from full dataset
+  const ALL_YEARS = [...new Set(questions.map(q=>String(q.year)).filter(Boolean))].sort();
+
+  // Store full question set and constants globally for year filter
+  window._qtBase = { questions, LCOLS, TYPE_LABELS, TYPE_ICONS, TYPE_COLS, AR_OPTS, ORDER, ALL_YEARS };
+
+  // Build year pills
+  const pillsEl = document.getElementById('qtYearPills');
+  if (pillsEl) {
+    pillsEl.innerHTML = ['All', ...ALL_YEARS].map(yr =>
+      `<button class="yr-pill${yr==='All'?' active':''}" data-qtyr="${yr}"
+        onclick="filterQTByYear('${yr}')"
+        style="font-size:11px;padding:3px 11px;border-radius:12px;border:1.5px solid var(--border);
+        background:${yr==='All'?'var(--blue)':'var(--bg3)'};
+        color:${yr==='All'?'#fff':'var(--text2)'};cursor:pointer;font-weight:600;">
+        ${yr}
+      </button>`).join('');
+  }
+
+  // Initial render with all questions
+  _renderQTBody(questions);
+
+  window.filterQTByYear = function(yr) {
+    // Update pill styles
+    document.querySelectorAll('[data-qtyr]').forEach(b => {
+      const isActive = b.dataset.qtyr === yr;
+      b.style.background = isActive ? 'var(--blue)' : 'var(--bg3)';
+      b.style.color       = isActive ? '#fff' : 'var(--text2)';
+      b.style.borderColor = isActive ? 'var(--blue)' : 'var(--border)';
+    });
+    // Filter questions and re-render
+    const filtered = yr === 'All'
+      ? window._qtBase.questions
+      : window._qtBase.questions.filter(q => String(q.year) === yr);
+    // Close detail panel when year changes
+    const det = document.getElementById('qtDetail');
+    if (det) det.style.display = 'none';
+    _renderQTBody(filtered);
+  };
+}
+
+function _renderQTBody(questions) {
+  const { LCOLS, TYPE_LABELS, TYPE_ICONS, TYPE_COLS, AR_OPTS, ORDER } = window._qtBase;
+  const gridEl = document.getElementById('qtGrid');
+  if (!gridEl) return;
+
   const YEARS = [...new Set(questions.map(q=>String(q.year)).filter(Boolean))].sort();
   const typeData = {};
   ORDER.forEach(t => typeData[t] = {
