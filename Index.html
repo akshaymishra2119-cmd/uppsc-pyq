@@ -136,23 +136,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .digest-hdr-badge{font-size:9px;font-weight:600;background:#C0DD97;color:#27500A;
   padding:2px 8px;border-radius:99px;}
 /* strip (date thumbnails) */
-.digest-strip{display:flex;gap:12px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;}
+.digest-strip{display:flex;gap:14px;overflow-x:hidden;padding:2px 0 10px;cursor:grab;user-select:none;}
+.digest-strip.grabbing{cursor:grabbing;}
 .digest-strip::-webkit-scrollbar{display:none;}
-.digest-thumb{min-width:180px;max-width:180px;height:220px;border-radius:12px;
+.digest-thumb{min-width:240px;max-width:240px;height:270px;border-radius:14px;
   border:2px solid #3B6D11;background:#EAF3DE;cursor:pointer;overflow:hidden;
-  position:relative;flex-shrink:0;transition:border-color .15s,transform .12s;}
-.digest-thumb:hover{border-color:#639922;transform:translateY(-2px);}
-.digest-thumb-date{font-size:9px;font-weight:600;color:#27500A;background:#C0DD97;
-  padding:3px 9px;position:absolute;top:8px;left:8px;border-radius:5px;}
-.digest-thumb-body{padding:34px 10px 6px;display:flex;flex-direction:column;gap:8px;}
-.dth-pyq-item{display:flex;flex-direction:column;gap:3px;}
-.dth-tag{font-size:8px;font-weight:600;border-radius:3px;padding:2px 6px;width:fit-content;}
+  position:relative;flex-shrink:0;transition:border-color .15s,transform .12s;box-shadow:0 2px 8px rgba(59,109,17,.15);}
+.digest-thumb:hover{border-color:#639922;transform:translateY(-3px);box-shadow:0 6px 18px rgba(59,109,17,.22);}
+.digest-thumb-date{font-size:10px;font-weight:700;color:#27500A;background:#C0DD97;
+  padding:4px 10px;position:absolute;top:10px;left:10px;border-radius:6px;}
+.digest-thumb-body{padding:40px 12px 8px;display:flex;flex-direction:column;gap:10px;}
+.dth-pyq-item{display:flex;flex-direction:column;gap:4px;}
+.dth-tag{font-size:9px;font-weight:600;border-radius:4px;padding:2px 7px;width:fit-content;}
 .dth-tag.pyq{background:#C0DD97;color:#27500A;}
-.dth-repeat{font-size:7.5px;color:#639922;font-weight:600;}
-.dth-line{font-size:8px;color:#27500A;line-height:1.45;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
-.digest-thumb-brand{font-size:7.5px;color:#3B6D11;font-weight:600;
-  position:absolute;bottom:7px;right:9px;}
+.dth-repeat{font-size:8px;color:#639922;font-weight:600;}
+.dth-line{font-size:9px;color:#27500A;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+.digest-thumb-brand{font-size:8px;color:#3B6D11;font-weight:600;
+  position:absolute;bottom:9px;right:11px;}
 /* modal overlay */
 .digest-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
   z-index:9999;align-items:center;justify-content:center;}
@@ -6885,6 +6886,48 @@ function showError(e) {
 let _digestData = [];
 let _digestActive = null;
 
+function _startDigestScroll(strip) {
+  // Duplicate cards so it loops seamlessly
+  const origCards = [...strip.children];
+  origCards.forEach(c => strip.appendChild(c.cloneNode(true)));
+
+  let pos       = 0;
+  let paused    = false;
+  const speed   = 0.5; // px per frame — tweak for faster/slower
+  const cardW   = 240 + 14; // width + gap
+
+  function step() {
+    if (!paused) {
+      pos += speed;
+      // When we've scrolled past the original set, jump back silently
+      if (pos >= origCards.length * cardW) pos = 0;
+      strip.scrollLeft = pos;
+    }
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  // Pause on hover or drag
+  strip.addEventListener('mouseenter', () => paused = true);
+  strip.addEventListener('mouseleave', () => paused = false);
+
+  // Allow manual drag
+  let isDragging = false, startX = 0, startScroll = 0;
+  strip.addEventListener('mousedown', e => {
+    isDragging = true; paused = true;
+    startX = e.pageX; startScroll = pos;
+    strip.classList.add('grabbing');
+  });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    pos = startScroll - (e.pageX - startX);
+    strip.scrollLeft = pos;
+  });
+  window.addEventListener('mouseup', () => {
+    if (isDragging) { isDragging = false; paused = false; strip.classList.remove('grabbing'); }
+  });
+}
+
 async function initDigest() {
   try {
     // ── 1. Daily Digest strip — top repeating PYQs from question bank ─
@@ -6899,6 +6942,19 @@ async function initDigest() {
       .map(q => ({ ...q, repeatCount: q.repeatsIn.split(',').length }))
       .sort((a, b) => b.repeatCount - a.repeatCount);
 
+    // Shuffle pool with fixed seed so all years/subjects are mixed
+    // (but still only high-repeat questions)
+    const shuffled = (() => {
+      const a = [...repeaters];
+      let seed = 1337;
+      const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 0x100000000; };
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    })();
+
     // Build 14 days worth of digest cards (rotate by day offset from epoch)
     const strip = document.getElementById('digestStrip');
     strip.innerHTML = '';
@@ -6907,10 +6963,10 @@ async function initDigest() {
       const cardDate = new Date(today);
       cardDate.setDate(today.getDate() - offset);
       const dayNum  = Math.floor(cardDate.getTime() / 86400000);
-      // Pick 2 questions by rotating through pool using day number
-      const pool = repeaters.length;
-      const q1   = pool > 0 ? repeaters[dayNum % pool]         : null;
-      const q2   = pool > 1 ? repeaters[(dayNum + 1) % pool]   : null;
+      // Pick 2 well-spaced questions so consecutive days don't look similar
+      const pool = shuffled.length;
+      const q1   = pool > 0 ? shuffled[dayNum % pool]                          : null;
+      const q2   = pool > 1 ? shuffled[(dayNum + Math.floor(pool / 2)) % pool] : null;
       const label = offset === 0 ? 'Today' : cardDate.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
 
       const itemsHtml = [q1, q2].filter(Boolean).map(q => `
@@ -6933,6 +6989,7 @@ async function initDigest() {
       strip.appendChild(el);
     }
     document.getElementById('digestSection').style.display = '';
+    _startDigestScroll(strip);
 
     // ── 2. UPPSC + CA one-liner news cards ────────────────────
     const rows = await fetch('/api/digest').then(r => r.json());
