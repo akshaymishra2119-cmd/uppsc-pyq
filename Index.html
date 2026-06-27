@@ -4711,6 +4711,7 @@ function _renderSGBestMatrix(sgData, TYPE_LABELS, LCOLS) {
 
   const TYPES   = ['Direct','Statement','Match','A&R','Chronology'];
   const COL     = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
+  const BG      = { A:'#EBF4FF', B:'#E6F9F2', C:'#F3F2FF', D:'#FEF6E6' };
   const confBG  = pct => pct>=45 ? '#E6F9F2' : pct>=35 ? '#FEFBE6' : '#FEF0F0';
   const confBorder = pct => pct>=45 ? '#1D9E75' : pct>=35 ? '#EF9F27' : '#E24B4A';
 
@@ -4738,9 +4739,8 @@ function _renderSGBestMatrix(sgData, TYPE_LABELS, LCOLS) {
           const pct  = (cell[best]/cell.total*100).toFixed(0);
           const safeT = t.replace(/&/g,'__AMP__');
           const safeSub = sub.replace(/'/g,"\\'");
-          const p = parseInt(pct);
           return `<td>
-            <div class="bgm-cell" style="background:${confBG(p)};border-left:3px solid ${confBorder(p)};"
+            <div class="bgm-cell" style="background:${BG[best]};border-left:3px solid ${COL[best]};"
               onclick="openSGMatrixDrill('${safeSub}','${safeT}','${best}')">
               <div class="bgm-letter" style="color:${COL[best]};">${best}</div>
               <div class="bgm-pct" style="color:${COL[best]};">${pct}%·${cell.total}q</div>
@@ -4752,9 +4752,8 @@ function _renderSGBestMatrix(sgData, TYPE_LABELS, LCOLS) {
           if (!all || all.total < 2) return `<td><div class="bgm-empty">—</div></td>`;
           const best = ['A','B','C','D'].reduce((a,l)=>all[l]>all[a]?l:a,'A');
           const pct  = (all[best]/all.total*100).toFixed(0);
-          const p    = parseInt(pct);
           return `<td>
-            <div class="bgm-cell" style="background:${confBG(p)};border-left:3px solid ${confBorder(p)};">
+            <div class="bgm-cell" style="background:${BG[best]};border-left:3px solid ${COL[best]};">
               <div class="bgm-letter" style="color:${COL[best]};">${best}</div>
               <div class="bgm-pct" style="color:${COL[best]};">${pct}%·${all.total}q</div>
             </div>
@@ -4825,11 +4824,10 @@ function _renderSGWorstMatrix(sgData, TYPE_LABELS, LCOLS) {
     <tbody>${subjects.map(sub => {
       const renderCell = (cell) => {
         if (!cell || cell.total < 2) return `<td><div class="bgm-empty">—</div></td>`;
-        const worst   = ['A','B','C','D'].reduce((a,l)=>cell[l]<cell[a]?l:a,'A');
+        const worst    = ['A','B','C','D'].reduce((a,l)=>cell[l]<cell[a]?l:a,'A');
         const worstPct = (cell[worst]/cell.total*100).toFixed(0);
-        const elimConf = 100 - parseInt(worstPct); // high elimConf = safe to drop
         return `<td>
-          <div class="bgm-cell" style="background:${confBG(elimConf)};border-left:3px solid ${confBorder(elimConf)};">
+          <div class="bgm-cell" style="background:${BG[worst]};border-left:3px solid ${COL[worst]};">
             <div class="bgm-letter" style="color:${COL[worst]};text-decoration:line-through;">${worst}</div>
             <div class="bgm-pct" style="color:${COL[worst]};">${worstPct}%·${cell.total}q</div>
           </div>
