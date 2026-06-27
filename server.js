@@ -582,19 +582,26 @@ function fetchDigest() {
             const cell = row.c[i];
             return cell && cell.v !== null && cell.v !== undefined ? String(cell.v).trim() : '';
           };
-          // Cols: 0=Date 1=UPPSC_Q 2=UPPSC_Ans 3=UPPSC_Subject 4=CA_Q 5=CA_Ans 6=CA_Subject
-          const rows = parsed.table.rows
-            .filter(row => v(row, 0))
-            .map(row => ({
-              date:        v(row, 0),
-              uppscQ:      v(row, 1),
-              uppscAns:    v(row, 2),
-              uppscSub:    v(row, 3),
-              caQ:         v(row, 4),
-              caAns:       v(row, 5),
-              caSub:       v(row, 6),
-            }));
-          resolve(rows.reverse()); // newest first
+          // New schema: 0=Date 1=Type(UPPSC|CA) 2=Question 3=Answer 4=Subject
+          const rows = parsed.table.rows.filter(row => v(row, 0) && v(row, 1) && v(row, 2));
+
+          // Group by date preserving insertion order
+          const byDate = {};
+          const dateOrder = [];
+          rows.forEach(row => {
+            const date = v(row, 0);
+            const type = v(row, 1).toUpperCase(); // UPPSC or CA
+            const item = { q: v(row, 2), ans: v(row, 3), sub: v(row, 4) };
+            if (!byDate[date]) {
+              byDate[date] = { date, uppsc: [], ca: [] };
+              dateOrder.push(date);
+            }
+            if (type === 'UPPSC') byDate[date].uppsc.push(item);
+            else if (type === 'CA') byDate[date].ca.push(item);
+          });
+
+          // Newest first
+          resolve(dateOrder.reverse().map(d => byDate[d]));
         } catch(e) { reject(e); }
       });
       res.on('error', reject);

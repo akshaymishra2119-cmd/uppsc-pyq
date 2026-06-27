@@ -129,59 +129,59 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .hw-q-text{font-size:12px;color:#4B5563;line-height:1.6;font-style:italic;}
 .hw-q-auth{font-size:10px;color:#9CA3AF;margin-top:4px;font-weight:600;}
 
-/* ── DAILY DIGEST STRIP ───────────────────────── */
+/* ── DAILY DIGEST CARDS ───────────────────────── */
 .digest-section{margin-bottom:16px;}
 .digest-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .digest-hdr-title{font-size:12px;font-weight:600;color:#27500A;}
 .digest-hdr-badge{font-size:9px;font-weight:600;background:#C0DD97;color:#27500A;
   padding:2px 8px;border-radius:99px;}
-.digest-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;}
-.digest-strip::-webkit-scrollbar{display:none;}
-.digest-thumb{min-width:120px;max-width:120px;height:154px;border-radius:10px;
-  border:2px solid #3B6D11;background:#EAF3DE;cursor:pointer;overflow:hidden;
-  position:relative;flex-shrink:0;transition:border-color .15s,transform .12s;}
-.digest-thumb:hover{border-color:#639922;transform:translateY(-2px);}
-.digest-thumb-date{font-size:8.5px;font-weight:600;color:#27500A;background:#C0DD97;
-  padding:2px 7px;position:absolute;top:7px;left:7px;border-radius:4px;}
-.digest-thumb-body{padding:26px 8px 4px;display:flex;flex-direction:column;gap:5px;}
-.dth-tag{font-size:7px;font-weight:600;border-radius:3px;padding:1px 5px;width:fit-content;}
-.dth-tag.u{background:#B5D4F4;color:#0C447C;}
-.dth-tag.ca{background:#F5C4B3;color:#712B13;}
-.dth-line{font-size:7px;color:#27500A;line-height:1.4;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.digest-thumb-brand{font-size:7px;color:#3B6D11;font-weight:600;
-  position:absolute;bottom:5px;right:7px;}
-/* modal overlay */
-.digest-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
-  z-index:9999;align-items:center;justify-content:center;}
-.digest-overlay.open{display:flex;}
-.digest-modal{background:#fff;border-radius:14px;border:2.5px solid #3B6D11;
-  width:340px;max-width:92vw;overflow:hidden;font-family:inherit;}
-.dm-header{background:#3B6D11;padding:10px 14px;display:flex;
-  align-items:center;justify-content:space-between;}
-.dm-brand{color:#EAF3DE;font-size:13px;font-weight:600;letter-spacing:.02em;}
-.dm-badge{background:#EAF3DE;color:#27500A;font-size:9px;font-weight:600;
-  padding:2px 8px;border-radius:4px;}
-.dm-body{padding:14px 16px;}
-.dm-block{margin-bottom:12px;}
-.dm-block:last-of-type{margin-bottom:0;}
-.dm-tag{display:inline-block;font-size:9px;font-weight:600;border-radius:4px;
-  padding:2px 8px;margin-bottom:6px;}
-.dm-tag.u{background:#E6F1FB;color:#0C447C;}
-.dm-tag.ca{background:#FAECE7;color:#712B13;}
-.dm-q{font-size:10.5px;color:#27500A;font-weight:600;margin-bottom:4px;line-height:1.45;}
-.dm-a{font-size:9.5px;color:#3B6D11;line-height:1.5;
-  border-left:2.5px solid #97C459;padding-left:8px;}
-.dm-divider{border:none;border-top:1px solid #C0DD97;margin:10px 0;}
-.dm-footer{background:#EAF3DE;padding:8px 16px;display:flex;
-  align-items:center;justify-content:space-between;}
-.dm-date{font-size:9px;color:#27500A;}
-.dm-dl{font-size:9px;font-weight:600;color:#3B6D11;background:#fff;
-  border:1.5px solid #3B6D11;border-radius:5px;padding:4px 12px;
-  cursor:pointer;display:flex;align-items:center;gap:4px;}
-.dm-dl:hover{background:#EAF3DE;}
-.dm-close{background:none;border:none;cursor:pointer;color:#EAF3DE;
-  font-size:18px;line-height:1;padding:0;}
+.digest-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.digest-cards .day-card{border-radius:11px;overflow:hidden;border:1.5px solid transparent;}
+.digest-cards .day-card.orange{border-color:#854F0B;background:#FAEEDA;}
+.digest-cards .day-card.blue{border-color:#185FA5;background:#E6F1FB;}
+.dc-header{padding:9px 13px;display:flex;align-items:center;justify-content:space-between;}
+.digest-cards .day-card.orange .dc-header{background:#854F0B;}
+.digest-cards .day-card.blue   .dc-header{background:#185FA5;}
+.dc-title{font-size:11px;font-weight:600;color:#fff;display:flex;align-items:center;gap:5px;}
+.dc-meta{display:flex;align-items:center;gap:5px;}
+.dc-date-badge{font-size:8.5px;font-weight:600;padding:2px 7px;border-radius:99px;}
+.digest-cards .day-card.orange .dc-date-badge{background:#FAEEDA;color:#633806;}
+.digest-cards .day-card.blue   .dc-date-badge{background:#E6F1FB;color:#0C447C;}
+.dc-count{font-size:8px;font-weight:600;padding:2px 7px;border-radius:99px;}
+.digest-cards .day-card.orange .dc-count{background:#EF9F27;color:#412402;}
+.digest-cards .day-card.blue   .dc-count{background:#378ADD;color:#042C53;}
+.dc-items{padding:4px 0;max-height:300px;overflow-y:auto;scrollbar-width:thin;}
+.digest-cards .day-card.orange .dc-items::-webkit-scrollbar-thumb{background:#EF9F27;}
+.digest-cards .day-card.blue   .dc-items::-webkit-scrollbar-thumb{background:#378ADD;}
+.dc-items::-webkit-scrollbar{width:3px;}
+.dc-item{border-bottom:1px solid rgba(0,0,0,.08);cursor:pointer;}
+.dc-item:last-child{border-bottom:none;}
+.dc-item-top{padding:8px 13px;display:flex;align-items:flex-start;gap:7px;}
+.dc-sub{font-size:7.5px;font-weight:600;border-radius:3px;padding:2px 5px;flex-shrink:0;margin-top:2px;}
+.digest-cards .day-card.orange .dc-sub{background:#EF9F27;color:#412402;}
+.digest-cards .day-card.blue   .dc-sub{background:#378ADD;color:#042C53;}
+.dc-headline{font-size:10.5px;font-weight:500;line-height:1.4;flex:1;}
+.digest-cards .day-card.orange .dc-headline{color:#412402;}
+.digest-cards .day-card.blue   .dc-headline{color:#042C53;}
+.dc-chev{font-size:12px;flex-shrink:0;margin-top:1px;transition:transform .2s;}
+.digest-cards .day-card.orange .dc-chev{color:#854F0B;}
+.digest-cards .day-card.blue   .dc-chev{color:#185FA5;}
+.dc-detail{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+.dc-detail.open{max-height:180px;}
+.dc-detail-inner{padding:0 13px 10px 13px;font-size:10px;line-height:1.6;border-left:3px solid transparent;margin-left:13px;border-radius:0;}
+.digest-cards .day-card.orange .dc-detail-inner{color:#633806;border-color:#EF9F27;}
+.digest-cards .day-card.blue   .dc-detail-inner{color:#0C447C;border-color:#378ADD;}
+.dc-footer{padding:6px 13px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(0,0,0,.1);}
+.digest-cards .day-card.orange .dc-footer{background:#FAC775;}
+.digest-cards .day-card.blue   .dc-footer{background:#B5D4F4;}
+.dc-brand{font-size:7.5px;font-weight:600;}
+.digest-cards .day-card.orange .dc-brand{color:#633806;}
+.digest-cards .day-card.blue   .dc-brand{color:#0C447C;}
+.dc-dl{font-size:8.5px;font-weight:600;border:none;border-radius:4px;padding:3px 9px;
+  cursor:pointer;display:flex;align-items:center;gap:3px;}
+.digest-cards .day-card.orange .dc-dl{background:#854F0B;color:#FAEEDA;}
+.digest-cards .day-card.blue   .dc-dl{background:#185FA5;color:#E6F1FB;}
+.dc-dl:hover{opacity:.88;}
 
 /* ── MAIN CONTENT ─────────────────────────────── */
 .main{max-width:1100px;margin:0 auto;padding:16px;}
@@ -1227,34 +1227,14 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   </div>
   <!-- ══ END HERO BANNER ══════════════════════════════════════ -->
 
-  <!-- ── DAILY DIGEST STRIP ───────────────────────────────── -->
+  <!-- ── DAILY DIGEST CARDS ───────────────────────────────── -->
   <div class="digest-section" id="digestSection" style="display:none;">
     <div class="digest-hdr">
-      <i class="ti ti-bolt" style="color:#3B6D11;font-size:15px;" aria-hidden="true"></i>
+      <i class="ti ti-news" style="color:#27500A;font-size:14px;" aria-hidden="true"></i>
       <span class="digest-hdr-title">SimpleSensePCS — Daily Digest</span>
       <span class="digest-hdr-badge">LIVE</span>
     </div>
-    <div class="digest-strip" id="digestStrip"></div>
-  </div>
-
-  <!-- digest modal (fixed overlay) -->
-  <div class="digest-overlay" id="digestOverlay" onclick="closeDigest(event)">
-    <div class="digest-modal" id="digestModal">
-      <div class="dm-header">
-        <span class="dm-brand">SimpleSensePCS</span>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="dm-badge">Daily Digest</span>
-          <button class="dm-close" onclick="closeDigestForce()" aria-label="Close">&#x2715;</button>
-        </div>
-      </div>
-      <div class="dm-body" id="digestModalBody"></div>
-      <div class="dm-footer">
-        <span class="dm-date" id="digestModalDate"></span>
-        <button class="dm-dl" id="digestDlBtn" onclick="downloadDigestCard()">
-          <i class="ti ti-download" style="font-size:11px;" aria-hidden="true"></i> Download PNG
-        </button>
-      </div>
-    </div>
+    <div class="digest-cards" id="digestCards"></div>
   </div>
 
   <!-- ── 4 STAT CARDS ───────────────────────────────────────── -->
@@ -6832,124 +6812,126 @@ function showError(e) {
 
 // ── DAILY DIGEST ─────────────────────────────────────────────
 let _digestData = [];
-let _digestActive = null;
+
+function _buildDigestCard(day, type) {
+  // type: 'uppsc' or 'ca'
+  const isOrange = type === 'uppsc';
+  const items    = day[type] || [];
+  const label    = isOrange ? 'UPPSC News' : 'Current Affairs';
+  const cls      = isOrange ? 'orange' : 'blue';
+  const btnId    = `dl-${type}-${day.date.replace(/\s/g,'-')}`;
+
+  const itemsHtml = items.map((item, i) => `
+    <div class="dc-item">
+      <div class="dc-item-top" onclick="toggleDigestItem(this)">
+        ${item.sub ? `<span class="dc-sub">${item.sub}</span>` : ''}
+        <span class="dc-headline">${item.q}</span>
+        <i class="ti ti-chevron-down dc-chev" aria-hidden="true"></i>
+      </div>
+      <div class="dc-detail">
+        <div class="dc-detail-inner">${item.ans || ''}</div>
+      </div>
+    </div>`).join('');
+
+  return `
+    <div class="day-card ${cls}">
+      <div class="dc-header">
+        <span class="dc-title">
+          <i class="ti ti-${isOrange ? 'book-2' : 'news'}" style="font-size:14px;" aria-hidden="true"></i>
+          ${label}
+          <span class="dc-count">${items.length} items</span>
+        </span>
+        <span class="dc-date-badge">${day.date}</span>
+      </div>
+      <div class="dc-items">${itemsHtml || '<p style="padding:12px;font-size:11px;opacity:.6;">No items for today</p>'}</div>
+      <div class="dc-footer">
+        <span class="dc-brand">SimpleSensePCS</span>
+        <button class="dc-dl" id="${btnId}" onclick="downloadDigest('${type}','${day.date}')">
+          <i class="ti ti-download" style="font-size:10px;" aria-hidden="true"></i> PNG
+        </button>
+      </div>
+    </div>`;
+}
 
 async function initDigest() {
   try {
     const rows = await fetch('/api/digest').then(r => r.json());
     if (!rows || rows.length === 0) return;
     _digestData = rows;
+    const day     = rows[0]; // most recent date
     const section = document.getElementById('digestSection');
-    const strip   = document.getElementById('digestStrip');
-    strip.innerHTML = '';
-    rows.slice(0, 14).forEach((d, i) => {
-      const el = document.createElement('div');
-      el.className = 'digest-thumb';
-      el.setAttribute('role', 'button');
-      el.setAttribute('tabindex', '0');
-      el.setAttribute('aria-label', `Daily digest ${d.date}`);
-      el.innerHTML = `
-        <div class="digest-thumb-date">${d.date}</div>
-        <div class="digest-thumb-body">
-          <span class="dth-tag u">UPPSC</span>
-          <p class="dth-line">${d.uppscQ}</p>
-          <span class="dth-tag ca" style="margin-top:4px;">CA</span>
-          <p class="dth-line">${d.caQ}</p>
-        </div>
-        <div class="digest-thumb-brand">SimpleSensePCS</div>`;
-      el.onclick = () => openDigest(i);
-      el.onkeydown = e => { if (e.key === 'Enter') openDigest(i); };
-      strip.appendChild(el);
-    });
+    document.getElementById('digestCards').innerHTML =
+      _buildDigestCard(day, 'uppsc') + _buildDigestCard(day, 'ca');
     section.style.display = '';
   } catch(e) {
     console.warn('Digest load failed:', e.message);
   }
 }
 
-function openDigest(idx) {
-  _digestActive = idx;
-  const d = _digestData[idx];
-  document.getElementById('digestModalDate').innerHTML =
-    `<i class="ti ti-calendar" style="font-size:10px;vertical-align:-1px;margin-right:3px;"></i>${d.date}`;
-  document.getElementById('digestModalBody').innerHTML = `
-    <div class="dm-block">
-      <span class="dm-tag u">UPPSC${d.uppscSub ? ' · ' + d.uppscSub : ''}</span>
-      <p class="dm-q">${d.uppscQ}</p>
-      <p class="dm-a">${d.uppscAns}</p>
-    </div>
-    <hr class="dm-divider">
-    <div class="dm-block">
-      <span class="dm-tag ca">Current Affairs${d.caSub ? ' · ' + d.caSub : ''}</span>
-      <p class="dm-q">${d.caQ}</p>
-      <p class="dm-a">${d.caAns}</p>
-    </div>`;
-  document.getElementById('digestOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+function toggleDigestItem(top) {
+  const detail  = top.nextElementSibling;
+  const chevron = top.querySelector('.dc-chev');
+  const isOpen  = detail.classList.toggle('open');
+  chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
 }
 
-function closeDigest(e) {
-  if (e.target === document.getElementById('digestOverlay')) closeDigestForce();
-}
-function closeDigestForce() {
-  document.getElementById('digestOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
+async function downloadDigest(type, date) {
+  const day = _digestData.find(d => d.date === date);
+  if (!day) return;
+  const items    = day[type] || [];
+  const isOrange = type === 'uppsc';
+  const label    = isOrange ? 'UPPSC News' : 'Current Affairs';
+  const headerBg = isOrange ? '#854F0B' : '#185FA5';
+  const bodyBg   = isOrange ? '#FAEEDA' : '#E6F1FB';
+  const accentBg = isOrange ? '#EF9F27' : '#378ADD';
+  const textClr  = isOrange ? '#412402' : '#042C53';
+  const darkClr  = isOrange ? '#633806' : '#0C447C';
+  const footBg   = isOrange ? '#FAC775' : '#B5D4F4';
+  const btnKey   = `dl-${type}-${date.replace(/\s/g,'-')}`;
+  const btn      = document.getElementById(btnKey);
+  if (btn) { btn.textContent = '…'; btn.disabled = true; }
 
-async function downloadDigestCard() {
-  const d = _digestData[_digestActive];
-  if (!d) return;
-  const btn = document.getElementById('digestDlBtn');
-  btn.textContent = 'Generating…';
-  btn.disabled = true;
+  const itemsHtml = items.map(item => `
+    <div style="border-bottom:1px solid rgba(0,0,0,.1);padding:8px 14px;">
+      ${item.sub ? `<span style="display:inline-block;font-size:8px;font-weight:600;border-radius:3px;padding:2px 5px;background:${accentBg};color:${textClr};margin-bottom:4px;">${item.sub}</span>` : ''}
+      <p style="font-size:10.5px;font-weight:600;color:${textClr};margin:0 0 4px;line-height:1.4;">${item.q}</p>
+      <p style="font-size:9.5px;color:${darkClr};line-height:1.55;margin:0;padding-left:8px;border-left:2.5px solid ${accentBg};">${item.ans || ''}</p>
+    </div>`).join('');
 
-  // Build an off-screen card for html2canvas
   const card = document.createElement('div');
-  card.style.cssText = 'position:fixed;left:-9999px;top:0;width:340px;font-family:sans-serif;background:#fff;border-radius:14px;border:2.5px solid #3B6D11;overflow:hidden;';
+  card.style.cssText = `position:fixed;left:-9999px;top:0;width:360px;font-family:sans-serif;background:${bodyBg};border-radius:12px;border:1.5px solid ${headerBg};overflow:hidden;`;
   card.innerHTML = `
-    <div style="background:#3B6D11;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
-      <span style="color:#EAF3DE;font-size:13px;font-weight:600;letter-spacing:.02em;">SimpleSensePCS</span>
-      <span style="background:#EAF3DE;color:#27500A;font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;">Daily Digest</span>
+    <div style="background:${headerBg};padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="color:#fff;font-size:12px;font-weight:600;">${label}</span>
+      <span style="background:${bodyBg};color:${darkClr};font-size:8.5px;font-weight:600;padding:2px 8px;border-radius:99px;">${date}</span>
     </div>
-    <div style="padding:14px 16px;">
-      <div style="margin-bottom:12px;">
-        <span style="display:inline-block;font-size:9px;font-weight:600;border-radius:4px;padding:2px 8px;margin-bottom:6px;background:#E6F1FB;color:#0C447C;">UPPSC${d.uppscSub ? ' · ' + d.uppscSub : ''}</span>
-        <p style="font-size:10.5px;color:#27500A;font-weight:600;margin:0 0 4px;line-height:1.45;">${d.uppscQ}</p>
-        <p style="font-size:9.5px;color:#3B6D11;line-height:1.5;margin:0;border-left:2.5px solid #97C459;padding-left:8px;">${d.uppscAns}</p>
-      </div>
-      <hr style="border:none;border-top:1px solid #C0DD97;margin:10px 0;">
-      <div>
-        <span style="display:inline-block;font-size:9px;font-weight:600;border-radius:4px;padding:2px 8px;margin-bottom:6px;background:#FAECE7;color:#712B13;">Current Affairs${d.caSub ? ' · ' + d.caSub : ''}</span>
-        <p style="font-size:10.5px;color:#27500A;font-weight:600;margin:0 0 4px;line-height:1.45;">${d.caQ}</p>
-        <p style="font-size:9.5px;color:#3B6D11;line-height:1.5;margin:0;border-left:2.5px solid #97C459;padding-left:8px;">${d.caAns}</p>
-      </div>
-    </div>
-    <div style="background:#EAF3DE;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:9px;color:#27500A;">📅 ${d.date}</span>
-      <span style="font-size:9px;color:#3B6D11;font-weight:600;">simplesensepcs.in</span>
+    <div>${itemsHtml}</div>
+    <div style="background:${footBg};padding:6px 14px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:8px;font-weight:600;color:${darkClr};">SimpleSensePCS</span>
+      <span style="font-size:8px;color:${darkClr};">simplesensepcs.in</span>
     </div>`;
   document.body.appendChild(card);
 
   try {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    script.onload = async () => {
-      const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null });
-      document.body.removeChild(card);
-      const link = document.createElement('a');
-      link.download = `SimpleSensePCS_${d.date.replace(/\s/g,'_')}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      btn.innerHTML = '<i class="ti ti-download" style="font-size:11px;"></i> Download PNG';
-      btn.disabled = false;
-    };
-    document.head.appendChild(script);
+    if (!window.html2canvas) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null });
+    document.body.removeChild(card);
+    const link = document.createElement('a');
+    link.download = `SimpleSensePCS_${label.replace(/\s/g,'_')}_${date.replace(/\s/g,'_')}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   } catch(e) {
     document.body.removeChild(card);
-    btn.innerHTML = '<i class="ti ti-download" style="font-size:11px;"></i> Download PNG';
-    btn.disabled = false;
     showToast('Download failed: ' + e.message, 3000);
   }
+  if (btn) { btn.innerHTML = '<i class="ti ti-download" style="font-size:10px;"></i> PNG'; btn.disabled = false; }
 }
 
 </script>
