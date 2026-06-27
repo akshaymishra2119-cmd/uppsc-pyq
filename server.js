@@ -7,7 +7,6 @@ const express      = require('express');
 const fs           = require('fs');
 const path         = require('path');
 const https        = require('https');
-const http         = require('http');
 const bcrypt       = require('bcryptjs');
 const jwt          = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -765,39 +764,8 @@ app.get('/api/scrapeStatus', (req, res) => {
   res.json(_lastScrapeReport || { status: 'never_run', message: 'No scrape has run yet' });
 });
 
-// ── Built-in cron (Railway) — scrape at 12:00 PM & 4:00 PM IST ─
-// IST = UTC+5:30  →  12:00 IST = 06:30 UTC  |  16:00 IST = 10:30 UTC
-try {
-  const cron    = require('node-cron');
-  const scraper = require('./scraper');
-
-  async function runScrapeJob(label) {
-    console.log(`\n⏰ [${label}] Auto-scrape triggered`);
-    try {
-      const result = await scraper.scrapeAll();
-      // POST to own ingestNews endpoint
-      const payload = JSON.stringify({ uppscNews: result.uppscNews, currentAffairs: result.currentAffairs, source: label });
-      await new Promise((resolve, reject) => {
-        const req = http.request({ hostname: 'localhost', port: PORT, path: '/api/ingestNews', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, r => {
-          let d = ''; r.on('data', c => d += c); r.on('end', () => resolve(JSON.parse(d)));
-        });
-        req.on('error', reject); req.write(payload); req.end();
-      }).then(r => {
-        _lastScrapeReport = { status: 'ok', label, time: new Date().toISOString(), added: r.added, errors: result.errors };
-        console.log(`✅ [${label}] Done — +${r.added?.uppsc} UPPSC, +${r.added?.ca} CA`);
-      });
-    } catch (e) {
-      _lastScrapeReport = { status: 'error', label, time: new Date().toISOString(), error: e.message };
-      console.error(`❌ [${label}] Scrape failed: ${e.message}`);
-    }
-  }
-
-  cron.schedule('30 6 * * *',  () => runScrapeJob('12PM-IST'));   // 12:00 PM IST
-  cron.schedule('30 10 * * *', () => runScrapeJob('4PM-IST'));    // 4:00 PM IST
-  console.log('⏰ Scraper cron registered: 12:00 PM IST + 4:00 PM IST');
-} catch (e) {
-  console.warn('⚠️  node-cron not installed — run: npm install node-cron  (scraper cron disabled)');
-}
+// ── Cron disabled on Railway (no node-cron dependency) ─────────
+// Scraping is handled by Claude scheduled tasks via /api/ingestNews
 
 // ── START ─────────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', () => {
