@@ -129,12 +129,62 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .hw-q-text{font-size:12px;color:#4B5563;line-height:1.6;font-style:italic;}
 .hw-q-auth{font-size:10px;color:#9CA3AF;margin-top:4px;font-weight:600;}
 
-/* ── DAILY DIGEST CARDS ───────────────────────── */
+/* ── DAILY DIGEST ─────────────────────────────── */
 .digest-section{margin-bottom:16px;}
 .digest-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .digest-hdr-title{font-size:12px;font-weight:600;color:#27500A;}
 .digest-hdr-badge{font-size:9px;font-weight:600;background:#C0DD97;color:#27500A;
   padding:2px 8px;border-radius:99px;}
+/* strip (date thumbnails) */
+.digest-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;}
+.digest-strip::-webkit-scrollbar{display:none;}
+.digest-thumb{min-width:120px;max-width:120px;height:154px;border-radius:10px;
+  border:2px solid #3B6D11;background:#EAF3DE;cursor:pointer;overflow:hidden;
+  position:relative;flex-shrink:0;transition:border-color .15s,transform .12s;}
+.digest-thumb:hover{border-color:#639922;transform:translateY(-2px);}
+.digest-thumb-date{font-size:8.5px;font-weight:600;color:#27500A;background:#C0DD97;
+  padding:2px 7px;position:absolute;top:7px;left:7px;border-radius:4px;}
+.digest-thumb-body{padding:26px 8px 4px;display:flex;flex-direction:column;gap:5px;}
+.dth-tag{font-size:7px;font-weight:600;border-radius:3px;padding:1px 5px;width:fit-content;}
+.dth-tag.u{background:#B5D4F4;color:#0C447C;}
+.dth-tag.ca{background:#F5C4B3;color:#712B13;}
+.dth-line{font-size:7px;color:#27500A;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.digest-thumb-brand{font-size:7px;color:#3B6D11;font-weight:600;
+  position:absolute;bottom:5px;right:7px;}
+/* modal overlay */
+.digest-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:9999;align-items:center;justify-content:center;}
+.digest-overlay.open{display:flex;}
+.digest-modal{background:#fff;border-radius:14px;border:2.5px solid #3B6D11;
+  width:340px;max-width:92vw;overflow:hidden;font-family:inherit;}
+.dm-header{background:#3B6D11;padding:10px 14px;display:flex;
+  align-items:center;justify-content:space-between;}
+.dm-brand{color:#EAF3DE;font-size:13px;font-weight:600;letter-spacing:.02em;}
+.dm-badge{background:#EAF3DE;color:#27500A;font-size:9px;font-weight:600;
+  padding:2px 8px;border-radius:4px;}
+.dm-body{padding:14px 16px;max-height:60vh;overflow-y:auto;}
+.dm-block{margin-bottom:12px;}
+.dm-block:last-of-type{margin-bottom:0;}
+.dm-tag{display:inline-block;font-size:9px;font-weight:600;border-radius:4px;
+  padding:2px 8px;margin-bottom:6px;}
+.dm-tag.u{background:#E6F1FB;color:#0C447C;}
+.dm-tag.ca{background:#FAECE7;color:#712B13;}
+.dm-q{font-size:10.5px;color:#27500A;font-weight:600;margin-bottom:4px;line-height:1.45;}
+.dm-a{font-size:9.5px;color:#3B6D11;line-height:1.5;
+  border-left:2.5px solid #97C459;padding-left:8px;}
+.dm-divider{border:none;border-top:1px solid #C0DD97;margin:10px 0;}
+.dm-footer{background:#EAF3DE;padding:8px 16px;display:flex;
+  align-items:center;justify-content:space-between;}
+.dm-date{font-size:9px;color:#27500A;}
+.dm-dl{font-size:9px;font-weight:600;color:#3B6D11;background:#fff;
+  border:1.5px solid #3B6D11;border-radius:5px;padding:4px 12px;
+  cursor:pointer;display:flex;align-items:center;gap:4px;}
+.dm-dl:hover{background:#EAF3DE;}
+.dm-close{background:none;border:none;cursor:pointer;color:#EAF3DE;
+  font-size:18px;line-height:1;padding:0;}
+/* today's UPPSC + CA news cards */
+.news-cards-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
 .digest-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .digest-cards .day-card{border-radius:11px;overflow:hidden;border:1.5px solid transparent;}
 .digest-cards .day-card.orange{border-color:#854F0B;background:#FAEEDA;}
@@ -1227,14 +1277,43 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   </div>
   <!-- ══ END HERO BANNER ══════════════════════════════════════ -->
 
-  <!-- ── DAILY DIGEST CARDS ───────────────────────────────── -->
+  <!-- ── DAILY DIGEST STRIP ───────────────────────────────── -->
   <div class="digest-section" id="digestSection" style="display:none;">
     <div class="digest-hdr">
-      <i class="ti ti-news" style="color:#27500A;font-size:14px;" aria-hidden="true"></i>
+      <i class="ti ti-bolt" style="color:#3B6D11;font-size:15px;" aria-hidden="true"></i>
       <span class="digest-hdr-title">SimpleSensePCS — Daily Digest</span>
       <span class="digest-hdr-badge">LIVE</span>
     </div>
-    <div class="digest-cards" id="digestCards"></div>
+    <div class="digest-strip" id="digestStrip"></div>
+  </div>
+
+  <!-- digest modal (fixed overlay) -->
+  <div class="digest-overlay" id="digestOverlay" onclick="closeDigest(event)">
+    <div class="digest-modal" id="digestModal">
+      <div class="dm-header">
+        <span class="dm-brand">SimpleSensePCS</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="dm-badge">Daily Digest</span>
+          <button class="dm-close" onclick="closeDigestForce()" aria-label="Close">&#x2715;</button>
+        </div>
+      </div>
+      <div class="dm-body" id="digestModalBody"></div>
+      <div class="dm-footer">
+        <span class="dm-date" id="digestModalDate"></span>
+        <button class="dm-dl" id="digestDlBtn" onclick="downloadDigestCard()">
+          <i class="ti ti-download" style="font-size:11px;" aria-hidden="true"></i> Download PNG
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TODAY'S NEWS CARDS (UPPSC orange + CA blue) ───────── -->
+  <div id="newsCardsSection" style="display:none;">
+    <div class="digest-hdr" style="margin-top:4px;">
+      <i class="ti ti-news" style="color:#27500A;font-size:14px;" aria-hidden="true"></i>
+      <span class="digest-hdr-title">Today's News</span>
+    </div>
+    <div class="news-cards-row" id="newsCardsRow"></div>
   </div>
 
   <!-- ── 4 STAT CARDS ───────────────────────────────────────── -->
@@ -6812,18 +6891,60 @@ function showError(e) {
 
 // ── DAILY DIGEST ─────────────────────────────────────────────
 let _digestData = [];
+let _digestActive = null;
 
-function _buildDigestCard(day, type) {
-  // type: 'uppsc' or 'ca'
+async function initDigest() {
+  try {
+    const rows = await fetch('/api/digest').then(r => r.json());
+    if (!rows || rows.length === 0) return;
+    _digestData = rows;
+
+    // ── 1. Restore original date-thumbnail strip ──────────────
+    const strip = document.getElementById('digestStrip');
+    strip.innerHTML = '';
+    rows.slice(0, 14).forEach((d, i) => {
+      const el = document.createElement('div');
+      el.className = 'digest-thumb';
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', `Daily digest ${d.date}`);
+      const uppscQ = (d.uppsc && d.uppsc[0]) ? d.uppsc[0].q : '';
+      const caQ    = (d.ca    && d.ca[0])    ? d.ca[0].q    : '';
+      el.innerHTML = `
+        <div class="digest-thumb-date">${d.date}</div>
+        <div class="digest-thumb-body">
+          <span class="dth-tag u">UPPSC</span>
+          <p class="dth-line">${uppscQ}</p>
+          <span class="dth-tag ca" style="margin-top:4px;">CA</span>
+          <p class="dth-line">${caQ}</p>
+        </div>
+        <div class="digest-thumb-brand">SimpleSensePCS</div>`;
+      el.onclick     = () => openDigest(i);
+      el.onkeydown   = e => { if (e.key === 'Enter') openDigest(i); };
+      strip.appendChild(el);
+    });
+    document.getElementById('digestSection').style.display = '';
+
+    // ── 2. Render orange + blue news cards below the strip ────
+    const day = rows[0]; // most recent
+    document.getElementById('newsCardsRow').innerHTML =
+      _buildNewsCard(day, 'uppsc') + _buildNewsCard(day, 'ca');
+    document.getElementById('newsCardsSection').style.display = '';
+  } catch(e) {
+    console.warn('Digest load failed:', e.message);
+  }
+}
+
+// Build one orange (UPPSC) or blue (CA) multi-item card
+function _buildNewsCard(day, type) {
   const isOrange = type === 'uppsc';
   const items    = day[type] || [];
   const label    = isOrange ? 'UPPSC News' : 'Current Affairs';
   const cls      = isOrange ? 'orange' : 'blue';
-  const btnId    = `dl-${type}-${day.date.replace(/\s/g,'-')}`;
-
-  const itemsHtml = items.map((item, i) => `
+  const btnId    = `nc-dl-${type}`;
+  const itemsHtml = items.map(item => `
     <div class="dc-item">
-      <div class="dc-item-top" onclick="toggleDigestItem(this)">
+      <div class="dc-item-top" onclick="toggleNewsItem(this)">
         ${item.sub ? `<span class="dc-sub">${item.sub}</span>` : ''}
         <span class="dc-headline">${item.q}</span>
         <i class="ti ti-chevron-down dc-chev" aria-hidden="true"></i>
@@ -6832,7 +6953,6 @@ function _buildDigestCard(day, type) {
         <div class="dc-detail-inner">${item.ans || ''}</div>
       </div>
     </div>`).join('');
-
   return `
     <div class="day-card ${cls}">
       <div class="dc-header">
@@ -6843,40 +6963,62 @@ function _buildDigestCard(day, type) {
         </span>
         <span class="dc-date-badge">${day.date}</span>
       </div>
-      <div class="dc-items">${itemsHtml || '<p style="padding:12px;font-size:11px;opacity:.6;">No items for today</p>'}</div>
+      <div class="dc-items">${itemsHtml || '<p style="padding:12px;font-size:11px;opacity:.6;">No items yet</p>'}</div>
       <div class="dc-footer">
         <span class="dc-brand">SimpleSensePCS</span>
-        <button class="dc-dl" id="${btnId}" onclick="downloadDigest('${type}','${day.date}')">
+        <button class="dc-dl" id="${btnId}" onclick="downloadNewsCard('${type}','${day.date}')">
           <i class="ti ti-download" style="font-size:10px;" aria-hidden="true"></i> PNG
         </button>
       </div>
     </div>`;
 }
 
-async function initDigest() {
-  try {
-    const rows = await fetch('/api/digest').then(r => r.json());
-    if (!rows || rows.length === 0) return;
-    _digestData = rows;
-    const day     = rows[0]; // most recent date
-    const section = document.getElementById('digestSection');
-    document.getElementById('digestCards').innerHTML =
-      _buildDigestCard(day, 'uppsc') + _buildDigestCard(day, 'ca');
-    section.style.display = '';
-  } catch(e) {
-    console.warn('Digest load failed:', e.message);
-  }
-}
-
-function toggleDigestItem(top) {
+function toggleNewsItem(top) {
   const detail  = top.nextElementSibling;
   const chevron = top.querySelector('.dc-chev');
   const isOpen  = detail.classList.toggle('open');
   chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
 }
 
-async function downloadDigest(type, date) {
-  const day = _digestData.find(d => d.date === date);
+// Open modal showing ALL items for a given date (clicking a thumbnail)
+function openDigest(idx) {
+  _digestActive = idx;
+  const d = _digestData[idx];
+  document.getElementById('digestModalDate').innerHTML =
+    `<i class="ti ti-calendar" style="font-size:10px;vertical-align:-1px;margin-right:3px;"></i>${d.date}`;
+
+  const uppscItems = (d.uppsc || []).map(item => `
+    <div class="dm-block">
+      <span class="dm-tag u">UPPSC${item.sub ? ' · ' + item.sub : ''}</span>
+      <p class="dm-q">${item.q}</p>
+      <p class="dm-a">${item.ans}</p>
+    </div>`).join('<hr class="dm-divider">');
+
+  const caItems = (d.ca || []).map(item => `
+    <div class="dm-block">
+      <span class="dm-tag ca">CA${item.sub ? ' · ' + item.sub : ''}</span>
+      <p class="dm-q">${item.q}</p>
+      <p class="dm-a">${item.ans}</p>
+    </div>`).join('<hr class="dm-divider">');
+
+  document.getElementById('digestModalBody').innerHTML =
+    uppscItems + (uppscItems && caItems ? '<hr class="dm-divider" style="border-color:#aaa;margin:12px 0;">' : '') + caItems;
+
+  document.getElementById('digestOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDigest(e) {
+  if (e.target === document.getElementById('digestOverlay')) closeDigestForce();
+}
+function closeDigestForce() {
+  document.getElementById('digestOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Download the orange or blue card as PNG
+async function downloadNewsCard(type, date) {
+  const day      = _digestData.find(d => d.date === date);
   if (!day) return;
   const items    = day[type] || [];
   const isOrange = type === 'uppsc';
@@ -6887,13 +7029,12 @@ async function downloadDigest(type, date) {
   const textClr  = isOrange ? '#412402' : '#042C53';
   const darkClr  = isOrange ? '#633806' : '#0C447C';
   const footBg   = isOrange ? '#FAC775' : '#B5D4F4';
-  const btnKey   = `dl-${type}-${date.replace(/\s/g,'-')}`;
-  const btn      = document.getElementById(btnKey);
+  const btn      = document.getElementById(`nc-dl-${type}`);
   if (btn) { btn.textContent = '…'; btn.disabled = true; }
 
   const itemsHtml = items.map(item => `
     <div style="border-bottom:1px solid rgba(0,0,0,.1);padding:8px 14px;">
-      ${item.sub ? `<span style="display:inline-block;font-size:8px;font-weight:600;border-radius:3px;padding:2px 5px;background:${accentBg};color:${textClr};margin-bottom:4px;">${item.sub}</span>` : ''}
+      ${item.sub ? `<span style="display:inline-block;font-size:8px;font-weight:600;border-radius:3px;padding:2px 5px;background:${accentBg};color:${textClr};margin-bottom:4px;">${item.sub}</span><br>` : ''}
       <p style="font-size:10.5px;font-weight:600;color:${textClr};margin:0 0 4px;line-height:1.4;">${item.q}</p>
       <p style="font-size:9.5px;color:${darkClr};line-height:1.55;margin:0;padding-left:8px;border-left:2.5px solid ${accentBg};">${item.ans || ''}</p>
     </div>`).join('');
@@ -6928,10 +7069,17 @@ async function downloadDigest(type, date) {
     link.href = canvas.toDataURL('image/png');
     link.click();
   } catch(e) {
-    document.body.removeChild(card);
+    if (card.parentNode) document.body.removeChild(card);
     showToast('Download failed: ' + e.message, 3000);
   }
   if (btn) { btn.innerHTML = '<i class="ti ti-download" style="font-size:10px;"></i> PNG'; btn.disabled = false; }
+}
+
+// Download modal card (old behaviour, kept for strip thumbnails)
+async function downloadDigestCard() {
+  const d = _digestData[_digestActive];
+  if (!d) return;
+  downloadNewsCard('uppsc', d.date); // download UPPSC card when triggered from modal
 }
 
 </script>
