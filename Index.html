@@ -312,6 +312,51 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   cursor:pointer;background:rgba(59,109,17,0.85);color:#fff;display:flex;align-items:center;gap:2px;}
 .dth-dl-btn:hover{background:#3B6D11;}
 
+/* ── STUDY TAB ─────────────────────────────────── */
+.study-subtabs{display:flex;gap:10px;margin-bottom:18px;background:var(--bg);
+  border:1px solid var(--border);border-radius:var(--radius-lg);padding:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.study-subtab{flex:1;padding:10px 8px;font-size:13px;font-weight:600;border:none;
+  background:none;cursor:pointer;color:var(--text2);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;}
+.study-subtab:hover:not(.active){background:var(--bg2);}
+.study-subtab[data-tab="editorial"].active{color:#1D9E75;background:#E1F5EE;
+  box-shadow:0 1px 6px rgba(29,158,117,.18);}
+.study-subtab[data-tab="upnews"].active{color:#C05600;background:#FEF6E6;
+  box-shadow:0 1px 6px rgba(192,86,0,.15);}
+.study-subtab[data-tab="mcq"].active{color:#6D28D9;background:#F5F3FF;
+  box-shadow:0 1px 6px rgba(109,40,217,.15);}
+.study-date{font-size:11px;color:var(--text3);margin-bottom:14px;font-weight:500;}
+.lp-loading{color:var(--text3);font-size:13px;text-align:center;padding:40px 0;}
+/* Editorial styles */
+.lp-ed-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px 18px;margin-bottom:12px;}
+.lp-ed-title{font-size:14px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:8px;}
+.lp-ed-bullet{font-size:13px;color:var(--text2);line-height:1.6;padding-left:12px;
+  border-left:3px solid #1D9E75;margin-bottom:5px;}
+.lp-ed-takeaway{font-size:12px;font-weight:600;color:#085041;margin-top:10px;
+  background:#E1F5EE;border-radius:6px;padding:7px 10px;}
+/* UP News styles */
+.lp-cat-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;
+  background:#FEF6E6;color:#C05600;margin-bottom:6px;display:inline-block;border:1px solid #EF9F27;}
+.lp-up-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:14px 16px;margin-bottom:10px;}
+.lp-up-headline{font-size:14px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:5px;}
+.lp-up-detail{font-size:13px;color:var(--text2);line-height:1.6;}
+/* MCQ styles */
+.lp-mcq-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px 18px;margin-bottom:12px;}
+.lp-mcq-qno{font-size:10px;font-weight:700;color:#6D28D9;margin-bottom:5px;letter-spacing:.5px;}
+.lp-mcq-q{font-size:14px;font-weight:600;color:var(--text);line-height:1.5;margin-bottom:10px;}
+.lp-mcq-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.lp-mcq-opt{font-size:13px;color:var(--text2);padding:8px 12px;border-radius:8px;
+  border:1px solid var(--border);cursor:pointer;transition:.12s;background:var(--bg2);}
+.lp-mcq-opt:hover{background:#EEF2FF;border-color:#7C3AED;color:#6D28D9;}
+.lp-mcq-opt.correct{background:#E1F5EE;color:#085041;font-weight:700;border-color:#1D9E75;}
+.lp-mcq-opt.wrong{background:#FEF2F2;color:#DC2626;border-color:#FCA5A5;}
+.lp-mcq-reveal{font-size:11px;font-weight:700;color:#6D28D9;cursor:pointer;
+  margin-top:4px;display:inline-block;text-decoration:underline;}
+
 /* ── MAIN CONTENT ─────────────────────────────── */
 .main{max-width:1100px;margin:0 auto;padding:16px;}
 .tab{display:none;}
@@ -1276,6 +1321,24 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   </div>
 </div>
 
+<!-- ══ LEFT PANEL ══════════════════════════════════════════════ -->
+<!-- study panel removed — now a full nav tab -->
+<div id="leftPanel" class="left-panel" style="display:none;">
+  <div class="lp-tabs">
+    <button class="lp-tab active" data-tab="editorial" onclick="lpSwitch('editorial',this)">
+      <i class="ti ti-news"></i> Editorial
+    </button>
+    <button class="lp-tab" data-tab="upnews" onclick="lpSwitch('upnews',this)">
+      <i class="ti ti-map-pin"></i> UP News
+    </button>
+    <button class="lp-tab" data-tab="mcq" onclick="lpSwitch('mcq',this)">
+      <i class="ti ti-bulb"></i> MCQ
+    </button>
+  </div>
+  <div class="lp-date" id="lpDate"></div>
+  <div class="lp-body" id="lpBody"><div class="lp-loading">Loading…</div></div>
+</div>
+
 <!-- NAV -->
 <div class="nav">
   <button class="nav-btn active" onclick="showTab('home',this)">
@@ -1301,6 +1364,9 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   </button>
   <button class="nav-btn nav-amber" onclick="showTab('pyq-analytics',this)">
     <i class="ti ti-calendar-stats" aria-hidden="true"></i> PYQ Analytics
+  </button>
+  <button class="nav-btn nav-teal" onclick="showTab('study',this)">
+    <i class="ti ti-book-2" aria-hidden="true"></i> Study Material
   </button>
   <button class="nav-btn admin-btn" id="adminNavBtn" style="display:none;" onclick="showTab('admin',this)">
     <i class="ti ti-settings" aria-hidden="true"></i> Admin
@@ -2816,6 +2882,23 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   </div>
 </div>
 
+<!-- ══ STUDY MATERIAL TAB ═══════════════════════════════════ -->
+<div class="tab" id="tab-study">
+  <div class="study-subtabs">
+    <button class="study-subtab active" data-tab="editorial" onclick="lpSwitch('editorial',this)">
+      📰 National Editorial
+    </button>
+    <button class="study-subtab" data-tab="upnews" onclick="lpSwitch('upnews',this)">
+      📍 UP News
+    </button>
+    <button class="study-subtab" data-tab="mcq" onclick="lpSwitch('mcq',this)">
+      💡 MCQ Practice
+    </button>
+  </div>
+  <div class="study-date" id="lpDate"></div>
+  <div id="lpBody"><div class="lp-loading">Loading…</div></div>
+</div>
+
 </div><!-- /main -->
 
 <!-- TOAST -->
@@ -3031,6 +3114,7 @@ window.onload = function() {
   initPortal();
   initDigest();
   initImgStrip();
+  initLeftPanel();
 };
 
 function startPortal() { initPortal(); }
@@ -8129,6 +8213,94 @@ function _buildNewsCard(day, type) {
         </div>
       </div>
     </div>`;
+}
+
+// ── LEFT PANEL ───────────────────────────────────────────────
+let _lpActive = 'editorial';
+let _lpCache  = {};
+
+function toggleLeftPanel() {
+  const panel  = document.getElementById('leftPanel');
+  const toggle = document.getElementById('lpToggle');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  toggle.classList.toggle('open', !isOpen);
+  if (!isOpen && !_lpCache[_lpActive]) {
+    // Load content on first open
+    lpSwitch(_lpActive, panel.querySelector(`.lp-tab[data-tab="${_lpActive}"]`));
+  }
+}
+
+async function initLeftPanel() {
+  // Set date label — panel loads content on first toggle click
+  const dateEl = document.getElementById('lpDate');
+  if (dateEl) dateEl.textContent =
+    new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+}
+
+async function lpSwitch(tab, btn) {
+  _lpActive = tab;
+  document.querySelectorAll('.lp-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (_lpCache[tab]) { lpRender(tab, _lpCache[tab]); return; }
+  document.getElementById('lpBody').innerHTML = '<div class="lp-loading">Loading…</div>';
+  try {
+    const data = await fetch(`/api/leftPanel/${tab}`).then(r => r.json());
+    _lpCache[tab] = data;
+    lpRender(tab, data);
+  } catch(e) {
+    document.getElementById('lpBody').innerHTML = '<div class="lp-loading">Could not load data.</div>';
+  }
+}
+
+function lpRender(tab, data) {
+  const body = document.getElementById('lpBody');
+  if (!data.ok || !data.items.length) {
+    body.innerHTML = '<div class="lp-loading">No data for today yet.</div>'; return;
+  }
+  if (tab === 'editorial') {
+    body.innerHTML = data.items.map(item => `
+      <div class="lp-ed-item">
+        <div class="lp-ed-title">${item.title}</div>
+        ${item.bullets.slice(0,3).map(b => `<div class="lp-ed-bullet">${b}</div>`).join('')}
+        ${item.takeaway ? `<div class="lp-ed-takeaway">💡 ${item.takeaway}</div>` : ''}
+      </div>`).join('');
+  } else if (tab === 'upnews') {
+    body.innerHTML = data.items.map(item => `
+      <div class="lp-up-item">
+        <div class="lp-cat-badge">${item.category}</div>
+        <div class="lp-up-headline">${item.headline}</div>
+        ${item.detail ? `<div class="lp-up-detail">${item.detail}</div>` : ''}
+      </div>`).join('');
+  } else if (tab === 'mcq') {
+    body.innerHTML = data.items.map((q,i) => `
+      <div class="lp-mcq-item" id="lpmcq-${i}">
+        <div class="lp-mcq-qno">Q${q.qno}</div>
+        <div class="lp-mcq-q">${q.question}</div>
+        ${['a','b','c','d'].map(opt => q.options[opt] ? `
+          <div class="lp-mcq-opt" id="lpmcq-${i}-${opt}" onclick="lpMCQAnswer(${i},'${opt}','${q.answer}')">
+            (${opt.toUpperCase()}) ${q.options[opt]}
+          </div>` : '').join('')}
+        <span class="lp-mcq-reveal" onclick="lpMCQReveal(${i},'${q.answer}')">Show Answer</span>
+      </div>`).join('');
+  }
+}
+
+function lpMCQAnswer(idx, chosen, correct) {
+  ['a','b','c','d'].forEach(o => {
+    const el = document.getElementById(`lpmcq-${idx}-${o}`);
+    if (!el) return;
+    el.classList.remove('correct','wrong');
+    if (o === correct) el.classList.add('correct');
+    else if (o === chosen) el.classList.add('wrong');
+    el.onclick = null;
+  });
+  const reveal = document.querySelector(`#lpmcq-${idx} .lp-mcq-reveal`);
+  if (reveal) reveal.style.display = 'none';
+}
+
+function lpMCQReveal(idx, correct) {
+  lpMCQAnswer(idx, null, correct);
 }
 
 // Navigate to news tab

@@ -18581,6 +18581,94 @@
       "source": "Chess.com / FIDE",
       "relevance": "Medium",
       "tags": "Praggnanandhaa, Norway Chess, Chess, Sports, India"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Science & Technology",
+      "headline": "India commissions world's first hydrogen production facility using nuclear process heat",
+      "detail": "India achieves global first by commissioning a hydrogen production facility based on nuclear process heat, boosting clean energy capabilities.",
+      "source": "Jagran Josh",
+      "relevance": "High",
+      "tags": "Hydrogen energy, nuclear process heat, clean energy, India, technology",
+      "mcq": "What global first did India achieve in the energy sector in June 2026? → Commissioned the world's first hydrogen production facility using nuclear process heat",
+      "link": "https://www.jagranjosh.com/current-affairs/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Appointments",
+      "headline": "OpenAI appoints Prabhjeet Singh as Managing Director for India",
+      "detail": "OpenAI announced Prabhjeet Singh as its Managing Director for India on June 26, 2026; he will take charge in September 2026.",
+      "source": "Jagran Josh",
+      "relevance": "Medium",
+      "tags": "OpenAI, Prabhjeet Singh, AI, tech appointment, India",
+      "mcq": "Who was appointed as OpenAI's Managing Director for India in June 2026? → Prabhjeet Singh (to take charge in September 2026)",
+      "link": "https://www.jagranjosh.com/current-affairs/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Economy & Banking",
+      "headline": "S&P forecasts India GDP growth at 6.6% in FY27 amid energy stress and weak monsoon concerns",
+      "detail": "Rating agency S&P forecasted India's GDP growth at 6.6% for FY2026-27, citing energy stress and concerns over weak monsoon impacting agricultural output.",
+      "source": "Jagran Josh",
+      "relevance": "High",
+      "tags": "GDP, S&P rating, India economy, FY27, monsoon, growth forecast",
+      "mcq": "What GDP growth rate did S&P forecast for India in FY2026-27? → 6.6%",
+      "link": "https://www.jagranjosh.com/current-affairs/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Economy & Banking",
+      "headline": "BHIM Payments App transaction volumes triple in less than a year",
+      "detail": "BHIM UPI-based payments application has seen its transaction volumes triple in under a year, indicating robust adoption of digital payments in India.",
+      "source": "Jagran Josh",
+      "relevance": "Medium",
+      "tags": "BHIM, UPI, digital payments, fintech, India",
+      "mcq": "By how much did BHIM Payments App transaction volumes grow in less than a year as of June 2026? → Tripled (300% growth)",
+      "link": "https://www.jagranjosh.com/current-affairs/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Science & Technology",
+      "headline": "India launches Amaravati Quantum and AI Innovation Centre (AQAIC) linking 380 engineering colleges",
+      "detail": "India launched AQAIC on June 18, 2026, creating India's largest quantum problem-solving force with 380 innovation cells across engineering colleges, involving 3,000+ professors and students.",
+      "source": "Jagran Josh",
+      "relevance": "High",
+      "tags": "Quantum computing, AI, Amaravati, AQAIC, innovation, Andhra Pradesh",
+      "mcq": "How many innovation cells are linked through the Amaravati Quantum and AI Innovation Centre (AQAIC) launched in June 2026? → 380 innovation cells across engineering colleges",
+      "link": "https://www.jagranjosh.com/current-affairs/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Reports & Indices",
+      "headline": "7 Indian schools secure places in Top 10 of World's Best School Prizes 2026",
+      "detail": "A record 7 Indian schools secured places in Top 10 shortlist for the World's Best School Prizes 2026, the highest by any country, showcasing India's education excellence.",
+      "source": "Jagran Josh",
+      "relevance": "High",
+      "tags": "World Best School Prize, India education, schools, global ranking, excellence",
+      "mcq": "How many Indian schools made the Top 10 of the World's Best School Prizes 2026, and how does this compare globally? → 7 schools – the highest number shortlisted by any country",
+      "link": "https://www.jagranjosh.com/current-affairs/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Economy & Banking",
+      "headline": "RBI introduces Digital Payments E-Mandate Framework 2026 with 24-hour pre-debit notification",
+      "detail": "The RBI's new E-Mandate Framework 2026 requires 24-hour pre-debit notifications, allows customers to modify, pause or cancel mandates anytime and set limits for recurring payments.",
+      "source": "Jagran Josh",
+      "relevance": "High",
+      "tags": "RBI, e-mandate, digital payments, consumer protection, recurring payments",
+      "mcq": "Under the RBI's new Digital Payments E-Mandate Framework 2026, what advance notice must be given before debiting a customer's account? → 24 hours (pre-debit notification)",
+      "link": "https://www.jagranjosh.com/current-affairs/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Government Schemes",
+      "headline": "Khelo India Mission launched in Union Budget 2026-27 with Rs 500 cr for sports goods manufacturing",
+      "detail": "Union Budget 2026-27 announced the Khelo India Mission to transform India's sports ecosystem over the next decade. Ministry allocation rose to Rs 4,479 crore. Rs 500 crore earmarked for sports goods manufacturing hubs.",
+      "source": "Jagran Josh",
+      "relevance": "High",
+      "tags": "Khelo India Mission, sports budget, Meerut, Jalandhar, sports manufacturing, Budget 2026",
+      "mcq": "What allocation was made in Union Budget 2026-27 for promoting sports goods manufacturing under the Khelo India Mission? → Rs 500 crore",
+      "link": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2221706&reg=3&lang=1"
     }
   ],
   "progress": [
@@ -18943,6 +19031,127 @@
       "source": "UP Invest / Organiser",
       "relevance": "Medium",
       "tags": "IBM, Lucknow, Cognizant, Noida, UP Investment, IT"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Government Schemes",
+      "headline": "First-Ever National Rural Development Conference held in New Delhi on June 28-29",
+      "detail": "Union Minister Shivraj Singh Chouhan chaired the National Rural Development Conference 2026 with theme 'Viksit Gram, Viksit Bharat', reviewing housing, roads, and women empowerment schemes.",
+      "source": "PIB",
+      "relevance": "High",
+      "tags": "Rural Development, Viksit Bharat, Shivraj Singh Chouhan, PMAY-G, PMGSY",
+      "mcq": "What is the theme of the first-ever National Rural Development Conference held in New Delhi on 28-29 June 2026? → Viksit Gram, Viksit Bharat",
+      "link": "https://www.pib.gov.in/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Summits & Agreements",
+      "headline": "PM Modi visits Seychelles as Guest of Honour for Golden Jubilee National Day celebrations",
+      "detail": "PM Narendra Modi is on a 3-day state visit to Seychelles (Jun 27-29), invited by President Patrick Herminie for the country's 50th independence anniversary; first Indian PM to address Seychelles National Assembly.",
+      "source": "PIB",
+      "relevance": "High",
+      "tags": "PM Modi, Seychelles, India-Seychelles relations, Indian Ocean, bilateral",
+      "mcq": "During his June 2026 visit to Seychelles, which milestone did PM Modi achieve in the Seychelles National Assembly? → He became the first Indian Prime Minister to address the National Assembly of Seychelles",
+      "link": "https://www.republicworld.com/amp/world-news/what-are-the-expectations-around-pm-modi-s-seychelles-visit-2026-06-26-130059"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Science & Technology",
+      "headline": "Aarogya Setu 2.0 to be launched by Health Minister JP Nadda on June 29 with new digital health features",
+      "detail": "Revamped Aarogya Setu 2.0 will offer single platform for health records, PM-JAY services, and healthcare connectivity. Also launching Ayushman Sarathi WhatsApp chatbot and National Health Claims Exchange.",
+      "source": "PIB",
+      "relevance": "High",
+      "tags": "Aarogya Setu 2.0, Digital Health, JP Nadda, PM-JAY, Ayushman Bharat",
+      "mcq": "Which additional platforms are being launched alongside Aarogya Setu 2.0 by the Union Health Ministry? → Ayushman Sarathi WhatsApp chatbot and National Health Claims Exchange",
+      "link": "https://www.prokerala.com/news/articles/a1780648.html"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Awards & Honours",
+      "headline": "Pradhan Mantri Rashtriya Bal Puraskar 2026: Nominations open till July 31",
+      "detail": "India's premier national award for children aged 5-18 across 6 categories: Bravery, Social Service, Environment, Sports, Art & Culture, Science & Technology. 203 children honoured since 2019.",
+      "source": "PIB",
+      "relevance": "Medium",
+      "tags": "PMRBP, Bal Puraskar, children award, Veer Bal Diwas, WCD Ministry",
+      "mcq": "On which day is the Pradhan Mantri Rashtriya Bal Puraskar conferred annually by the President of India? → Veer Bal Diwas (26th December)",
+      "link": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2276954&reg=3&lang=1"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Appointments",
+      "headline": "Mahesh Dixit appointed new Director of Intelligence Bureau (IB)",
+      "detail": "1993-batch IPS officer Mahesh Dixit of Telangana cadre appointed as Director of the Intelligence Bureau, India's domestic intelligence agency.",
+      "source": "PIB",
+      "relevance": "High",
+      "tags": "Intelligence Bureau, IB Director, Mahesh Dixit, IPS, appointment",
+      "mcq": "Who was appointed as the new Director of the Intelligence Bureau (IB) in June 2026? → Mahesh Dixit (1993-batch IPS, Telangana cadre)",
+      "link": "https://currentaffairsai.com/current-affairs/june-2026"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Economy & Banking",
+      "headline": "RBI appoints Rohit Jain as Deputy Governor for three-year term",
+      "detail": "RBI Executive Director Rohit Jain was appointed Deputy Governor of the Reserve Bank of India for a three-year term beginning on or after May 3, 2026.",
+      "source": "PIB",
+      "relevance": "High",
+      "tags": "RBI, Deputy Governor, Rohit Jain, Reserve Bank of India, banking appointment",
+      "mcq": "Who was appointed as the Deputy Governor of the Reserve Bank of India for a three-year term beginning May 2026? → Rohit Jain (formerly RBI Executive Director)",
+      "link": "https://www.bankingfinance.in/rbi-news-for-june-2026.html"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Sports",
+      "headline": "Indian Women's Football Team wins SAFF Women's Championship 2026",
+      "detail": "Indian Women's Football Team won the SAFF Women's Championship 2026, with PM Modi congratulating the team for the regional championship victory.",
+      "source": "PIB",
+      "relevance": "High",
+      "tags": "SAFF Championship, Indian Women's Football, sports, South Asia football",
+      "mcq": "Which Indian team won the SAFF Women's Championship 2026? → Indian Women's Football Team",
+      "link": "https://www.pib.gov.in/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Sports",
+      "headline": "India wins Men's Under-18 Hockey Asia Cup 2026; Women's U-18 team wins Bronze",
+      "detail": "Indian Men's Under-18 Hockey Team won the Asia Cup 2026 title while the Women's Under-18 team won the bronze medal, PM congratulated both teams.",
+      "source": "PIB",
+      "relevance": "High",
+      "tags": "Hockey, Asia Cup 2026, Under-18, sports achievement, India",
+      "mcq": "In the Under-18 Hockey Asia Cup 2026, what medals did India's men's and women's teams win respectively? → Gold (Men's U-18) and Bronze (Women's U-18)",
+      "link": "https://www.pib.gov.in/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Editorial",
+      "headline": "The Hindu Editorial (Jun 27): Investigating irregularities in Ram Janmabhoomi temple donations",
+      "detail": "VHP international president Alok Kumar called for a complete probe into alleged donation collection irregularities at Ram Janmabhoomi temple, demanding FIR registration.",
+      "source": "The Hindu",
+      "relevance": "High",
+      "tags": "Ram Janmabhoomi, VHP, temple donations, accountability, governance",
+      "mcq": "What did The Hindu editorial of June 27, 2026 highlight regarding the Ram Janmabhoomi temple? → It flagged calls for a complete investigation into alleged irregularities in donation collection and demanded an FIR",
+      "link": "https://www.thehindu.com/opinion/editorial/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Editorial",
+      "headline": "The Hindu Editorial (Jun 27): NCERT adds 1975 Emergency to Class 9 textbook as 'challenge to democracy'",
+      "detail": "NCERT added the 1975 Emergency to Class 9 textbook describing it as 'one of the major challenges to democracy in India', the first time the Emergency features in Class 9 syllabus.",
+      "source": "The Hindu",
+      "relevance": "High",
+      "tags": "NCERT, Emergency 1975, Class 9, textbook, democracy, education curriculum",
+      "mcq": "How has NCERT described the 1975 Emergency in its newly updated Class 9 textbook? → As 'one of the major challenges to democracy in India'",
+      "link": "https://www.thehindu.com/opinion/editorial/"
+    },
+    {
+      "date": "28 Jun 2026",
+      "category": "Editorial",
+      "headline": "Indian Express Editorial (Jun 27): India-Oman CEPA and its economic implications",
+      "detail": "PM Modi shared analysis on the India-Oman Comprehensive Economic Partnership Agreement (CEPA) and the wide-ranging trade and investment benefits it offers for bilateral relations.",
+      "source": "Indian Express",
+      "relevance": "High",
+      "tags": "India-Oman CEPA, trade agreement, bilateral, economic partnership, exports",
+      "mcq": "What major trade agreement with a Gulf nation was highlighted in the Indian Express editorial in late June 2026? → India-Oman Comprehensive Economic Partnership Agreement (CEPA)",
+      "link": "https://indianexpress.com/section/opinion/editorials/"
     }
   ],
   "dailyQuizQuestions": [

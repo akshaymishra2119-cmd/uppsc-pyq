@@ -767,6 +767,144 @@ app.get('/api/scrapeStatus', (req, res) => {
 // ── Cron disabled on Railway (no node-cron dependency) ─────────
 // Scraping is handled by Claude scheduled tasks via /api/ingestNews
 
+// ── LEFT PANEL — local docx readers ──────────────────────────
+const mammoth = require('mammoth');
+
+const LEFT_PANEL_DIRS = {
+  editorial: 'D:\\editorial_national',
+  upnews:    'D:\\Editorial_UP',
+  mcq:       'D:\\1_liner_UPPSC',
+};
+const LEFT_PANEL_PREFIX = { editorial: 'CA_', upnews: 'UPPSC_', mcq: 'Questions_' };
+
+function getTodayDocx(type) {
+  const dir    = LEFT_PANEL_DIRS[type];
+  const prefix = LEFT_PANEL_PREFIX[type];
+  if (!fs.existsSync(dir)) return null;
+  const today  = new Date();
+  const months = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  const name   = `${prefix}${today.getDate()}${months[today.getMonth()]}${today.getFullYear()}.docx`;
+  const exact  = path.join(dir, name);
+  if (fs.existsSync(exact)) return exact;
+  // fallback: most recent docx in folder
+  try {
+    const files = fs.readdirSync(dir)
+      .filter(f => f.endsWith('.docx'))
+      .sort();
+    if (files.length) return path.join(dir, files[files.length - 1]);
+  } catch(e) {}
+  return null;
+}
+
+async function parseDocxText(filepath) {
+  const result = await mammoth.extractRawText({ path: filepath });
+  return result.value;
+}
+
+// Parse editorial text → array of {title, bullets[], takeaway}
+function parseEditorial(text) {
+  const sections = [];
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  let current = null;
+  for (const line of lines) {
+    // Numbered section heading like "1. India–New Zealand FTA"
+    if (/^\d+\.\s+[A-Z]/.test(line)) {
+      if (current) sections.push(current);
+      current = { title: line.replace(/^\d+\.\s+/, ''), bullets: [], takeaway: '' };
+    } else if (current && /^Takeaway:/i.test(line)) {
+      current.takeaway = line.replace(/^Takeaway:\s*/i, '');
+    } else if (current) {
+      current.bullets.push(line);
+    }
+  }
+  if (current) sections.push(current);
+  return sections;
+}
+
+// Parse UP news text → array of {category, headline, detail}
+function parseUPNews(text) {
+  const items = [];
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  let category = 'General';
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    // Category headers (short, no period, title-case)
+    if (line.length < 50 && !line.endsWith('.') && /^[A-Z]/.test(line) && !/^\d/.test(line) && !line.startsWith('Source')) {
+      category = line;
+    } else if (/^[A-Z]/.test(line) && line.length > 40) {
+      // Headline — next lines are detail
+      const detail = [];
+      let j = i + 1;
+      while (j < lines.length && lines[j].length > 20 && /^[A-Za-z]/.test(lines[j]) && !/^[A-Z][a-z]+ [A-Z]/.test(lines[j])) {
+        detail.push(lines[j]);
+        j++;
+      }
+      items.push({ category, headline: line, detail: detail.join(' ').slice(0, 250) });
+      i = j;
+      continue;
+    }
+    i++;
+  }
+  return items;
+}
+
+// Parse MCQ text → array of {qno, question, options:{a,b,c,d}, answer}
+function parseMCQ(text) {
+  const questions = [];
+  const blocks = text.split(/(?=Q\d+\.)/);
+  for (const block of blocks) {
+    const qMatch = block.match(/Q(\d+)\.\s*([\s\S]*?)(?=\(a\))/i);
+    const aMatch = block.match(/\(a\)\s*(.+)/i);
+    const bMatch = block.match(/\(b\)\s*(.+)/i);
+    const cMatch = block.match(/\(c\)\s*(.+)/i);
+    const dMatch = block.match(/\(d\)\s*(.+)/i);
+    const ansMatch = block.match(/Answer:\s*\(([abcd])\)/i);
+    if (qMatch && ansMatch) {
+      questions.push({
+        qno:      parseInt(qMatch[1]),
+        question: qMatch[2].trim(),
+        options:  {
+          a: aMatch ? aMatch[1].trim() : '',
+          b: bMatch ? bMatch[1].trim() : '',
+          c: cMatch ? cMatch[1].trim() : '',
+          d: dMatch ? dMatch[1].trim() : '',
+        },
+        answer: ansMatch[1].toLowerCase(),
+      });
+    }
+  }
+  return questions;
+}
+
+app.get('/api/leftPanel/editorial', async (req, res) => {
+  try {
+    const file = getTodayDocx('editorial');
+    if (!file) return res.json({ ok: false, items: [] });
+    const text = await parseDocxText(file);
+    res.json({ ok: true, items: parseEditorial(text), file: path.basename(file) });
+  } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
+});
+
+app.get('/api/leftPanel/upnews', async (req, res) => {
+  try {
+    const file = getTodayDocx('upnews');
+    if (!file) return res.json({ ok: false, items: [] });
+    const text = await parseDocxText(file);
+    res.json({ ok: true, items: parseUPNews(text), file: path.basename(file) });
+  } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
+});
+
+app.get('/api/leftPanel/mcq', async (req, res) => {
+  try {
+    const file = getTodayDocx('mcq');
+    if (!file) return res.json({ ok: false, items: [] });
+    const text = await parseDocxText(file);
+    res.json({ ok: true, items: parseMCQ(text), file: path.basename(file) });
+  } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
+});
+
 // ── START ─────────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', () => {
   console.log('\n✅ UPPSC Study Portal — Server started');
