@@ -878,31 +878,42 @@ function parseMCQ(text) {
   return questions;
 }
 
+// Helper: parse docx → items, save to db.json, return items
+async function getStudyItems(type, parseFn) {
+  const file = getTodayDocx(type);
+  if (file) {
+    // Running locally — read docx, save to db.json so Railway can serve it
+    const text  = await parseDocxText(file);
+    const items = parseFn(text);
+    // Persist to db.json
+    const db = loadDB();
+    if (!db.studyContent) db.studyContent = {};
+    db.studyContent[type] = { items, file: path.basename(file), date: new Date().toDateString() };
+    saveDB(db);
+    return { ok: true, items, file: path.basename(file) };
+  }
+  // Running on Railway — fall back to db.json
+  const db = loadDB();
+  const cached = db.studyContent && db.studyContent[type];
+  if (cached && cached.items && cached.items.length) {
+    return { ok: true, items: cached.items, file: cached.file, cached: true };
+  }
+  return { ok: false, items: [] };
+}
+
 app.get('/api/leftPanel/editorial', async (req, res) => {
-  try {
-    const file = getTodayDocx('editorial');
-    if (!file) return res.json({ ok: false, items: [] });
-    const text = await parseDocxText(file);
-    res.json({ ok: true, items: parseEditorial(text), file: path.basename(file) });
-  } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
+  try { res.json(await getStudyItems('editorial', parseEditorial)); }
+  catch(e) { res.json({ ok: false, items: [], error: e.message }); }
 });
 
 app.get('/api/leftPanel/upnews', async (req, res) => {
-  try {
-    const file = getTodayDocx('upnews');
-    if (!file) return res.json({ ok: false, items: [] });
-    const text = await parseDocxText(file);
-    res.json({ ok: true, items: parseUPNews(text), file: path.basename(file) });
-  } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
+  try { res.json(await getStudyItems('upnews', parseUPNews)); }
+  catch(e) { res.json({ ok: false, items: [], error: e.message }); }
 });
 
 app.get('/api/leftPanel/mcq', async (req, res) => {
-  try {
-    const file = getTodayDocx('mcq');
-    if (!file) return res.json({ ok: false, items: [] });
-    const text = await parseDocxText(file);
-    res.json({ ok: true, items: parseMCQ(text), file: path.basename(file) });
-  } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
+  try { res.json(await getStudyItems('mcq', parseMCQ)); }
+  catch(e) { res.json({ ok: false, items: [], error: e.message }); }
 });
 
 // ── START ─────────────────────────────────────────────────────
