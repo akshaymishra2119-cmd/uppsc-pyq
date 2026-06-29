@@ -18797,6 +18797,24 @@
       "result": "wrong",
       "timeTaken": 0,
       "date": "2026-06-26T12:21:44.522Z"
+    },
+    {
+      "userName": "Student",
+      "qId": "Q451",
+      "subject": "Current Affairs",
+      "year": "2018",
+      "result": "wrong",
+      "timeTaken": 0,
+      "date": "2026-06-29T11:01:57.979Z"
+    },
+    {
+      "userName": "Student",
+      "qId": "Q452",
+      "subject": "Geography",
+      "year": "2018",
+      "result": "wrong",
+      "timeTaken": 0,
+      "date": "2026-06-29T11:02:10.838Z"
     }
   ],
   "leaderboard": [
@@ -18810,9 +18828,9 @@
     {
       "name": "Student",
       "score": 0,
-      "accuracy": 22,
-      "attempted": 9,
-      "lastActive": "26 Jun 2026"
+      "accuracy": 18,
+      "attempted": 11,
+      "lastActive": "29 Jun 2026"
     }
   ],
   "uppscNews": [
