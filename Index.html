@@ -6,6 +6,8 @@
 <title>Ghatna Chakra — UPPSC PYQ Portal</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 /* ── RESET & BASE ─────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -356,6 +358,68 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .lp-mcq-opt.wrong{background:#FEF2F2;color:#DC2626;border-color:#FCA5A5;}
 .lp-mcq-reveal{font-size:11px;font-weight:700;color:#6D28D9;cursor:pointer;
   margin-top:4px;display:inline-block;text-decoration:underline;}
+
+/* ── QUESTION CARD (shareable) ────────────────── */
+.pyq-card-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;margin-top:12px;}
+.pyq-scard{width:360px;border-radius:18px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  box-shadow:0 6px 28px rgba(0,0,0,.14);background:#fff;flex-shrink:0;}
+.pyq-scard-head{padding:14px 16px 10px;position:relative;}
+.pyq-scard-brand{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.pyq-scard-logo{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.22);
+  display:flex;align-items:center;justify-content:center;font-size:18px;}
+.pyq-scard-brandname{color:#fff;font-weight:800;font-size:14px;line-height:1.1;}
+.pyq-scard-brandtag{color:rgba(255,255,255,.7);font-size:10px;}
+.pyq-scard-badge{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.35);border-radius:8px;
+  padding:5px 10px;text-align:center;color:#fff;}
+.pyq-scard-badge-top{font-size:9px;font-weight:600;letter-spacing:.5px;opacity:.8;}
+.pyq-scard-badge-row{display:flex;gap:5px;margin-top:3px;}
+.pyq-scard-ybadge{background:rgba(255,255,255,.22);border-radius:5px;
+  padding:2px 8px;font-size:11px;font-weight:800;color:#fff;}
+.pyq-scard-body{padding:14px 16px;}
+.pyq-scard-qwrap{display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;}
+.pyq-scard-qicon{width:26px;height:26px;border-radius:50%;background:#EEF2FF;
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px;}
+.pyq-scard-q{font-size:13.5px;font-weight:700;color:#111;line-height:1.5;}
+.pyq-scard-opts{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.pyq-scard-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:10px;border:1.5px solid #E5E7EB;font-size:12.5px;color:#374151;font-weight:500;}
+.pyq-scard-opt.correct{background:#F0FDF4;border-color:#22C55E;color:#15803D;font-weight:700;}
+.pyq-scard-opt.wrong{background:#FEF2F2;border-color:#F87171;color:#DC2626;}
+.pyq-scard-optletter{width:22px;height:22px;border-radius:6px;background:#F3F4F6;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+  color:#6B7280;flex-shrink:0;}
+.pyq-scard-opt.correct .pyq-scard-optletter{background:#22C55E;color:#fff;}
+.pyq-scard-opt.wrong .pyq-scard-optletter{background:#EF4444;color:#fff;}
+.pyq-scard-check{margin-left:auto;color:#22C55E;font-size:16px;}
+.pyq-scard-expl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.pyq-scard-ans{background:#F0FDF4;border-radius:10px;padding:10px 12px;}
+.pyq-scard-ans-lbl{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700;
+  color:#15803D;margin-bottom:3px;}
+.pyq-scard-ans-val{font-size:12px;font-weight:700;color:#111;}
+.pyq-scard-exp{background:#FFF7ED;border-radius:10px;padding:10px 12px;}
+.pyq-scard-exp-lbl{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700;
+  color:#C2410C;margin-bottom:3px;}
+.pyq-scard-exp-text{font-size:11px;color:#374151;line-height:1.4;}
+.pyq-scard-meta{display:flex;gap:0;border-top:1px solid #F3F4F6;padding-top:10px;
+  flex-wrap:wrap;gap:8px;}
+.pyq-scard-metaitem{display:flex;align-items:center;gap:4px;font-size:10px;color:#9CA3AF;}
+.pyq-scard-metaitem strong{color:#374151;}
+.pyq-scard-tip{background:#FEFCE8;border-radius:10px;padding:9px 12px;
+  margin-top:10px;font-size:11px;color:#713F12;line-height:1.4;}
+.pyq-scard-tip-lbl{font-weight:800;margin-bottom:2px;display:flex;align-items:center;gap:4px;}
+/* card view toolbar */
+.card-view-bar{display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap;}
+.card-view-btn{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:6px;color:var(--text2);transition:.15s;}
+.card-view-btn:hover{border-color:#7C3AED;color:#7C3AED;}
+.card-view-btn.active{background:#7C3AED;color:#fff;border-color:#7C3AED;}
+.card-dl-btn{padding:8px 16px;border-radius:8px;border:none;
+  background:linear-gradient(135deg,#1D9E75,#085041);color:#fff;
+  font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;
+  transition:.15s;box-shadow:0 2px 8px rgba(29,158,117,.3);}
+.card-dl-btn:disabled{opacity:.5;cursor:not-allowed;}
 
 /* ── MAIN CONTENT ─────────────────────────────── */
 .main{max-width:1100px;margin:0 auto;padding:16px;}
@@ -2123,8 +2187,21 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
     </button>
   </div>
 
-  <!-- ── Result count ──────────────────────────────── -->
-  <div id="qResultCount" style="font-size:13px;color:var(--text2);padding:8px 0 4px;"></div>
+  <!-- ── Result count + view toggle ───────────────── -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:8px 0 4px;">
+    <div id="qResultCount" style="font-size:13px;color:var(--text2);"></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="card-view-btn" id="btnListView" onclick="setQView('list')" title="List view">
+        <i class="ti ti-list"></i> List
+      </button>
+      <button class="card-view-btn" id="btnCardView" onclick="setQView('card')" title="Card view">
+        <i class="ti ti-cards"></i> Cards
+      </button>
+      <button class="card-dl-btn" id="btnDownloadCards" onclick="downloadCardsPNG()" style="display:none;" title="Download all visible cards as PNG images">
+        <i class="ti ti-download"></i> Download Cards
+      </button>
+    </div>
+  </div>
 
   <!-- ── Questions container ───────────────────────── -->
   <div id="qContainer"><div class="loading"><i class="ti ti-loader"></i>Loading questions...</div></div>
@@ -3121,6 +3198,12 @@ function startPortal() { initPortal(); }
 function changeName() {}
 
 function initPortal() {
+  // Default view toggle state
+  const lb = document.getElementById('btnListView');
+  const cb = document.getElementById('btnCardView');
+  if (lb) lb.classList.add('active');
+  if (cb) cb.classList.remove('active');
+
   // Update UI (elements may not exist in new banner layout)
   const udEl = document.getElementById("userName-display");
   if (udEl) udEl.textContent = userName;
@@ -5368,6 +5451,9 @@ function renderQuestions() {
 
   if (countEl) countEl.textContent = `Showing ${filteredQ.length} question${filteredQ.length!==1?'s':''}`;
 
+  // Card view mode
+  if (_qView === 'card') { renderCardView(); return; }
+
   el.innerHTML = filteredQ.map((q, idx) => {
     const ans      = answers[q.id];
     const shown    = ans !== undefined;
@@ -5500,6 +5586,141 @@ function renderOneQ(idx) {
   // Track start time
   if (!startTimes[q.id]) startTimes[q.id] = new Date();
   updateNavInfo(idx);
+}
+
+// ── CARD VIEW ─────────────────────────────────────────────────
+let _qView = 'list'; // 'list' | 'card'
+
+const SUBJECT_COLORS = {
+  'History':         ['#1E3A5F','#2563EB'], 'Modern History':  ['#1E3A5F','#2563EB'],
+  'Ancient History': ['#1E3A5F','#2563EB'], 'Polity':          ['#064E3B','#059669'],
+  'Geography':       ['#7C2D12','#EA580C'], 'Economy':         ['#713F12','#D97706'],
+  'Science':         ['#4C1D95','#7C3AED'], 'Environment':     ['#14532D','#16A34A'],
+  'Current Affairs': ['#1E1B4B','#6366F1'], 'UP Special':      ['#831843','#DB2777'],
+  'General Studies': ['#374151','#6B7280'],
+};
+
+function subjectGradient(subj) {
+  const c = SUBJECT_COLORS[subj] || ['#374151','#6B7280'];
+  return `linear-gradient(135deg,${c[0]} 0%,${c[1]} 100%)`;
+}
+
+function setQView(view) {
+  _qView = view;
+  document.getElementById('btnListView').classList.toggle('active', view === 'list');
+  document.getElementById('btnCardView').classList.toggle('active', view === 'card');
+  document.getElementById('btnDownloadCards').style.display = view === 'card' ? 'flex' : 'none';
+  renderQuestions();
+}
+
+function buildShareCard(q, idx) {
+  const grad   = subjectGradient(q.subject);
+  const opts   = ['A','B','C','D'];
+  const optsHtml = opts.map((l,i) => {
+    const text = [q.optA,q.optB,q.optC,q.optD][i] || '';
+    if (!text) return '';
+    const isCorrect = l === q.answer;
+    return `<div class="pyq-scard-opt ${isCorrect?'correct':''}">
+      <div class="pyq-scard-optletter">${l}</div>
+      <span style="flex:1;">${text}</span>
+      ${isCorrect ? '<span class="pyq-scard-check">✓</span>' : ''}
+    </div>`;
+  }).join('');
+
+  const ansText = [q.optA,q.optB,q.optC,q.optD][['A','B','C','D'].indexOf(q.answer)] || '';
+  const explShort = (q.explanation||'').slice(0,200) + ((q.explanation||'').length>200?'…':'');
+  const tags = (q.tags||q.subTopic||'').split(',').slice(0,3).filter(Boolean).join(', ');
+
+  return `<div class="pyq-scard" id="scard-${q.id}" data-qid="${q.id}" data-year="${q.year}" data-subject="${q.subject}">
+    <div class="pyq-scard-head" style="background:${grad};">
+      <div class="pyq-scard-brand">
+        <div class="pyq-scard-logo">📚</div>
+        <div>
+          <div class="pyq-scard-brandname">UPPSC PYQ</div>
+          <div class="pyq-scard-brandtag">Ghatna Chakra Portal</div>
+        </div>
+      </div>
+      <div class="pyq-scard-badge">
+        <div class="pyq-scard-badge-top">${q.subject}</div>
+        <div class="pyq-scard-badge-row">
+          <div class="pyq-scard-ybadge">${q.year}</div>
+          <div class="pyq-scard-ybadge">Q${String(idx+1).padStart(3,'0')}</div>
+        </div>
+      </div>
+    </div>
+    <div class="pyq-scard-body">
+      <div class="pyq-scard-qwrap">
+        <div class="pyq-scard-qicon">❓</div>
+        <div class="pyq-scard-q">${q.question}</div>
+      </div>
+      <div class="pyq-scard-opts">${optsHtml}</div>
+      <div class="pyq-scard-expl">
+        <div class="pyq-scard-ans">
+          <div class="pyq-scard-ans-lbl">✅ Correct Answer</div>
+          <div class="pyq-scard-ans-val">${q.answer}. ${ansText}</div>
+        </div>
+        <div class="pyq-scard-exp">
+          <div class="pyq-scard-exp-lbl">💡 Explanation</div>
+          <div class="pyq-scard-exp-text">${explShort||'—'}</div>
+        </div>
+      </div>
+      <div class="pyq-scard-meta">
+        <div class="pyq-scard-metaitem">📖 <strong>${q.topic||q.subTopic||'—'}</strong></div>
+        <div class="pyq-scard-metaitem">⚡ <strong>${q.difficulty||'—'}</strong></div>
+        ${q.repeatsIn ? `<div class="pyq-scard-metaitem">🔁 <strong>${q.repeatsIn}</strong></div>` : ''}
+        ${tags ? `<div class="pyq-scard-metaitem">🏷 <strong>${tags}</strong></div>` : ''}
+      </div>
+      ${q.examTip ? `<div class="pyq-scard-tip"><div class="pyq-scard-tip-lbl">⭐ Exam Tip</div>${q.examTip}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderCardView() {
+  const el = document.getElementById('qContainer');
+  if (!filteredQ.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);">No questions match these filters.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="pyq-card-wrap">${filteredQ.map((q,i) => buildShareCard(q,i)).join('')}</div>`;
+}
+
+async function downloadCardsPNG() {
+  const btn = document.getElementById('btnDownloadCards');
+  const cards = document.querySelectorAll('.pyq-scard');
+  if (!cards.length) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader"></i> Generating…';
+
+  // Group by year then subject for folder naming
+  const year    = document.getElementById('f-year')?.value || 'all';
+  const subject = document.getElementById('f-subject')?.value || 'all';
+  const label   = `UPPSC_${year !== 'all' ? year : 'AllYears'}_${subject !== 'all' ? subject.replace(/\s+/g,'') : 'AllSubjects'}`;
+
+  const zip = new JSZip();
+  const folder = zip.folder(label);
+
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+    btn.innerHTML = `<i class="ti ti-loader"></i> ${i+1}/${cards.length}…`;
+    try {
+      const canvas = await html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      const blob   = await new Promise(r => canvas.toBlob(r, 'image/png'));
+      const qid    = card.dataset.qid;
+      const yr     = card.dataset.year;
+      const subj   = (card.dataset.subject||'').replace(/\s+/g,'');
+      folder.file(`${yr}_${subj}_Q${String(i+1).padStart(3,'0')}_${qid}.png`, blob);
+    } catch(e) { console.warn('Card render error:', e); }
+  }
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(zipBlob);
+  a.download = `${label}_Cards.zip`;
+  a.click();
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-download"></i> Download Cards';
 }
 
 // ── Server-side attempt tracking ──────────────────────────────
