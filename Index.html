@@ -2236,6 +2236,17 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
         </div>
       </div>
 
+      <div class="mock-divider"></div>
+
+      <!-- Year -->
+      <div class="mock-field">
+        <div class="mock-field-label"><i class="ti ti-calendar"></i> Year</div>
+        <div class="mock-options" id="mt-year-opts" style="flex-wrap:wrap;">
+          <span class="mock-opt selected" data-val="all" onclick="selectMockOpt('year',this)">All</span>
+          <!-- populated by openMockModal() -->
+        </div>
+      </div>
+
       <!-- Topic -->
       <div class="mock-field" id="mt-topic-wrap" style="display:none;">
         <div class="mock-field-label"><i class="ti ti-tag"></i> Topic <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;">(optional)</span></div>
@@ -3131,7 +3142,7 @@ let mockTotalSecs     = 0;
 let mockQIdx          = 0;
 let mockQStartTime    = null;
 let mockQTimes        = {};  // { qId: seconds }
-let mockSettings      = { count: 30, sub: "all", time: 60, topic: "all", mode: "normal" };
+let mockSettings      = { count: 30, sub: "all", year: "all", time: 60, topic: "all", mode: "normal" };
 let mockAdaptiveDiff  = "Easy"; // tracks current difficulty in adaptive mode
 
 // ── HEATMAP STATE ─────────────────────────────
@@ -5288,6 +5299,7 @@ function selectPyqYear(year, btn) {
   document.querySelectorAll('.pyq-yr-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   applyFilters();
+  updatePyqSidebarCounts();
 }
 
 function buildYearTabs() {
@@ -5299,11 +5311,15 @@ function buildYearTabs() {
 }
 
 function updatePyqSidebarCounts() {
-  // Recount after any chip filter changes
+  // Recount filtered by the active year tab
+  const activeYear = (document.getElementById('f-year')?.value) || 'all';
+  const base = (typeof allQuestions !== 'undefined' ? allQuestions : [])
+    .filter(q => activeYear === 'all' || String(q.year) === String(activeYear));
+
   const counts = { all: 0 };
   ['Geography','Modern History','Economy','Polity','Current Affairs','Science','General Studies','Environment','Ancient History','UP Special']
     .forEach(s => counts[s] = 0);
-  (typeof allQuestions !== 'undefined' ? allQuestions : []).forEach(q => {
+  base.forEach(q => {
     counts.all++;
     if (counts[q.subject] !== undefined) counts[q.subject]++;
     else counts[q.subject] = 1;
@@ -5863,8 +5879,14 @@ function updateLiveScore() {
 // ══════════════════════════════════════════════════════════════
 function openMockModal() {
   document.getElementById("mockModal").style.display = "flex";
-  // Populate topic dropdown from current subject
   populateMockTopics();
+  // Populate year options dynamically
+  const yearWrap = document.getElementById('mt-year-opts');
+  if (yearWrap && allQuestions.length) {
+    const years = [...new Set(allQuestions.map(q => String(q.year)).filter(Boolean))].sort();
+    yearWrap.innerHTML = `<span class="mock-opt selected" data-val="all" onclick="selectMockOpt('year',this)">All</span>`
+      + years.map(y => `<span class="mock-opt" data-val="${y}" onclick="selectMockOpt('year',this)">${y}</span>`).join('');
+  }
 }
 function closeMockModal() { document.getElementById("mockModal").style.display = "none"; }
 
@@ -5892,6 +5914,7 @@ function selectMockOpt(type, el) {
     const tw = document.getElementById('mt-topic-wrap');
     if (tw) tw.style.display = el.dataset.val === 'all' ? 'none' : '';
   }
+  else if (type === "year")  mockSettings.year  = el.dataset.val;
   else if (type === "time")  mockSettings.time  = parseInt(el.dataset.val) || 60;
   else if (type === "mode")  mockSettings.mode  = el.dataset.val;
 }
@@ -5905,6 +5928,7 @@ function launchMockTest() {
 
   // Build question pool
   let pool = [...allQuestions];
+  if (mockSettings.year  && mockSettings.year  !== "all") pool = pool.filter(q => String(q.year) === String(mockSettings.year));
   if (mockSettings.sub   !== "all") pool = pool.filter(q => q.subject === mockSettings.sub);
   if (mockSettings.topic !== "all") pool = pool.filter(q =>
     (q.subTopic||q.topic||'') === mockSettings.topic);
