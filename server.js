@@ -1294,5 +1294,3 @@ function _syncLeaderboard(db, userName) {
 app.listen(PORT, '0.0.0.0', () => {
   console.log('UPPSC Study Portal started on port ' + PORT);
 });
-nsole.log('UPPSC Study Portal started on port ' + PORT);
-});
