@@ -234,7 +234,7 @@ app.post('/api/forgot-password', async (req, res) => {
     const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 min
     await pool.query('UPDATE users SET reset_otp=$1, reset_otp_expires=$2 WHERE id=$3', [otp, expires, user.id]);
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'noreply@simplersense.com',
       to: email.toLowerCase().trim(),
       subject: 'UPPSC Portal — Password Reset OTP',
       html: `
