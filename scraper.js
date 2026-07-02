@@ -8,12 +8,27 @@ const https = require('https');
 const http  = require('http');
 
 // ── Fetch a URL (no external deps — uses built-in https/http) ─
-function fetchUrl(url, timeoutMs = 12000) {
+function fetchUrl(url, timeoutMs = 15000, redirectCount = 0) {
+  if (redirectCount > 5) return Promise.reject(new Error('Too many redirects'));
   return new Promise((resolve, reject) => {
     const mod = url.startsWith('https') ? https : http;
-    const req = mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; UPPSCScraper/1.0)' } }, res => {
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/rss+xml, application/xml, text/xml, text/html, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'identity',
+        'Referer': 'https://www.google.com/',
+        'Cache-Control': 'no-cache',
+      }
+    };
+    const req = mod.get(url, options, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return fetchUrl(res.headers.location, timeoutMs).then(resolve).catch(reject);
+        const next = res.headers.location.startsWith('http') ? res.headers.location : new URL(res.headers.location, url).href;
+        return fetchUrl(next, timeoutMs, redirectCount + 1).then(resolve).catch(reject);
+      }
+      if (res.statusCode === 403 || res.statusCode === 404 || res.statusCode === 429) {
+        return reject(new Error(`HTTP ${res.statusCode}: ${url}`));
       }
       let raw = '';
       res.on('data', c => raw += c);
@@ -109,10 +124,20 @@ function generateMCQ(title, category, detail) {
 }
 
 // ── RSS Feed sources ─────────────────────────────────────────
+// type 'uppsc' → uppscNews tab, type 'ca' → currentAffairs tab
+// UPPSC keyword-filtering applied to 'uppsc' sources automatically
 const FEEDS = [
-  { name: 'PIB',         url: 'https://pib.gov.in/RssMain.aspx',                    type: 'uppsc' },
-  { name: 'Jagran Josh', url: 'https://www.jagranjosh.com/current-affairs/rss',     type: 'ca'    },
-  { name: 'PIB Science', url: 'https://pib.gov.in/RssMain.aspx?regid=3&langid=1',  type: 'ca'    },
+  // NDTV — confirmed working ✅
+  { name: 'NDTV India',     url: 'https://feeds.feedburner.com/ndtvnews-india-news',               type: 'ca'    },
+  { name: 'NDTV Top',       url: 'https://feeds.feedburner.com/ndtvnews-top-stories',              type: 'ca'    },
+  // The Hindu — confirmed working ✅
+  { name: 'The Hindu',      url: 'https://www.thehindu.com/feeder/default.rss',                    type: 'uppsc' },
+  // Indian Express — confirmed working ✅
+  { name: 'Indian Express', url: 'https://indianexpress.com/feed/',                                type: 'ca'    },
+  // TOI India — confirmed working ✅
+  { name: 'TOI India',      url: 'https://timesofindia.indiatimes.com/rssfeeds/296589292.cms',     type: 'uppsc' },
+  // Hindustan Times — confirmed working ✅
+  { name: 'HT',             url: 'https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml', type: 'uppsc' },
 ];
 
 // ── Main scrape function ─────────────────────────────────────
