@@ -10,12 +10,16 @@ const https        = require('https');
 const bcrypt       = require('bcryptjs');
 const jwt          = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const { pool, initDB } = require('./db');
 
 const app    = express();
 const PORT   = process.env.PORT || 3000;
 const DB     = path.join(__dirname, 'db.json');
 const USERS  = path.join(__dirname, 'users.json');
 const JWT_SECRET = process.env.JWT_SECRET || 'ghatna-chakra-secret-2026';
+
+// Init PostgreSQL tables on startup
+initDB().catch(e => console.error('DB init failed:', e.message));
 
 // ── GOOGLE SHEETS CONFIG ──────────────────────────────────────
 const SHEET_ID  = '1K-XHrHic5of1qIp5vWCJUbYnDbzSVt4_7RZAN-yY_vw';
@@ -164,109 +168,192 @@ function authMiddleware(req, res, next) {
 
 // ── REGISTER ──────────────────────────────────────────────────
 app.post('/api/register', async (req, res) => {
-  const { name, email, password } = req.body || {};
+  const { name, email, password, phone } = req.body || {};
   if (!name || !email || !password) return res.status(400).json({ error: 'All fields required' });
   if (password.length < 6) return res.status(400).json({ error: 'Password min 6 characters' });
-  const data = loadUsers();
-  if (data.users.find(u => u.email.toLowerCase() === email.toLowerCase()))
-    return res.status(400).json({ error: 'Email already registered' });
-  const hash = await bcrypt.hash(password, 10);
-  const user = { id: Date.now().toString(), name: name.trim(), email: email.toLowerCase().trim(),
-                 password: hash, createdAt: new Date().toISOString(), attempts: [] };
-  data.users.push(user);
-  saveUsers(data);
-  const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
-  res.cookie('token', token, { httpOnly: true, maxAge: 30*24*60*60*1000 });
-  res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
+  try {
+    const exists = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+    if (exists.rows.length) return res.status(400).json({ error: 'Email already registered' });
+    const hash = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      `INSERT INTO users (name, email, password_hash, phone)
+       VALUES ($1, $2, $3, $4) RETURNING id, name, email, trial_expires_on, status`,
+      [name.trim(), email.toLowerCase().trim(), hash, phone || null]
+    );
+    const user = result.rows[0];
+    const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+    res.cookie('token', token, { httpOnly: true, maxAge: 30*24*60*60*1000, sameSite: 'lax' });
+    res.json({ success: true, user: { id: user.id, name: user.name, email: user.email, status: user.status, trialExpiresOn: user.trial_expires_on } });
+  } catch(e) {
+    console.error('Register error:', e.message);
+    res.status(500).json({ error: 'Registration failed, try again' });
+  }
 });
 
 // ── LOGIN ─────────────────────────────────────────────────────
 app.post('/api/login', async (req, res) => {
   const { email, password, rememberMe } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-  const data = loadUsers();
-  const user = data.users.find(u => u.email.toLowerCase() === email.toLowerCase());
-  if (!user) return res.status(400).json({ error: 'Email not registered' });
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.status(400).json({ error: 'Incorrect password' });
-  const expiresIn = rememberMe ? '30d' : '1d';
-  const maxAge    = rememberMe ? 30*24*60*60*1000 : 24*60*60*1000;
-  const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn });
-  res.cookie('token', token, { httpOnly: true, maxAge });
-  res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+    if (!result.rows.length) return res.status(400).json({ error: 'Email not registered' });
+    const user = result.rows[0];
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) return res.status(400).json({ error: 'Incorrect password' });
+    // Determine current access status
+    const now = new Date();
+    let status = user.status;
+    if (status === 'trial' && now > new Date(user.trial_expires_on)) status = 'expired';
+    if (user.subscription_paid_till && now <= new Date(user.subscription_paid_till)) status = 'active';
+    const expiresIn = rememberMe ? '30d' : '7d';
+    const maxAge    = rememberMe ? 30*24*60*60*1000 : 7*24*60*60*1000;
+    const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn });
+    res.cookie('token', token, { httpOnly: true, maxAge, sameSite: 'lax' });
+    res.json({ success: true, user: { id: user.id, name: user.name, email: user.email, status, trialExpiresOn: user.trial_expires_on, subscriptionPaidTill: user.subscription_paid_till } });
+  } catch(e) {
+    console.error('Login error:', e.message);
+    res.status(500).json({ error: 'Login failed, try again' });
+  }
 });
 
 // ── LOGOUT ────────────────────────────────────────────────────
 app.post('/api/logout', (req, res) => { res.clearCookie('token'); res.json({ success: true }); });
 
 // ── CHECK SESSION ─────────────────────────────────────────────
-app.get('/api/me', (req, res) => {
+app.get('/api/me', async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.json({ loggedIn: false });
   try {
-    const user = jwt.verify(token, JWT_SECRET);
-    res.json({ loggedIn: true, user: { id: user.id, name: user.name, email: user.email } });
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const result  = await pool.query('SELECT id, name, email, trial_expires_on, subscription_paid_till, status FROM users WHERE id = $1', [decoded.id]);
+    if (!result.rows.length) return res.json({ loggedIn: false });
+    const user = result.rows[0];
+    const now  = new Date();
+    let status = user.status;
+    if (status === 'trial' && now > new Date(user.trial_expires_on)) status = 'expired';
+    if (user.subscription_paid_till && now <= new Date(user.subscription_paid_till)) status = 'active';
+    res.json({ loggedIn: true, user: { id: user.id, name: user.name, email: user.email, status, trialExpiresOn: user.trial_expires_on, subscriptionPaidTill: user.subscription_paid_till } });
   } catch { res.json({ loggedIn: false }); }
 });
 
-// ── SAVE ATTEMPT ──────────────────────────────────────────────
-app.post('/api/saveAttempt', authMiddleware, (req, res) => {
-  const data = loadUsers();
-  const user = data.users.find(u => u.id === req.user.id);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  if (!user.attempts) user.attempts = [];
-  user.attempts.push({ ...req.body, date: new Date().toISOString() });
-  saveUsers(data);
-  res.json({ success: true });
+// ── SAVE ATTEMPT (PostgreSQL) ─────────────────────────────────
+app.post('/api/saveAttempt', authMiddleware, async (req, res) => {
+  const { qId, subject, year, result, timeTaken } = req.body || {};
+  if (!qId || !result) return res.status(400).json({ error: 'qId and result required' });
+  try {
+    await pool.query(
+      `INSERT INTO progress (user_id, q_id, subject, year, result, time_taken)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [req.user.id, qId, subject || null, year || null, result, timeTaken || 0]
+    );
+    res.json({ success: true });
+  } catch(e) {
+    console.error('saveAttempt error:', e.message);
+    res.status(500).json({ error: 'Could not save attempt' });
+  }
 });
 
-// ── MY STATS ─────────────────────────────────────────────────
-app.get('/api/myStats', authMiddleware, (req, res) => {
-  const data = loadUsers();
-  const user = data.users.find(u => u.id === req.user.id);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  const attempts = user.attempts || [];
-  const correct  = attempts.filter(a => a.result === 'correct').length;
-  const wrong    = attempts.filter(a => a.result === 'wrong').length;
-  const accuracy = (correct+wrong)>0 ? Math.round(correct/(correct+wrong)*100) : 0;
-  const today    = new Date().toDateString();
-  const yest     = new Date(Date.now()-86400000).toDateString();
-  const todayA   = attempts.filter(a => new Date(a.date).toDateString()===today);
-  const yestA    = attempts.filter(a => new Date(a.date).toDateString()===yest);
-  const tC=todayA.filter(a=>a.result==='correct').length, tW=todayA.filter(a=>a.result==='wrong').length;
-  const yC=yestA.filter(a=>a.result==='correct').length,  yW=yestA.filter(a=>a.result==='wrong').length;
-  const subjects = {};
-  attempts.forEach(a => {
-    if (!a.subject) return;
-    if (!subjects[a.subject]) subjects[a.subject]={correct:0,wrong:0,total:0};
-    subjects[a.subject].total++;
-    if (a.result==='correct') subjects[a.subject].correct++;
-    if (a.result==='wrong')   subjects[a.subject].wrong++;
-  });
-  const dailyMap = {};
-  attempts.forEach(a => {
-    const d=new Date(a.date).toDateString();
-    if (!dailyMap[d]) dailyMap[d]={correct:0,wrong:0,total:0};
-    dailyMap[d].total++;
-    if (a.result==='correct') dailyMap[d].correct++;
-    if (a.result==='wrong')   dailyMap[d].wrong++;
-  });
-  const dates=Object.keys(dailyMap).sort((a,b)=>new Date(b)-new Date(a));
-  let streak=0;
-  if (dates[0]===today||dates[0]===yest) {
-    streak=1;
-    for (let i=1;i<dates.length;i++) {
-      if ((new Date(dates[i-1])-new Date(dates[i]))/86400000<=1.5) streak++;
-      else break;
+// ── MY STATS (PostgreSQL) ─────────────────────────────────────
+app.get('/api/myStats', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT q_id, subject, year, result, time_taken, attempted_at
+       FROM progress WHERE user_id = $1 ORDER BY attempted_at ASC`,
+      [req.user.id]
+    );
+
+    // Deduplicate: keep latest result per question
+    const latestMap = {};
+    rows.forEach(r => { latestMap[r.q_id] = r; });
+    const attempts = Object.values(latestMap);
+
+    const correct = attempts.filter(a => a.result === 'correct').length;
+    const wrong   = attempts.filter(a => a.result === 'wrong').length;
+    const accuracy = (correct+wrong)>0 ? Math.round(correct/(correct+wrong)*100) : 0;
+
+    const today = new Date().toDateString();
+    const yest  = new Date(Date.now()-86400000).toDateString();
+    const todayA = rows.filter(a => new Date(a.attempted_at).toDateString()===today);
+    const yestA  = rows.filter(a => new Date(a.attempted_at).toDateString()===yest);
+    const tC=todayA.filter(a=>a.result==='correct').length, tW=todayA.filter(a=>a.result==='wrong').length;
+    const yC=yestA.filter(a=>a.result==='correct').length,  yW=yestA.filter(a=>a.result==='wrong').length;
+
+    // Subject breakdown
+    const subjects = {};
+    attempts.forEach(a => {
+      if (!a.subject) return;
+      if (!subjects[a.subject]) subjects[a.subject]={correct:0,wrong:0,total:0};
+      subjects[a.subject].total++;
+      if (a.result==='correct') subjects[a.subject].correct++;
+      if (a.result==='wrong')   subjects[a.subject].wrong++;
+    });
+
+    // Year breakdown (unique questions attempted per year)
+    const yearMap = {};
+    attempts.forEach(a => {
+      if (!a.year) return;
+      if (!yearMap[a.year]) yearMap[a.year]={correct:0,wrong:0,total:0};
+      yearMap[a.year].total++;
+      if (a.result==='correct') yearMap[a.year].correct++;
+      if (a.result==='wrong')   yearMap[a.year].wrong++;
+    });
+
+    // Daily history (all rows, not deduplicated — for heatmap)
+    const dailyMap = {};
+    rows.forEach(a => {
+      const d = new Date(a.attempted_at).toDateString();
+      if (!dailyMap[d]) dailyMap[d]={correct:0,wrong:0,total:0};
+      dailyMap[d].total++;
+      if (a.result==='correct') dailyMap[d].correct++;
+      if (a.result==='wrong')   dailyMap[d].wrong++;
+    });
+
+    // Streak
+    const dates = Object.keys(dailyMap).sort((a,b)=>new Date(b)-new Date(a));
+    let streak=0;
+    if (dates.length && (dates[0]===today||dates[0]===yest)) {
+      streak=1;
+      for (let i=1;i<dates.length;i++) {
+        if ((new Date(dates[i-1])-new Date(dates[i]))/86400000<=1.5) streak++;
+        else break;
+      }
     }
+
+    // Mock history
+    const mockRows = await pool.query(
+      `SELECT score, total, time_taken, subject_breakdown, settings, taken_at
+       FROM mock_history WHERE user_id = $1 ORDER BY taken_at DESC LIMIT 20`,
+      [req.user.id]
+    );
+
+    res.json({
+      total: attempts.length, correct, wrong, accuracy, streak,
+      projected: Math.max(0, correct - Math.round(wrong*0.33)),
+      today:     { total:todayA.length, correct:tC, wrong:tW, accuracy:(tC+tW)>0?Math.round(tC/(tC+tW)*100):0 },
+      yesterday: { total:yestA.length,  correct:yC, wrong:yW, accuracy:(yC+yW)>0?Math.round(yC/(yC+yW)*100):0 },
+      subjects, yearMap, dailyHistory: dailyMap,
+      mockHistory: mockRows.rows
+    });
+  } catch(e) {
+    console.error('myStats error:', e.message);
+    res.status(500).json({ error: 'Could not load stats' });
   }
-  res.json({
-    total: attempts.length, correct, wrong, accuracy, streak,
-    projected: Math.max(0, correct-Math.round(wrong*0.33)),
-    today:     { total:todayA.length, correct:tC, wrong:tW, accuracy:(tC+tW)>0?Math.round(tC/(tC+tW)*100):0 },
-    yesterday: { total:yestA.length,  correct:yC, wrong:yW, accuracy:(yC+yW)>0?Math.round(yC/(yC+yW)*100):0 },
-    subjects, dailyHistory: dailyMap
-  });
+});
+
+// ── SAVE MOCK RESULT ──────────────────────────────────────────
+app.post('/api/saveMockResult', authMiddleware, async (req, res) => {
+  const { score, total, timeTaken, subjectBreakdown, settings } = req.body || {};
+  try {
+    await pool.query(
+      `INSERT INTO mock_history (user_id, score, total, time_taken, subject_breakdown, settings)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [req.user.id, score||0, total||0, timeTaken||0, JSON.stringify(subjectBreakdown||{}), JSON.stringify(settings||{})]
+    );
+    res.json({ success: true });
+  } catch(e) {
+    console.error('saveMockResult error:', e.message);
+    res.status(500).json({ error: 'Could not save mock result' });
+  }
 });
 
 // ── DB HELPERS ────────────────────────────────────────────────

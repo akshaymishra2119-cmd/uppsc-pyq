@@ -1,0 +1,61 @@
+// ── PostgreSQL connection + table setup ──────────────────────
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('railway.internal')
+    ? false
+    : { rejectUnauthorized: false }
+});
+
+async function initDB() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id            SERIAL PRIMARY KEY,
+        name          TEXT NOT NULL,
+        email         TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        phone         TEXT,
+        registered_on TIMESTAMPTZ DEFAULT NOW(),
+        trial_expires_on TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '30 days'),
+        subscription_paid_till TIMESTAMPTZ,
+        status        TEXT DEFAULT 'trial'
+      );
+
+      CREATE TABLE IF NOT EXISTS progress (
+        id           SERIAL PRIMARY KEY,
+        user_id      INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        q_id         TEXT NOT NULL,
+        subject      TEXT,
+        year         TEXT,
+        result       TEXT,
+        time_taken   INTEGER DEFAULT 0,
+        attempted_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS mock_history (
+        id                 SERIAL PRIMARY KEY,
+        user_id            INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        taken_at           TIMESTAMPTZ DEFAULT NOW(),
+        score              INTEGER,
+        total              INTEGER,
+        time_taken         INTEGER,
+        subject_breakdown  JSONB,
+        settings           JSONB
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_progress_user    ON progress(user_id);
+      CREATE INDEX IF NOT EXISTS idx_progress_q_id    ON progress(q_id);
+      CREATE INDEX IF NOT EXISTS idx_mock_user        ON mock_history(user_id);
+    `);
+    console.log('✅ Database tables ready');
+  } catch (e) {
+    console.error('❌ DB init error:', e.message);
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = { pool, initDB };
