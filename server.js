@@ -1002,7 +1002,7 @@ app.get('/api/getUPPSCNews', async (req, res) => {
       const rows = pgRes.rows.map(r => ({
         headline: r.headline, detail: r.detail, date: r.date,
         category: r.category, relevance: r.relevance, source: r.source,
-        tags: r.tags, link: r.link
+        tags: r.tags, link: r.link, mcq: r.mcq || ''
       }));
       _newsCache.uppsc = rows;
       _newsCacheTime.uppsc = now;
@@ -1056,7 +1056,7 @@ app.get('/api/getCurrentAffairs', async (req, res) => {
       const rows = pgRes.rows.map(r => ({
         headline: r.headline, detail: r.detail, date: r.date,
         category: r.category, relevance: r.relevance, source: r.source,
-        tags: r.tags, link: r.link
+        tags: r.tags, link: r.link, mcq: r.mcq || ''
       }));
       _newsCache.ca = rows;
       _newsCacheTime.ca = now;
@@ -1145,20 +1145,20 @@ app.post('/api/ingestNews', async (req, res) => {
     for (const r of uppscNews) {
       if (!r.headline) continue;
       await pool.query(
-        `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link, mcq)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
         ['uppsc', r.headline, r.detail||'', r.date||formatDate(new Date()),
-         r.category||'General', r.relevance||'Medium', r.source||'', r.tags||'', r.link||'']
+         r.category||'General', r.relevance||'Medium', r.source||'', r.tags||'', r.link||'', r.mcq||'']
       );
       added++;
     }
     for (const r of currentAffairs) {
       if (!r.headline) continue;
       await pool.query(
-        `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link, mcq)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
         ['ca', r.headline, r.detail||'', r.date||formatDate(new Date()),
-         r.category||'General', r.relevance||'Medium', r.source||'', r.tags||'', r.link||'']
+         r.category||'General', r.relevance||'Medium', r.source||'', r.tags||'', r.link||'', r.mcq||'']
       );
       added++;
     }
@@ -1168,6 +1168,28 @@ app.post('/api/ingestNews', async (req, res) => {
     res.json({ success: true, added });
   } catch(e) {
     console.error('ingestNews error:', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ── API: updateNewsMcq — bulk update MCQ for existing items ──
+app.post('/api/updateNewsMcq', async (req, res) => {
+  try {
+    const items = Array.isArray(req.body) ? req.body : [];
+    let updated = 0;
+    for (const r of items) {
+      if (!r.headline || !r.mcq) continue;
+      const result = await pool.query(
+        `UPDATE news_items SET mcq=$1 WHERE headline=$2`,
+        [r.mcq, r.headline]
+      );
+      updated += result.rowCount;
+    }
+    _newsCacheTime.uppsc = 0;
+    _newsCacheTime.ca = 0;
+    res.json({ success: true, updated });
+  } catch(e) {
+    console.error('updateNewsMcq error:', e.message);
     res.status(500).json({ success: false, error: e.message });
   }
 });

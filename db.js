@@ -78,6 +78,7 @@ async function initDB() {
       )
     `);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_news_type ON news_items(type)`);
+    await client.query(`ALTER TABLE news_items ADD COLUMN IF NOT EXISTS mcq TEXT`);
     console.log('✅ Database tables ready');
   } catch (e) {
     console.error('❌ DB init error:', e.message);
