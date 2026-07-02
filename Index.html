@@ -410,6 +410,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .pyq-scard-tip-lbl{font-weight:800;margin-bottom:2px;display:flex;align-items:center;gap:4px;}
 /* card view toolbar */
 .card-view-bar{display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap;}
+.study-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 0 14px;gap:8px;}
+.study-counter{font-size:13px;font-weight:700;color:var(--text2);text-align:center;}
+.study-nav-btn{padding:8px 20px;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--bg2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;}
+.study-nav-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue);}
+.study-nav-btn[disabled]{opacity:0.35;cursor:not-allowed;}
 .card-view-btn{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);
   background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;
   display:flex;align-items:center;gap:6px;color:var(--text2);transition:.15s;}
@@ -2069,6 +2075,15 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
     </button>
   </div>
 
+  <!-- ── Start Mock Test (small) ──────────────────── -->
+  <div style="padding:4px 0 10px;">
+    <button onclick="openMockModal()" style="padding:7px 18px;background:var(--blue,#2563EB);color:#fff;
+      border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s;"
+      onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      Start Mock Test
+    </button>
+  </div>
+
   <!-- ── Main PYQ Content ─────────────────────────── -->
   <div class="pyq-main">
 
@@ -2108,7 +2123,11 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   <div id="mockTimerBar" style="display:none;" class="mock-timer-bar">
     <div class="mock-timer-val" id="mockTimerVal">60:00</div>
     <div class="mock-prog-wrap">
-      <div class="mock-prog-label" id="mockProgLabel">Q 0 of 0</div>
+      <div id="mockLiveScore" style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;font-weight:700;">
+        <span style="color:var(--teal);">✓ 0</span>
+        <span style="color:var(--red);">✗ 0</span>
+        <span style="color:var(--text2);">Left: 0</span>
+      </div>
       <div id="adaptiveDiffBadge" style="display:none;font-size:10px;font-weight:700;
         border-radius:4px;padding:2px 6px;background:var(--amber);color:#fff;"></div>
       <div class="mock-prog-track"><div class="mock-prog-fill" id="mockProgFill" style="width:0%"></div></div>
@@ -2123,10 +2142,10 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
     <div id="qResultCount" style="font-size:13px;color:var(--text2);"></div>
     <div style="display:flex;gap:8px;align-items:center;">
       <button class="card-view-btn" id="btnListView" onclick="setQView('list')" title="List view">
-        <i class="ti ti-list"></i> List
+        Practice Mode
       </button>
       <button class="card-view-btn" id="btnCardView" onclick="setQView('card')" title="Card view">
-        <i class="ti ti-cards"></i> Cards
+        Study Mode
       </button>
       <button class="card-dl-btn" id="btnDownloadCards" onclick="downloadCardsPNG()" style="display:none;" title="Download all visible cards as PNG images (Admin only)">
         <i class="ti ti-download"></i> Download Cards
@@ -5489,7 +5508,11 @@ function subjectGradient(subj) {
   return `linear-gradient(135deg,${c[0]} 0%,${c[1]} 100%)`;
 }
 
+let _studyIdx = 0;
+
 function setQView(view) {
+  if (view === 'card' && mockActive) { showToast('Exit mock test before switching to Study Mode'); return; }
+  if (view === 'list') _studyIdx = 0;
   _qView = view;
   document.getElementById('btnListView').classList.toggle('active', view === 'list');
   document.getElementById('btnCardView').classList.toggle('active', view === 'card');
@@ -5560,20 +5583,57 @@ function buildShareCard(q, idx) {
 }
 
 function renderCardView() {
+  _studyIdx = Math.max(0, Math.min(_studyIdx, Math.max(0, filteredQ.length - 1)));
+  renderStudyCard(_studyIdx);
+  setupStudySwipe();
+}
+
+function renderStudyCard(idx) {
+  _studyIdx = idx;
   const el = document.getElementById('qContainer');
-  if (!filteredQ.length) {
-    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);">No questions match these filters.</div>`;
+  const total = filteredQ.length;
+  if (!total) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);">No questions match these filters.</div>';
     return;
   }
-  el.innerHTML = `<div class="pyq-card-wrap">${filteredQ.map((q,i) => {
-    if (isLocked(q)) {
-      return `<div class="pyq-scard q-locked" data-qid="${q.id}" data-year="${q.year}" data-subject="${q.subject||''}">
-        ${lockOverlayHTML()}
-        <div style="filter:blur(5px);opacity:0.5;pointer-events:none;">${buildShareCard(q,i)}</div>
-      </div>`;
-    }
-    return buildShareCard(q,i);
-  }).join('')}</div>`;
+  const nav = `<div class="study-nav">
+    <button class="study-nav-btn" onclick="renderStudyCard(${idx-1})" ${idx===0?'disabled':''}>← Prev</button>
+    <span class="study-counter">Q ${idx+1} <span style="color:var(--text3);font-weight:400;">of</span> ${total}</span>
+    <button class="study-nav-btn" onclick="renderStudyCard(${idx+1})" ${idx===total-1?'disabled':''}>Next →</button>
+  </div>`;
+  if (!hasFullAccess() && idx >= 10) {
+    const msg = currentUser ? 'Subscribe to continue practising' : 'Register free — 30-day full access';
+    const btnTxt = currentUser ? 'Subscribe ₹100/month' : 'Register Free';
+    const btnAct = currentUser ? "openAuthModal(\'login\')" : "openAuthModal(\'register\')";
+    el.innerHTML = nav + `<div style="text-align:center;padding:40px 20px;border:1px solid var(--border);border-radius:14px;background:var(--bg2);">
+      <div style="font-size:36px;margin-bottom:12px;">🔒</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Study Mode Limit Reached</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:18px;">${msg}<br>Unlock all ${total} questions</div>
+      <button onclick="${btnAct}" class="q-lock-btn" style="font-size:13px;padding:10px 26px;">${btnTxt}</button>
+    </div>`;
+    return;
+  }
+  const q = filteredQ[idx];
+  if (isLocked(q)) {
+    el.innerHTML = nav + `<div class="pyq-scard q-locked" style="min-height:220px;">${lockOverlayHTML()}<div style="filter:blur(5px);opacity:0.5;pointer-events:none;">${buildShareCard(q,idx)}</div></div>`;
+    return;
+  }
+  el.innerHTML = nav + buildShareCard(q, idx);
+}
+
+function setupStudySwipe() {
+  const el = document.getElementById('qContainer');
+  if (!el || el._swipeReady) return;
+  el._swipeReady = true;
+  let sx = 0;
+  el.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (_qView !== 'card') return;
+    const dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) < 50) return;
+    if (dx < 0 && _studyIdx < filteredQ.length - 1) renderStudyCard(_studyIdx + 1);
+    if (dx > 0 && _studyIdx > 0) renderStudyCard(_studyIdx - 1);
+  }, { passive: true });
 }
 
 async function downloadCardsPNG() {
@@ -5892,7 +5952,7 @@ function launchMockTest() {
   updateMockTimerDisplay();
 
   // Render first Q
-  renderMockQ(0);
+  renderAllMockQs();
 }
 
 function updateMockTimerDisplay() {
@@ -5906,8 +5966,7 @@ function updateMockTimerDisplay() {
   const pct = ((mockTotalSecs - mockSecsLeft) / mockTotalSecs * 100).toFixed(1);
   const fill = document.getElementById("mockProgFill");
   if (fill) fill.style.width = pct + "%";
-  const lbl = document.getElementById("mockProgLabel");
-  if (lbl) lbl.textContent = `Q ${mockQIdx+1} of ${filteredQ.length}`;
+  updateMockLiveScore();
   const adb = document.getElementById("adaptiveDiffBadge");
   if (adb) {
     if (mockSettings.mode === "adaptive") {
@@ -5918,74 +5977,40 @@ function updateMockTimerDisplay() {
   }
 }
 
-function renderMockQ(idx) {
-  mockQIdx = idx;
+function renderAllMockQs() {
   mockQStartTime = new Date();
-  const q    = filteredQ[idx];
-  const ans  = answers[q.id];
-  const shown = ans !== undefined;
-  const diffCls = q.difficulty==="Easy" ? "badge-teal" : q.difficulty==="Medium" ? "badge-amber" : "badge-red";
-  const repeatFlag = (q.repeatsIn||"").includes(",")
-    ? `<span class="badge badge-amber"><i class="ti ti-repeat"></i> ${q.repeatsIn}</span>` : "";
-
-  const opts = ["A","B","C","D"].map((letter,i) => {
-    const text = [q.optA,q.optB,q.optC,q.optD][i];
-    let cls = "opt";
-    if (shown) {
-      if (letter === q.answer) cls += " reveal";
-      if (ans === "correct" && letter === q.answer) cls += " correct";
-      if (ans === "wrong" && answers[q.id+"_chosen"] === letter) cls += " wrong";
-    }
-    return `<button class="${cls}" ${shown?"disabled":""} onclick="mockAttemptQ('${q.id}','${letter}','${q.answer}')">
-      <strong>${letter}.</strong> ${text}</button>`;
-  }).join("");
-
-  const explanation = shown ? `
-    <div class="explanation">
-      <strong>Correct answer:</strong> ${q.answer}. ${q.answerText||""}<br><br>
-      <strong>Explanation:</strong> ${q.explanation || "No explanation available."}
-    </div>` : "";
-
-  // Progress dots
-  const dots = filteredQ.map((qd, di) => {
-    const a = answers[qd.id];
-    let cls = "mock-dot";
-    if (di === idx) cls += " current";
-    else if (a === "correct") cls += " answered";
-    else if (a === "wrong")   cls += " wrong";
-    return `<div class="${cls}" title="Q${di+1}"></div>`;
-  }).join("");
-
-  const isLast = idx === filteredQ.length - 1;
-  const navBtns = `
-    <div class="mock-nav">
-      <div class="mock-dots">${dots}</div>
-      <div style="display:flex;gap:8px;">
-        ${!shown ? `<button class="btn btn-sm" onclick="mockSkipQ('${q.id}')">
-          <i class="ti ti-forward-skip"></i> Skip</button>` : ""}
-        ${shown && !isLast ? `<button class="btn btn-primary" onclick="renderMockQ(${idx+1})">
-          Next <i class="ti ti-arrow-right"></i></button>` : ""}
-        ${shown && isLast ? `<button class="btn btn-primary" onclick="endMockTest()" style="background:var(--teal);">
-          <i class="ti ti-flag"></i> Finish</button>` : ""}
-      </div>
-    </div>`;
-
-  document.getElementById("qContainer").innerHTML = `
-    <div class="q-card" id="qcard-${q.id}">
-      <div class="q-meta">
-        <span class="q-num">Q${idx+1}.</span>
+  const el = document.getElementById('qContainer');
+  el.innerHTML = filteredQ.map((q, idx) => {
+    const opts = ['A','B','C','D'].map((letter, i) => {
+      const text = [q.optA,q.optB,q.optC,q.optD][i];
+      if (!text) return '';
+      return `<button class="opt" onclick="mockAttemptQ('${q.id}','${letter}','${q.answer}')"><strong>${letter}.</strong> ${text}</button>`;
+    }).join('');
+    return `<div class="q-card" id="mockcard-${q.id}" style="margin-bottom:14px;">
+      <div class="q-meta" style="margin-bottom:8px;">
+        <span class="q-num" style="font-weight:700;">Q${idx+1}.</span>
         ${subjectBadge(q.subject)}
-        <span class="badge ${diffCls}">${q.difficulty}</span>
-        <span class="badge" style="background:var(--bg3);color:var(--text2);">${q.year}</span>
-        ${repeatFlag}
+        <span class="badge" style="background:var(--bg3);color:var(--text2);">${q.year||''}</span>
       </div>
-      ${navBtns}
       <div class="q-text">${highlightDangerWords(q.question)}</div>
-      <div class="opts">${opts}</div>
-      ${explanation}
+      <div class="opts" id="mockopts-${q.id}">${opts}</div>
+      <div class="explanation" id="mockexp-${q.id}" style="display:none;"></div>
     </div>`;
+  }).join('');
+  updateMockLiveScore();
+}
 
-  updateMockTimerDisplay();
+function updateMockLiveScore() {
+  const correct   = Object.values(answers).filter(v => v==='correct').length;
+  const wrong     = Object.values(answers).filter(v => v==='wrong').length;
+  const attempted = correct + wrong;
+  const remaining = filteredQ.length - attempted;
+  const el = document.getElementById('mockLiveScore');
+  if (el) el.innerHTML =
+    `<span style="color:var(--teal);font-size:12px;font-weight:700;">✓ ${correct}</span>` +
+    `<span style="color:var(--red);font-size:12px;font-weight:700;">✗ ${wrong}</span>` +
+    `<span style="font-size:11px;color:var(--text2);">Done: ${attempted}</span>` +
+    `<span style="font-size:11px;color:var(--text3);">Left: ${remaining}</span>`;
 }
 
 function mockAttemptQ(qId, chosen, correct) {
@@ -5995,7 +6020,26 @@ function mockAttemptQ(qId, chosen, correct) {
   answers[qId+"_chosen"] = chosen;
   const timeTaken = mockQStartTime ? Math.round((new Date()-mockQStartTime)/1000) : 0;
   mockQTimes[qId] = timeTaken;
+  mockQStartTime  = new Date();
   const q = filteredQ.find(q => q.id === qId);
+  // Update options in-place
+  const optsEl = document.getElementById('mockopts-' + qId);
+  if (optsEl) {
+    optsEl.innerHTML = ['A','B','C','D'].map((letter, i) => {
+      const text = [q.optA,q.optB,q.optC,q.optD][i];
+      if (!text) return '';
+      let cls = 'opt';
+      if (letter === q.answer) cls += ' correct reveal';
+      else if (letter === chosen) cls += ' wrong';
+      return `<button class="${cls}" disabled><strong>${letter}.</strong> ${text}</button>`;
+    }).join('');
+  }
+  const expEl = document.getElementById('mockexp-' + qId);
+  if (expEl) {
+    expEl.style.display = 'block';
+    expEl.innerHTML = `<strong>Correct:</strong> ${q.answer}. ${q.answerText||''}` + (q.explanation ? `<br><br>${q.explanation}` : '');
+  }
+  updateMockLiveScore();
   google.script.run.saveProgress({ userName, qId, subject:q.subject, year:q.year, result, timeTaken });
   trackAttemptHeatmap();
   attemptedQIds.add(String(qId));
@@ -6033,15 +6077,13 @@ function mockAttemptQ(qId, chosen, correct) {
       }
     }
   }
-  renderMockQ(mockQIdx);
+  // score updated above
 }
 
 function mockSkipQ(qId) {
+  if (answers[qId] !== undefined) return;
   answers[qId] = "skipped";
-  const q = filteredQ.find(q => q.id === qId);
-  google.script.run.saveProgress({ userName, qId, subject:q.subject, year:q.year, result:"skipped", timeTaken:0 });
-  if (mockQIdx < filteredQ.length - 1) renderMockQ(mockQIdx + 1);
-  else endMockTest();
+  updateMockLiveScore();
 }
 
 function endMockTest() {
