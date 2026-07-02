@@ -17678,6 +17678,42 @@
       "result": "wrong",
       "timeTaken": 0,
       "date": "2026-06-29T11:02:10.838Z"
+    },
+    {
+      "userName": "Student",
+      "qId": "Q363",
+      "subject": "Geography",
+      "year": "2025",
+      "result": "correct",
+      "timeTaken": 0,
+      "date": "2026-07-02T05:23:27.068Z"
+    },
+    {
+      "userName": "Student",
+      "qId": "Q403",
+      "subject": "Environment",
+      "year": "2025",
+      "result": "correct",
+      "timeTaken": 0,
+      "date": "2026-07-02T05:23:31.453Z"
+    },
+    {
+      "userName": "Student",
+      "qId": "Q431",
+      "subject": "Modern History",
+      "year": "2025",
+      "result": "wrong",
+      "timeTaken": 0,
+      "date": "2026-07-02T05:23:35.385Z"
+    },
+    {
+      "userName": "Student",
+      "qId": "Q450",
+      "subject": "Polity",
+      "year": "2025",
+      "result": "wrong",
+      "timeTaken": 0,
+      "date": "2026-07-02T05:23:38.318Z"
     }
   ],
   "leaderboard": [
@@ -17691,9 +17727,9 @@
     {
       "name": "Student",
       "score": 0,
-      "accuracy": 18,
-      "attempted": 11,
-      "lastActive": "29 Jun 2026"
+      "accuracy": 27,
+      "attempted": 15,
+      "lastActive": "2 Jul 2026"
     }
   ],
   "uppscNews": [],

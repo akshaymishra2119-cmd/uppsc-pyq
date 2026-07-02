@@ -3122,7 +3122,9 @@ function renderClusterView() {
         <strong>${q.answer}.</strong> ${q.answerText} — ${q.explanation||''}
       </div>` : '';
       const isBk = pyqBookmarks.has(String(q.id));
-      return `<div class="q-card" id="qcard-${q.id}" style="margin-bottom:8px;">
+      const locked = isLocked(q);
+      return `<div class="q-card${locked?' q-locked':''}" id="qcard-${q.id}" style="margin-bottom:8px;">
+        ${locked ? lockOverlayHTML() : ''}
         <button class="q-bk-btn ${isBk?'bookmarked':''}" onclick="toggleQBookmark('${q.id}')" title="Bookmark">
           <i class="ti ti-bookmark${isBk?'-filled':''}"></i>
         </button>
@@ -5246,6 +5248,7 @@ function loadQuestions() {
       if (data.error) { showError(data.error); return; }
       allQuestions = data;
       filteredQ    = [...data];
+      resetLockedCache(); // recompute 50% lock on fresh question load
       // Update global YEARS and populate year dropdown dynamically from loaded data
       YEARS = [...new Set(data.map(q=>String(q.year)).filter(Boolean))].sort();
       const yrSel = document.getElementById('f-year');
@@ -5540,7 +5543,9 @@ function renderQuestions() {
           answers[q.id]==='correct'&&conf==='guess'?'<span class="conf-lucky"> 🍀 Lucky guess!</span>':''}
       </div>` : '';
 
-    return `<div class="q-card" id="qcard-${q.id}" style="margin-bottom:12px;">
+    const locked = isLocked(q);
+    return `<div class="q-card${locked?' q-locked':''}" id="qcard-${q.id}" style="margin-bottom:12px;">
+      ${locked ? lockOverlayHTML() : ''}
       <button class="q-bk-btn ${isBk?"bookmarked":""}" data-bk="${q.id}" onclick="toggleQBookmark('${q.id}')" title="${isBk?"Remove bookmark":"Bookmark this question"}">
         <i class="ti ti-bookmark${isBk?"-filled":""}"></i>
       </button>
@@ -5714,7 +5719,15 @@ function renderCardView() {
     el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);">No questions match these filters.</div>`;
     return;
   }
-  el.innerHTML = `<div class="pyq-card-wrap">${filteredQ.map((q,i) => buildShareCard(q,i)).join('')}</div>`;
+  el.innerHTML = `<div class="pyq-card-wrap">${filteredQ.map((q,i) => {
+    if (isLocked(q)) {
+      return `<div class="pyq-scard q-locked" data-qid="${q.id}" data-year="${q.year}" data-subject="${q.subject||''}">
+        ${lockOverlayHTML()}
+        <div style="filter:blur(5px);opacity:0.5;pointer-events:none;">${buildShareCard(q,i)}</div>
+      </div>`;
+    }
+    return buildShareCard(q,i);
+  }).join('')}</div>`;
 }
 
 async function downloadCardsPNG() {
@@ -9088,6 +9101,17 @@ function closeImgLightbox(e) {
 .auth-btn:hover{background:#4f46e5;}
 .auth-err{font-size:11px;color:#f87171;text-align:center;min-height:16px;margin-bottom:6px;}
 
+/* ── Question lock / blur (50% gate) ────────────────────────── */
+.q-locked{position:relative;pointer-events:none;user-select:none;}
+.q-locked > *:not(.q-lock-overlay){filter:blur(4px);opacity:0.55;}
+.q-lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;z-index:10;pointer-events:all;gap:8px;}
+.q-lock-icon{font-size:28px;line-height:1;}
+.q-lock-msg{font-size:12px;font-weight:600;color:var(--text2);text-align:center;max-width:220px;}
+.q-lock-btn{padding:7px 18px;background:#6366f1;color:#fff;border:none;border-radius:8px;
+  font-size:12px;font-weight:700;cursor:pointer;}
+.q-lock-btn:hover{background:#4f46e5;}
+
 /* Track progress login prompt */
 .tp-login-prompt{text-align:center;padding:48px 24px;}
 .tp-login-prompt h3{font-size:18px;font-weight:700;margin-bottom:8px;}
@@ -9224,6 +9248,44 @@ function updateTrialBanner() {
 function hasFullAccess() {
   if (!currentUser) return false;
   return currentUser.status === "trial" || currentUser.status === "active";
+}
+
+// Build set of locked question IDs: last 50% of each year from allQuestions
+let _lockedQIds = null;
+function getLockedQIds() {
+  if (_lockedQIds) return _lockedQIds;
+  _lockedQIds = new Set();
+  const byYear = {};
+  (allQuestions || []).forEach(q => {
+    if (!q.year) return;
+    if (!byYear[q.year]) byYear[q.year] = [];
+    byYear[q.year].push(q.id);
+  });
+  Object.values(byYear).forEach(ids => {
+    const cutoff = Math.ceil(ids.length / 2);
+    ids.slice(cutoff).forEach(id => _lockedQIds.add(String(id)));
+  });
+  return _lockedQIds;
+}
+// Reset cache when questions reload
+function resetLockedCache() { _lockedQIds = null; }
+
+function isLocked(q) {
+  if (hasFullAccess()) return false;
+  return getLockedQIds().has(String(q.id));
+}
+
+function lockOverlayHTML() {
+  const msg = currentUser
+    ? 'Your trial ended. Subscribe for ₹100/month'
+    : 'Register free for 30-day full access';
+  const btnTxt = currentUser ? 'Subscribe ₹100/month' : 'Register Free';
+  const btnAct = currentUser ? "openAuthModal('login')" : "openAuthModal('register')";
+  return `<div class="q-lock-overlay">
+    <div class="q-lock-icon">🔒</div>
+    <div class="q-lock-msg">${msg}</div>
+    <button class="q-lock-btn" onclick="${btnAct}">${btnTxt}</button>
+  </div>`;
 }
 
 // Close modal on backdrop click
