@@ -1304,6 +1304,38 @@ function _syncLeaderboard(db, userName) {
   }
 }
 
+// ── API: deleteRecentNews — delete items added in last N hours ──
+app.post('/api/deleteRecentNews', async (req, res) => {
+  const { secret, hours = 2 } = req.body || {};
+  if (secret !== 'clear-news-2026') return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const h = Math.min(parseInt(hours) || 2, 48);
+    const result = await pool.query(
+      `DELETE FROM news_items WHERE created_at > NOW() - ($1 || ' hours')::INTERVAL`,
+      [h]
+    );
+    _newsCacheTime.uppsc = 0;
+    _newsCacheTime.ca    = 0;
+    res.json({ success: true, deleted: result.rowCount });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── API: clearAllNews (admin wipe) ───────────────────────────
+app.post('/api/clearAllNews', async (req, res) => {
+  const { secret } = req.body || {};
+  if (secret !== 'clear-news-2026') return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const result = await pool.query(`DELETE FROM news_items`);
+    _newsCacheTime.uppsc = 0;
+    _newsCacheTime.ca    = 0;
+    res.json({ success: true, deleted: result.rowCount });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // -- START
 app.listen(PORT, '0.0.0.0', () => {
   console.log('UPPSC Study Portal started on port ' + PORT);
