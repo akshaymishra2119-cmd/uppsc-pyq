@@ -515,7 +515,7 @@ textarea{resize:vertical;min-height:70px;}
 .pyq-subj-tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;
   scrollbar-width:none;margin-bottom:8px;}
 .pyq-subj-tabs::-webkit-scrollbar{display:none;}
-.pyq-subj-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;
+.pyq-subj-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;
   border-radius:10px;border:1.5px solid var(--border);background:var(--bg);
   cursor:pointer;font-size:12.5px;font-weight:600;color:var(--text2);
   white-space:nowrap;transition:all .15s;flex-shrink:0;}
@@ -2025,59 +2025,47 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   <!-- ── Subject tabs ──────────────────────────────── -->
   <div class="pyq-subj-tabs" id="pyqSubjTabs">
     <button class="pyq-subj-btn active" id="pyq-subj-all" onclick="selectPyqSubject('all',this)">
-      <span class="pyq-subj-icon">📋</span>
-      <span class="pyq-subj-label">All</span>
-      <span class="pyq-subj-count" id="pyq-cnt-all">—</span>
+      All <span class="pyq-subj-count" id="pyq-cnt-all">—</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Geography" onclick="selectPyqSubject('Geography',this)">
-      <span class="pyq-subj-icon">🗺️</span>
-      <span class="pyq-subj-label">Geography</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Geography">189</span>
+      Geography <span class="pyq-subj-count" id="pyq-cnt-Geography">189</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Polity" onclick="selectPyqSubject('Polity',this)">
-      <span class="pyq-subj-icon">⚖️</span>
-      <span class="pyq-subj-label">Polity</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Polity">150</span>
+      Polity <span class="pyq-subj-count" id="pyq-cnt-Polity">150</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Modern History" onclick="selectPyqSubject('Modern History',this)">
-      <span class="pyq-subj-icon">📜</span>
-      <span class="pyq-subj-label">Modern History</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Modern History">116</span>
+      Modern History <span class="pyq-subj-count" id="pyq-cnt-Modern History">116</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Economy" onclick="selectPyqSubject('Economy',this)">
-      <span class="pyq-subj-icon">💰</span>
-      <span class="pyq-subj-label">Economy</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Economy">106</span>
+      Economy <span class="pyq-subj-count" id="pyq-cnt-Economy">106</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Current Affairs" onclick="selectPyqSubject('Current Affairs',this)">
-      <span class="pyq-subj-icon">📰</span>
-      <span class="pyq-subj-label">Current Affairs</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Current Affairs">103</span>
+      Current Affairs <span class="pyq-subj-count" id="pyq-cnt-Current Affairs">103</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Science" onclick="selectPyqSubject('Science',this)">
-      <span class="pyq-subj-icon">🔬</span>
-      <span class="pyq-subj-label">Science</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Science">102</span>
+      Science <span class="pyq-subj-count" id="pyq-cnt-Science">102</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-General Studies" onclick="selectPyqSubject('General Studies',this)">
-      <span class="pyq-subj-icon">📚</span>
-      <span class="pyq-subj-label">General Studies</span>
-      <span class="pyq-subj-count" id="pyq-cnt-General Studies">88</span>
+      General Studies <span class="pyq-subj-count" id="pyq-cnt-General Studies">88</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Environment" onclick="selectPyqSubject('Environment',this)">
-      <span class="pyq-subj-icon">🌿</span>
-      <span class="pyq-subj-label">Environment</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Environment">77</span>
+      Environment <span class="pyq-subj-count" id="pyq-cnt-Environment">77</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-Ancient History" onclick="selectPyqSubject('Ancient History',this)">
-      <span class="pyq-subj-icon">🏺</span>
-      <span class="pyq-subj-label">Ancient History</span>
-      <span class="pyq-subj-count" id="pyq-cnt-Ancient History">22</span>
+      Ancient History <span class="pyq-subj-count" id="pyq-cnt-Ancient History">22</span>
     </button>
     <button class="pyq-subj-btn" id="pyq-subj-UP Special" onclick="selectPyqSubject('UP Special',this)">
-      <span class="pyq-subj-icon">🏙️</span>
-      <span class="pyq-subj-label">UP Special</span>
-      <span class="pyq-subj-count" id="pyq-cnt-UP Special">—</span>
+      UP Special <span class="pyq-subj-count" id="pyq-cnt-UP Special">—</span>
+    </button>
+  </div>
+
+  <!-- ── Start Mock Test (small, below subject tabs) ── -->
+  <div style="padding:4px 0 10px;">
+    <button onclick="openMockModal()" style="padding:7px 18px;background:var(--blue,#2563EB);color:#fff;
+      border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;
+      letter-spacing:0.2px;transition:opacity .15s;" onmouseover="this.style.opacity='.85'"
+      onmouseout="this.style.opacity='1'">
+      Start Mock Test
     </button>
   </div>
 
@@ -2086,16 +2074,12 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 
   <!-- ── Filter bar ───────────────────────────────── -->
   <div class="filter-bar" id="filterBar">
-    <div class="srch-filter-wrap">
-      <input class="srch-filter-inp" id="f-search" type="text"
-        placeholder="🔍 Search questions…" oninput="debounceSearch()">
-      <button class="srch-filter-clear" id="f-search-clear" onclick="clearPyqSearch()">✕</button>
-    </div>
-    <select id="f-diff" onchange="applyFilters()">
+    <!-- hidden selects kept for JS compatibility -->
+    <select id="f-search" style="display:none;"></select>
+    <select id="f-diff" style="display:none;" onchange="applyFilters()">
       <option value="all">All difficulty</option>
       <option>Easy</option><option>Medium</option><option>Hard</option>
     </select>
-    <!-- hidden selects kept for JS compatibility -->
     <select id="f-subject" style="display:none;" onchange="selectPyqSubject(this.value,null)">
       <option value="all">All subjects</option>
       <option>Geography</option><option>Polity</option><option>Modern History</option>
@@ -2105,30 +2089,6 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
     <select id="f-year" style="display:none;" onchange="applyFilters()">
       <option value="all">All years</option>
     </select>
-  </div>
-
-  <!-- ── Smart Filter Chips ──────────────────────── -->
-  <div class="smart-chips" id="smartChips">
-    <span class="chip chip-amber" id="chip-repeat" onclick="toggleChip('repeat')">
-      <i class="ti ti-repeat"></i> Repeating Topics
-    </span>
-    <span class="chip chip-gold" id="chip-bookmarked" onclick="toggleChip('bookmarked')">
-      <i class="ti ti-bookmark"></i> Bookmarked
-    </span>
-  </div>
-
-  <!-- ── Start Mock Test CTA ────────────────────────── -->
-  <div style="margin:10px 0 12px;">
-    <button onclick="openMockModal()" style="width:100%;padding:13px 20px;
-      background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;
-      border:none;border-radius:12px;font-size:14px;font-weight:700;
-      cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
-      box-shadow:0 4px 14px rgba(37,99,235,0.35);letter-spacing:0.3px;
-      transition:opacity 0.15s;">
-      <i class="ti ti-clock-play" style="font-size:18px;"></i>
-      Start Mock Test
-      <span style="font-size:11px;font-weight:500;opacity:0.8;margin-left:4px;">— Simulate Exam</span>
-    </button>
   </div>
 
   <!-- ── Answer Pattern Panel ──────────────────────── -->
@@ -5325,13 +5285,13 @@ function toggleChip(type) {
     document.getElementById("chip-hipri").classList.toggle("active", filterHighPri);
   } else if (type === "repeat") {
     filterRepeating = !filterRepeating;
-    document.getElementById("chip-repeat").classList.toggle("active", filterRepeating);
+    const _cr = document.getElementById("chip-repeat"); if (_cr) _cr.classList.toggle("active", filterRepeating);
   } else if (type === "notdone") {
     filterNotDone = !filterNotDone;
-    document.getElementById("chip-notdone").classList.toggle("active", filterNotDone);
+    const _cn = document.getElementById("chip-notdone"); if (_cn) _cn.classList.toggle("active", filterNotDone);
   } else if (type === "bookmarked") {
     filterBookmarked = !filterBookmarked;
-    document.getElementById("chip-bookmarked").classList.toggle("active", filterBookmarked);
+    const _cb = document.getElementById("chip-bookmarked"); if (_cb) _cb.classList.toggle("active", filterBookmarked);
   }
   applyFilters();
 }
@@ -5916,7 +5876,7 @@ function launchMockTest() {
 
   // Hide filter bar, show timer bar
   document.getElementById("filterBar").style.display    = "none";
-  document.getElementById("smartChips").style.display   = "none";
+  const _sc1 = document.getElementById("smartChips"); if (_sc1) _sc1.style.display = "none";
   document.getElementById("mockTimerBar").style.display = "flex";
   document.getElementById("qResultCount").textContent   = "";
 
@@ -6089,7 +6049,7 @@ function endMockTest() {
   mockActive = false;
   document.getElementById("mockTimerBar").style.display = "none";
   document.getElementById("filterBar").style.display    = "flex";
-  document.getElementById("smartChips").style.display   = "flex";
+  const _sc2 = document.getElementById("smartChips"); if (_sc2) _sc2.style.display = "flex";
 
   const correct = Object.values(answers).filter(v => v==="correct").length;
   const wrong   = Object.values(answers).filter(v => v==="wrong").length;
@@ -6579,23 +6539,10 @@ function loadCA() {
 }
 
 // ── SEARCH FUNCTIONS ─────────────────────────────────────────
-function debounceSearch() {
-  const inp = document.getElementById('f-search');
-  const clearBtn = document.getElementById('f-search-clear');
-  if (clearBtn) clearBtn.style.display = inp && inp.value ? 'block' : 'none';
-  clearTimeout(_searchDebounce);
-  _searchDebounce = setTimeout(() => {
-    searchQuery = inp ? inp.value.trim() : '';
-    applyFilters();
-  }, 300);
-}
+function debounceSearch() { /* search bar removed */ }
 
 function clearPyqSearch() {
   searchQuery = '';
-  const inp = document.getElementById('f-search');
-  if (inp) inp.value = '';
-  const clearBtn = document.getElementById('f-search-clear');
-  if (clearBtn) clearBtn.style.display = 'none';
   applyFilters();
 }
 
@@ -6622,12 +6569,6 @@ function doSearchFromWidget() {
 
 function quickSearch(term) {
   searchQuery = term;
-  const filterInp = document.getElementById('f-search');
-  if (filterInp) {
-    filterInp.value = term;
-    const cb = document.getElementById('f-search-clear');
-    if (cb) cb.style.display = 'block';
-  }
   const pyqBtn = document.querySelector('.nav-btn[onclick*="pyq"]');
   showTab('pyq', pyqBtn);
   applyFilters();
