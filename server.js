@@ -996,7 +996,7 @@ app.get('/api/getUPPSCNews', async (req, res) => {
   try {
     // Pull manually-ingested news from PostgreSQL first
     const pgRes = await pool.query(
-      `SELECT * FROM news_items WHERE type='uppsc' ORDER BY created_at DESC LIMIT 200`
+      `SELECT * FROM news_items WHERE type='uppsc' ORDER BY TO_DATE(date, 'DD Mon YYYY') DESC, created_at DESC LIMIT 200`
     );
     if (pgRes.rows.length > 0) {
       const rows = pgRes.rows.map(r => ({
@@ -1050,7 +1050,7 @@ app.get('/api/getCurrentAffairs', async (req, res) => {
   try {
     // Pull manually-ingested news from PostgreSQL first
     const pgRes = await pool.query(
-      `SELECT * FROM news_items WHERE type='ca' ORDER BY created_at DESC LIMIT 200`
+      `SELECT * FROM news_items WHERE type='ca' ORDER BY TO_DATE(date, 'DD Mon YYYY') DESC, created_at DESC LIMIT 200`
     );
     if (pgRes.rows.length > 0) {
       const rows = pgRes.rows.map(r => ({
@@ -1293,5 +1293,6 @@ function _syncLeaderboard(db, userName) {
 // -- START
 app.listen(PORT, '0.0.0.0', () => {
   console.log('UPPSC Study Portal started on port ' + PORT);
-  console.log('UPPSC Study Portal started on port ' + PORT);
+});
+nsole.log('UPPSC Study Portal started on port ' + PORT);
 });
