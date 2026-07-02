@@ -416,6 +416,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   background:var(--bg2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;}
 .study-nav-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue);}
 .study-nav-btn[disabled]{opacity:0.35;cursor:not-allowed;}
+.study-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media(max-width:900px){.study-card-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.study-card-grid{grid-template-columns:1fr;}}
 /* Slideshow fullscreen overlay */
 #slideshowOverlay{display:none;position:fixed;inset:0;z-index:9999;
   background:rgba(0,0,0,0.92);flex-direction:column;align-items:center;justify-content:center;}
@@ -5610,17 +5613,18 @@ function renderCardView() {
   </div>`;
   const cards = filteredQ.map((q, idx) => {
     if (isLocked(q)) {
-      return `<div class="pyq-scard q-locked" style="min-height:180px;margin-bottom:14px;cursor:pointer;"
+      return `<div class="pyq-scard q-locked" style="min-height:180px;cursor:pointer;"
         onclick="openSlideshow(${idx})">
         ${lockOverlayHTML()}
         <div style="filter:blur(5px);opacity:0.5;pointer-events:none;">${buildShareCard(q,idx)}</div>
       </div>`;
     }
-    return `<div style="margin-bottom:14px;cursor:pointer;" onclick="openSlideshow(${idx})">
+    return `<div style="cursor:pointer;" onclick="openSlideshow(${idx})">
       ${buildShareCard(q,idx)}
     </div>`;
   }).join('');
-  el.innerHTML = ssBtn + cards;
+  const grid = `<div class="study-card-grid">${cards}</div>`;
+  el.innerHTML = ssBtn + grid;
 }
 
 // ── SLIDESHOW overlay ────────────────────────────────────────────────────────
