@@ -7974,7 +7974,7 @@ function renderUPPSCFeed(rows, dateFilter) {
   // Build sidebar
   const dayList = document.getElementById("uppscDayList");
   if (dayList) {
-    const dates = [...new Set(rows.map(r => r.date))].sort().reverse();
+    const dates = [...new Set(rows.map(r => r.date))].sort((a, b) => new Date(b) - new Date(a));
     const totalCount = rows.length;
     let sideHtml = `<button class="uppsc-day-btn${_uppscActiveDate==='all'?' uppsc-day-active':''}" onclick="selectUPPSCDay('all',this)" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--border);padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
       <div><div style="font-size:13px;font-weight:600;color:var(--text);">All</div><div style="font-size:11px;color:var(--text3);">${totalCount} stories</div></div>
@@ -8038,7 +8038,9 @@ function renderUPPSCFeed(rows, dateFilter) {
   };
 
   let html = "";
-  Object.entries(byDate).forEach(([date, items]) => {
+  const sortedDates = Object.keys(byDate).sort((a, b) => new Date(b) - new Date(a));
+  sortedDates.forEach(date => {
+    const items = byDate[date];
     html += `<div style="margin-bottom:6px;padding:6px 10px;background:var(--bg3);border-radius:6px;
       font-size:11px;font-weight:600;color:var(--text2);letter-spacing:0.5px;">
       📅 ${date} &nbsp;·&nbsp; ${items.length} items
