@@ -5874,7 +5874,7 @@ function attemptQ(qId, chosen, correct, idx) {
     localStorage.setItem("pyqSpacedRepeat", JSON.stringify(srData));
   }
   // ── Save to server for live dashboard ──────────────
-  saveAttemptToServer({ qId, subject: q.subject, year: q.year || '', result, timeTaken });
+  saveAttemptToServer({ qId, subject: q.subject, year: q.year || '', result, timeTaken, mode: 'practice' });
   renderQuestions();
   setTimeout(() => { const el = document.getElementById('qcard-'+qId); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 50);
 }
@@ -6156,7 +6156,7 @@ function mockAttemptQ(qId, chosen, correct) {
     localStorage.setItem("pyqSpacedRepeat", JSON.stringify(srData2));
   }
   // ── Save to server for live dashboard ──────────────
-  saveAttemptToServer({ qId, subject: q.subject, year: q.year || '', result, timeTaken });
+  saveAttemptToServer({ qId, subject: q.subject, year: q.year || '', result, timeTaken, mode: 'mock' });
   // Adaptive mode: upgrade difficulty after 3 consecutive correct
   if (mockSettings.mode === "adaptive") {
     const recentResults = Object.values(answers).slice(-3);
@@ -6950,210 +6950,367 @@ function toggleBookmark(headline) {
 // PROGRESS
 // ══════════════════════════════════════════════════════════════
 function loadProgress() {
-  // Show login prompt if not logged in
   const prompt = document.getElementById("progressLoginPrompt");
   const content = document.getElementById("progressContent");
   if (!currentUser) {
     if (prompt) prompt.style.display = "";
     if (content) content.style.display = "none";
-    renderHeatmap();
     return;
   }
   if (prompt) prompt.style.display = "none";
-  if (content) content.style.display = "";
-  const timeline = document.getElementById("timelineContent");
+  if (content) { content.innerHTML = ""; content.style.display = ""; }
+  const tl = document.getElementById("timelineContent");
+  if (tl) tl.innerHTML = `<div class="loading"><i class="ti ti-loader"></i>Loading your progress…</div>`;
 
-  // If timeline already rendered, just refresh data silently (don't flash loading)
-  const alreadyRendered = timeline && timeline.querySelector('.tl-outer');
-  if (!alreadyRendered) {
-    if (timeline) timeline.innerHTML = `<div class="loading"><i class="ti ti-loader"></i>Loading timeline...</div>`;
-    content.innerHTML = `<div class="loading"><i class="ti ti-loader"></i>Loading your progress...</div>`;
-  }
-  renderHeatmap();
-
-  // Load server-side stats (real tracked data) — skip Google script when logged in
-  fetch('/api/myStats')
+  fetch('/api/trackProgress')
     .then(r => r.json())
     .then(data => {
-      if (!data.error) {
-        renderServerProgress(data);
-        // Only fall back to Google Apps Script if no server data
+      if (data.error) {
+        if (tl) tl.innerHTML = `<div style="color:var(--red);padding:20px;">${data.error}</div>`;
         return;
       }
-      // No server data — use Google Apps Script fallback
-      google.script.run
-        .withSuccessHandler(prog => renderProgress(prog))
-        .withFailureHandler(() => {})
-        .getUserProgress(userName);
+      renderServerProgress(data);
     })
-    .catch(() => {
-      // Fetch failed — use Google Apps Script fallback
-      google.script.run
-        .withSuccessHandler(prog => renderProgress(prog))
-        .withFailureHandler(() => {})
-        .getUserProgress(userName);
+    .catch(e => {
+      if (tl) tl.innerHTML = `<div style="color:var(--red);padding:20px;">Could not load progress.</div>`;
     });
 }
 
 function renderServerProgress(data) {
-  const el = document.getElementById("timelineContent");
-  const todayData     = data.today     || {};
-  const yesterdayData = data.yesterday || {};
-
-  // Build day-by-day lookup for current month
-  const hist = data.dailyHistory || {};
-  const now  = new Date();
-  const yr   = now.getFullYear();
-  const mo   = now.getMonth(); // 0-indexed
-  const daysInMonth = new Date(yr, mo+1, 0).getDate();
-  const todayDay    = now.getDate();
-  const monthName   = now.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
-
-  // Map "Mon Jun 24 2026" style keys → day number
-  const dayMap = {};
-  Object.keys(hist).forEach(k => {
-    const d = new Date(k);
-    if (d.getFullYear()===yr && d.getMonth()===mo) {
-      dayMap[d.getDate()] = hist[k];
-    }
-  });
-
-  const maxT = Object.values(dayMap).reduce((m,d)=>Math.max(m,d.total||0),1);
-
-  // Build day columns HTML
-  let colsHTML = '';
-  for (let day=1; day<=daysInMonth; day++) {
-    const d    = dayMap[day];
-    const isToday = day === todayDay;
-    const hasDot  = !!d;
-
-    let barsHTML = '';
-    if (d && d.total > 0) {
-      const scale  = 72 / maxT;
-      const wH     = Math.max(3, Math.round((d.wrong||0)  * scale));
-      const cH     = Math.max(3, Math.round((d.correct||0)* scale));
-      const tH     = Math.max(0, Math.round(d.total*scale) - cH - wH);
-      barsHTML = `
-        <div style="height:${tH}px;width:100%;background:#B5D4F4;border-radius:2px 2px 0 0;min-height:${tH>0?2:0}px;"></div>
-        <div style="height:${cH}px;width:100%;background:#1D9E75;min-height:2px;"></div>
-        <div style="height:${wH}px;width:100%;background:#E24B4A;min-height:2px;border-radius:0 0 2px 2px;"></div>`;
-    }
-
-    const dotColor = hasDot ? '#378ADD' : 'var(--border,#ddd)';
-    const numColor = isToday ? '#378ADD' : 'var(--text3,#aaa)';
-    const numWeight= isToday ? '700' : '400';
-    const cursor   = hasDot ? 'pointer' : 'default';
-    const onclick  = hasDot
-      ? `onclick="tlSelectDay(${day})" `
-      : '';
-
-    colsHTML += `
-      <div class="tl-day-col" id="tlDay${day}" ${onclick}style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:${cursor};">
-        <div style="display:flex;flex-direction:column;justify-content:flex-end;height:80px;width:100%;gap:1px;">
-          ${barsHTML}
-        </div>
-        <div style="width:6px;height:6px;border-radius:50%;background:${dotColor};"></div>
-        <div style="font-size:9px;color:${numColor};font-weight:${numWeight};">${day}</div>
-      </div>`;
-  }
-
-  el.innerHTML = `
-    <style>
-      .sp-summary-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
-      @media(max-width:600px){.sp-summary-4{grid-template-columns:repeat(2,1fr);}}
-      .sp-card{background:var(--bg2,#f5f5f5);border:1px solid var(--border,#e0e0e0);border-radius:12px;padding:12px 14px;text-align:center;}
-      .sp-card-lbl{font-size:10px;color:var(--text3,#888);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
-      .sp-card-val{font-size:24px;font-weight:800;}
-      .sp-card-sub{font-size:11px;color:var(--text3,#888);margin-top:2px;}
-      .tl-outer{border:1px solid var(--border,#e0e0e0);border-radius:14px;padding:16px;background:var(--bg,#fff);margin-bottom:14px;}
-      .tl-scroll{overflow-x:auto;padding-bottom:4px;}
-      .tl-day-col:hover{opacity:.8;}
-      .tl-detail{background:var(--bg2,#f5f5f5);border-radius:10px;padding:12px 16px;margin-top:14px;
-        display:flex;align-items:center;gap:20px;flex-wrap:wrap;min-height:48px;}
-      .tl-leg{display:flex;gap:14px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border,#e0e0e0);}
-      .tl-leg span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3,#888);}
-      .tl-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;}
-      .sp-sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:4px;}
-      .sp-sub-c{background:var(--bg2,#f5f5f5);border:1px solid var(--border,#e0e0e0);border-radius:10px;padding:10px 12px;}
-    </style>
-
-    <!-- 4 stat cards -->
-    <div class="sp-summary-4">
-      <div class="sp-card">
-        <div class="sp-card-lbl">Today</div>
-        <div class="sp-card-val" style="color:#378ADD;">${todayData.total||0}</div>
-        <div class="sp-card-sub">&#10003;${todayData.correct||0} &nbsp;&#10007;${todayData.wrong||0} &nbsp;${todayData.accuracy||0}%</div>
-      </div>
-      <div class="sp-card">
-        <div class="sp-card-lbl">Yesterday</div>
-        <div class="sp-card-val" style="color:#7F77DD;">${yesterdayData.total||0}</div>
-        <div class="sp-card-sub">&#10003;${yesterdayData.correct||0} &nbsp;&#10007;${yesterdayData.wrong||0} &nbsp;${yesterdayData.accuracy||0}%</div>
-      </div>
-      <div class="sp-card">
-        <div class="sp-card-lbl">All-time</div>
-        <div class="sp-card-val" style="color:#1D9E75;">${data.total||0}</div>
-        <div class="sp-card-sub">&#10003;${data.correct||0} &nbsp;&#10007;${data.wrong||0} &nbsp;${data.accuracy||0}%</div>
-      </div>
-      <div class="sp-card">
-        <div class="sp-card-lbl">Streak &#128293;</div>
-        <div class="sp-card-val" style="color:#D85A30;">${data.streak||0}</div>
-        <div class="sp-card-sub">day${(data.streak||0)!==1?'s':''} active</div>
-      </div>
-    </div>
-
-    <!-- Calendar timeline -->
-    <div class="tl-outer">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-size:14px;font-weight:600;">${monthName}</div>
-        <div style="font-size:11px;color:var(--text3,#888);">Click a day to see details</div>
-      </div>
-
-      <div class="tl-scroll">
-        <div style="display:grid;grid-template-columns:repeat(${daysInMonth},1fr);gap:3px;min-width:${Math.max(520,daysInMonth*20)}px;">
-          ${colsHTML}
-        </div>
-      </div>
-
-      <div class="tl-leg">
-        <span><i style="background:#B5D4F4;"></i>Attempted</span>
-        <span><i style="background:#1D9E75;"></i>Correct</span>
-        <span><i style="background:#E24B4A;"></i>Wrong</span>
-      </div>
-
-      <div class="tl-detail" id="tlDetailBox">
-        <span style="font-size:12px;color:var(--text3,#888);">&#8592; Click any active day bar above</span>
-      </div>
-    </div>
-
-    <!-- Subject breakdown -->
-    ${Object.keys(data.subjects||{}).length > 0 ? `
-    <div style="border:1px solid var(--border,#e0e0e0);border-radius:14px;padding:16px;background:var(--bg,#fff);margin-bottom:14px;">
-      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Subject breakdown</div>
-      <div class="sp-sub-grid">
-        ${Object.entries(data.subjects).map(([sub,d])=>{
-          const acc=(d.correct+d.wrong)>0?Math.round(d.correct/(d.correct+d.wrong)*100):0;
-          const col=acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
-          return `<div class="sp-sub-c">
-            <div style="font-size:11px;font-weight:600;margin-bottom:4px;color:var(--text2,#555);">${sub}</div>
-            <div style="font-size:18px;font-weight:800;color:${col};">${acc}%</div>
-            <div style="font-size:11px;color:var(--text3,#888);">&#10003;${d.correct} &nbsp;&#10007;${d.wrong} &nbsp;of ${d.total}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>` : ''}
-  `;
-
-  // Store dayMap for click handler
-  window._tlDayMap = dayMap;
-
-  // Append local analytics below the timeline (into progressContent)
+  const tl  = document.getElementById("timelineContent");
   const pcEl = document.getElementById("progressContent");
-  if (pcEl) {
-    pcEl.innerHTML = '';
-    renderWeakTopicHeatmap();
-    renderSpacedRepeatDue();
-    renderDailyActivityLog();
+  if (pcEl) pcEl.innerHTML = "";
+
+  const s   = data.summary    || {};
+  const m   = data.modes      || {};
+  const ym  = data.yearMap    || {};
+  const rs  = data.repeatStats|| {};
+  const mh  = data.mockHistory|| [];
+  const wb  = data.wrongBank  || [];
+  const st  = data.subjectTrend || {};
+  const cal = data.calendarData || {};
+
+  /* ── readiness ring colour ── */
+  const rCol = s.readiness >= 70 ? '#1D9E75' : s.readiness >= 40 ? '#EF9F27' : '#E24B4A';
+  const rRing = s.readiness || 0;
+
+  /* ── days-to-exam pill ── */
+  const examPill = s.daysToExam !== null && s.daysToExam !== undefined
+    ? `<span style="background:#378ADD22;color:#378ADD;border-radius:20px;
+         padding:3px 10px;font-size:12px;font-weight:600;">
+         📅 ${s.daysToExam} days to exam</span>`
+    : `<span onclick="openExamDateModal()"
+         style="background:var(--bg2);border:1px dashed var(--border);border-radius:20px;
+         padding:3px 10px;font-size:12px;color:var(--text3);cursor:pointer;">
+         + Set exam date</span>`;
+
+  /* ── SECTION 1: Summary Strip ── */
+  const sec1 = `
+  <div class="tp-section">
+    <div class="tp-sec-hdr">📊 Overview</div>
+    <div class="tp-sumrow">
+      <!-- Readiness ring -->
+      <div class="tp-ring-wrap">
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r="36" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle cx="44" cy="44" r="36" fill="none" stroke="${rCol}" stroke-width="8"
+            stroke-dasharray="${Math.round(2*3.14159*36*rRing/100)} 999"
+            stroke-linecap="round" transform="rotate(-90 44 44)"/>
+        </svg>
+        <div class="tp-ring-label">
+          <div style="font-size:18px;font-weight:800;color:${rCol};">${rRing}</div>
+          <div style="font-size:9px;color:var(--text3);font-weight:600;">READINESS</div>
+        </div>
+      </div>
+      <!-- Stats pills -->
+      <div class="tp-sum-pills">
+        <div class="tp-pill">
+          <div class="tp-pill-v" style="color:#1D9E75;">${s.totalDone||0}</div>
+          <div class="tp-pill-l">Questions done</div>
+        </div>
+        <div class="tp-pill">
+          <div class="tp-pill-v" style="color:#1D9E75;">${s.accuracy||0}%</div>
+          <div class="tp-pill-l">Accuracy</div>
+        </div>
+        <div class="tp-pill">
+          <div class="tp-pill-v" style="color:#D85A30;">${s.streak||0}</div>
+          <div class="tp-pill-l">Day streak 🔥</div>
+        </div>
+        <div class="tp-pill">
+          <div class="tp-pill-v" style="color:#378ADD;">${s.correct||0}✓ ${s.wrong||0}✗</div>
+          <div class="tp-pill-l">Correct / Wrong</div>
+        </div>
+      </div>
+      ${examPill}
+    </div>
+  </div>`;
+
+  /* ── SECTION 2: Mode Bifurcation ── */
+  function modeCard(key, label, emoji, col) {
+    const d = m[key] || {};
+    return `<div class="tp-mode-card" style="border-top:3px solid ${col};">
+      <div class="tp-mode-hdr">${emoji} ${label}</div>
+      <div class="tp-mode-val" style="color:${col};">${d.done||0}</div>
+      <div class="tp-mode-sub">questions</div>
+      <div class="tp-mode-row">✓${d.correct||0} &nbsp; ✗${d.wrong||0}</div>
+      <div class="tp-mode-acc" style="color:${col};">${d.accuracy||0}% accuracy</div>
+      ${key==='mock'?`<div class="tp-mode-sub">${d.mockCount||0} mock tests taken</div>`:''}
+    </div>`;
   }
+  const sec2 = `
+  <div class="tp-section">
+    <div class="tp-sec-hdr">🎯 Mode-wise Practice</div>
+    <div class="tp-mode-grid">
+      ${modeCard('practice','Casual Practice','📖','var(--teal)')}
+      ${modeCard('quiz','Daily Quiz','📝','var(--purple)')}
+      ${modeCard('mock','Mock Tests','🏆','var(--amber)')}
+    </div>
+  </div>`;
+
+  /* ── SECTION 3: Year-wise PYQ Coverage ── */
+  const yearRows = Object.keys(ym).sort((a,b)=>b-a).map(yr => {
+    const d = ym[yr];
+    const acc = (d.correct+d.wrong)>0 ? Math.round(d.correct/(d.correct+d.wrong)*100):0;
+    const col = acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
+    return `<tr class="tp-yr-row" onclick="tpExpandYear('${yr}')">
+      <td style="font-weight:600;">${yr}</td>
+      <td>${d.done||0}</td>
+      <td style="color:#1D9E75;">${d.correct||0}</td>
+      <td style="color:#E24B4A;">${d.wrong||0}</td>
+      <td style="font-weight:700;color:${col};">${acc}%</td>
+      <td style="color:var(--text3);font-size:12px;">▼ view</td>
+    </tr>`;
+  }).join('');
+  const sec3 = `
+  <div class="tp-section">
+    <div class="tp-sec-hdr">📅 Year-wise PYQ Coverage</div>
+    ${yearRows ? `
+    <div style="overflow-x:auto;">
+      <table class="tp-table">
+        <thead><tr><th>Year</th><th>Done</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th></th></tr></thead>
+        <tbody>${yearRows}</tbody>
+      </table>
+    </div>
+    <div id="tpYearDetail" style="margin-top:8px;"></div>`
+    : `<div class="tp-empty">No year-wise data yet. Start practising!</div>`}
+  </div>`;
+
+  /* ── SECTION 4: Repeat Questions Mastery ── */
+  const sec4 = `
+  <div class="tp-section">
+    <div class="tp-sec-hdr">🔁 Repeat Questions Mastery
+      <span class="tp-badge">${rs.total||0} high-priority</span>
+    </div>
+    <div class="tp-mode-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="tp-mode-card" style="border-top:3px solid #7F77DD;">
+        <div class="tp-mode-hdr">Total repeats</div>
+        <div class="tp-mode-val" style="color:#7F77DD;">${rs.total||0}</div>
+        <div class="tp-mode-sub">questions in 2+ years</div>
+      </div>
+      <div class="tp-mode-card" style="border-top:3px solid #1D9E75;">
+        <div class="tp-mode-hdr">Mastered</div>
+        <div class="tp-mode-val" style="color:#1D9E75;">${rs.correct||0}</div>
+        <div class="tp-mode-sub">last attempt correct</div>
+      </div>
+      <div class="tp-mode-card" style="border-top:3px solid #E24B4A;">
+        <div class="tp-mode-hdr">Need work</div>
+        <div class="tp-mode-val" style="color:#E24B4A;">${rs.wrong||0}</div>
+        <div class="tp-mode-sub">last attempt wrong</div>
+      </div>
+    </div>
+    ${(data.repeatQIds||[]).length ? `
+    <div style="margin-top:10px;font-size:12px;color:var(--text3);margin-bottom:6px;">
+      Top repeat questions (appeared in multiple years):
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      ${(data.repeatQIds||[]).slice(0,20).map(r=>{
+        const col = r.lastResult==='correct'?'#1D9E75':r.lastResult==='wrong'?'#E24B4A':'var(--border)';
+        return `<span style="background:var(--bg2);border:1px solid ${col};border-radius:6px;
+          padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;"
+          onclick="openDrillModal('${r.qId}')" title="Years: ${r.years.join(', ')}">
+          ${r.qId} <span style="color:${col};">(${r.years.length}×)</span>
+        </span>`;
+      }).join('')}
+    </div>` : ''}
+  </div>`;
+
+  /* ── SECTION 5: Mock Test History ── */
+  const mockRows = mh.length ? mh.slice(0,10).map((mk,i) => {
+    const d = new Date(mk.takenAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
+    const col = mk.pct>=70?'#1D9E75':mk.pct>=50?'#BA7517':'#E24B4A';
+    return `<div class="tp-mock-row">
+      <div style="font-size:11px;color:var(--text3);">${d}</div>
+      <div style="font-weight:700;font-size:15px;color:${col};">${mk.score}/${mk.total}</div>
+      <div style="font-size:12px;color:${col};">${mk.pct}%</div>
+      <div class="tp-mock-bar-wrap">
+        <div style="height:6px;border-radius:3px;width:${mk.pct}%;background:${col};"></div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="tp-empty">No mock tests taken yet.</div>`;
+  const sec5 = `
+  <div class="tp-section">
+    <div class="tp-sec-hdr">🏆 Mock Test History</div>
+    <div class="tp-mock-list">${mockRows}</div>
+  </div>`;
+
+  /* ── SECTION 6: Wrong Question Bank ── */
+  const wbHTML = wb.length ? `
+  <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">${wb.length} questions to revise:</div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+    ${wb.slice(0,30).map(w=>`
+      <span style="background:#E24B4A18;border:1px solid #E24B4A44;border-radius:6px;
+        padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text1);"
+        onclick="openDrillModal('${w.qId}')"
+        title="${w.subject||''} ${w.year||''}">
+        ${w.qId}${w.year?` <span style="color:var(--text3);font-weight:400;">(${w.year})</span>`:''}
+      </span>`).join('')}
+    ${wb.length>30?`<span style="font-size:11px;color:var(--text3);align-self:center;">+${wb.length-30} more…</span>`:''}
+  </div>` : `<div class="tp-empty">No wrong answers yet — great job! 🎉</div>`;
+  const sec6 = `
+  <div class="tp-section">
+    <div class="tp-sec-hdr">❌ Wrong Question Bank
+      <span class="tp-badge" style="background:#E24B4A22;color:#E24B4A;">${wb.length} to revise</span>
+    </div>
+    ${wbHTML}
+  </div>`;
+
+  /* ── SECTION 7: Subject Trend ── */
+  const subOrder = ["Polity","Modern History","Ancient History","Geography",
+    "Economy","Science","Environment","Current Affairs","UP Special"];
+  const trendRows = subOrder.filter(sub => st[sub] && (st[sub].curr.t > 0 || st[sub].prev.t > 0)).map(sub => {
+    const d = st[sub];
+    const acc = d.currAcc !== null ? d.currAcc : 0;
+    const col = acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
+    const arrow = d.trend === null ? '—'
+      : d.trend > 0 ? `<span style="color:#1D9E75;">↑ +${d.trend}%</span>`
+      : d.trend < 0 ? `<span style="color:#E24B4A;">↓ ${d.trend}%</span>`
+      : `<span style="color:var(--text3);">→ 0%</span>`;
+    const barW = Math.min(100, acc);
+    return `<div class="tp-trend-row">
+      <div class="tp-trend-sub">${sub}</div>
+      <div class="tp-trend-bar-wrap">
+        <div style="height:8px;border-radius:4px;width:${barW}%;background:${col};transition:width .4s;"></div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:${col};min-width:34px;text-align:right;">${acc}%</div>
+      <div style="font-size:11px;min-width:60px;text-align:right;">${arrow}</div>
+    </div>`;
+  }).join('');
+  const sec7 = `
+  <div class="tp-section">
+    <div class="tp-sec-hdr">📈 Subject Accuracy Trend
+      <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">vs last 14 days</span>
+    </div>
+    ${trendRows || `<div class="tp-empty">Practice more questions to see trends.</div>`}
+  </div>`;
+
+  /* ── SECTION 8: Activity Calendar (12-month heatmap) ── */
+  const calCells = (() => {
+    const today = new Date();
+    const cells = [];
+    for (let i = 364; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0,10);
+      const v = cal[key];
+      const total = v ? v.total : 0;
+      const acc   = v && (v.correct+v.wrong)>0 ? Math.round(v.correct/(v.correct+v.wrong)*100) : 0;
+      const intensity = total === 0 ? 0 : total <= 5 ? 1 : total <= 15 ? 2 : total <= 30 ? 3 : 4;
+      const bg = ['var(--bg2)','#B5E8D5','#5CC8A0','#1D9E75','#166B4F'][intensity];
+      cells.push(`<div class="tp-cal-cell" style="background:${bg};"
+        title="${key}: ${total} questions${total>0?' | acc '+acc+'%':''}"></div>`);
+    }
+    return cells.join('');
+  })();
+  const sec8 = `
+  <div class="tp-section">
+    <div class="tp-sec-hdr">🗓️ Activity Calendar
+      <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">last 365 days</span>
+    </div>
+    <div class="tp-cal-grid">${calCells}</div>
+    <div style="display:flex;gap:8px;margin-top:8px;align-items:center;font-size:11px;color:var(--text3);">
+      <span>Less</span>
+      ${['var(--bg2)','#B5E8D5','#5CC8A0','#1D9E75','#166B4F'].map(c=>
+        `<div style="width:12px;height:12px;border-radius:2px;background:${c};"></div>`).join('')}
+      <span>More</span>
+    </div>
+  </div>`;
+
+  /* ── CSS ── */
+  const css = `<style>
+  .tp-section{background:var(--bg);border:1px solid var(--border);border-radius:14px;
+    padding:16px 18px;margin-bottom:14px;}
+  .tp-sec-hdr{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .tp-badge{font-size:11px;font-weight:600;background:var(--teal-bg,#e0f7ef);color:var(--teal);
+    border-radius:20px;padding:2px 8px;}
+  .tp-sumrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .tp-ring-wrap{position:relative;width:88px;height:88px;flex-shrink:0;}
+  .tp-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;}
+  .tp-sum-pills{display:flex;gap:10px;flex-wrap:wrap;}
+  .tp-pill{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+    padding:8px 14px;text-align:center;min-width:80px;}
+  .tp-pill-v{font-size:17px;font-weight:800;}
+  .tp-pill-l{font-size:10px;color:var(--text3);margin-top:2px;font-weight:600;}
+  .tp-mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px;}
+  @media(max-width:560px){.tp-mode-grid{grid-template-columns:1fr;}}
+  .tp-mode-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+    padding:14px;text-align:center;}
+  .tp-mode-hdr{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;}
+  .tp-mode-val{font-size:28px;font-weight:800;}
+  .tp-mode-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+  .tp-mode-row{font-size:12px;margin-top:4px;}
+  .tp-mode-acc{font-size:13px;font-weight:700;margin-top:4px;}
+  .tp-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .tp-table th{font-size:11px;font-weight:600;color:var(--text3);text-align:left;
+    padding:6px 10px;border-bottom:1px solid var(--border);}
+  .tp-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+  .tp-yr-row{cursor:pointer;} .tp-yr-row:hover{background:var(--bg2);}
+  .tp-mock-list{display:flex;flex-direction:column;gap:8px;}
+  .tp-mock-row{display:grid;grid-template-columns:80px 80px 50px 1fr;gap:10px;
+    align-items:center;background:var(--bg2);border-radius:8px;padding:8px 12px;}
+  .tp-mock-bar-wrap{background:var(--border);border-radius:3px;height:6px;overflow:hidden;}
+  .tp-trend-row{display:grid;grid-template-columns:130px 1fr 44px 70px;
+    gap:8px;align-items:center;margin-bottom:8px;}
+  .tp-trend-sub{font-size:12px;font-weight:500;}
+  .tp-trend-bar-wrap{background:var(--border);border-radius:4px;height:8px;overflow:hidden;}
+  .tp-cal-grid{display:grid;grid-template-columns:repeat(52,1fr);gap:3px;}
+  @media(max-width:600px){.tp-cal-grid{grid-template-columns:repeat(26,1fr);}}
+  .tp-cal-cell{aspect-ratio:1;border-radius:2px;}
+  .tp-empty{font-size:12px;color:var(--text3);padding:8px 0;}
+  </style>`;
+
+  tl.innerHTML = css + sec1 + sec2 + sec3 + sec4 + sec5 + sec6 + sec7 + sec8;
+  window._tpData = data;
+}
+
+function tpExpandYear(yr) {
+  const d = (window._tpData||{}).yearMap || {};
+  const yData = d[yr] || {};
+  const el = document.getElementById('tpYearDetail');
+  if (!el) return;
+  if (el.dataset.yr === yr) { el.innerHTML = ''; el.dataset.yr = ''; return; }
+  el.dataset.yr = yr;
+  const acc = (yData.correct+yData.wrong)>0 ? Math.round(yData.correct/(yData.correct+yData.wrong)*100):0;
+  const col = acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
+  el.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+    padding:12px 16px;font-size:13px;">
+    <b>${yr} details</b> — ${yData.done||0} done &nbsp;
+    <span style="color:#1D9E75;">✓${yData.correct||0}</span> &nbsp;
+    <span style="color:#E24B4A;">✗${yData.wrong||0}</span> &nbsp;
+    <span style="color:${col};font-weight:700;">${acc}% accuracy</span>
+    <div style="margin-top:8px;font-size:11px;color:var(--text3);">
+      Click any question card in Practice Mode filtered to ${yr} to attempt these questions.
+    </div>
+  </div>`;
+}
+
+function openExamDateModal() {
+  const d = prompt('Enter your exam date (YYYY-MM-DD):');
+  if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+  fetch('/api/setExamDate', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ examDate: d })
+  }).then(r=>r.json()).then(()=>{ showToast('Exam date saved!'); loadProgress(); });
 }
 
 function tlSelectDay(day) {
@@ -8059,7 +8216,7 @@ function attemptDQ(qId, chosen, correct) {
   dqAnswers[qId] = result;
   dqAnswers[qId + "_chosen"] = chosen;
   const q = dqQuestions.find(q => q.id === qId);
-  if (q) saveAttemptToServer({ qId, subject: q.subject || "Daily Quiz", year: q.year || "", result, timeTaken: 0 });
+  if (q) saveAttemptToServer({ qId, subject: q.subject || "Daily Quiz", year: q.year || "", result, timeTaken: 0, mode: 'quiz' });
   renderDQ();
 }
 

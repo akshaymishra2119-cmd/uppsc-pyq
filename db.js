@@ -55,6 +55,12 @@ async function initDB() {
     // Add OTP columns if not yet present (safe on existing DB)
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_otp VARCHAR(6)`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_otp_expires TIMESTAMPTZ`);
+    // Add exam_date for countdown
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS exam_date DATE`);
+    // Add mode to progress for bifurcation (practice / quiz / mock)
+    await client.query(`ALTER TABLE progress ADD COLUMN IF NOT EXISTS mode TEXT DEFAULT 'practice'`);
+    // Add quiz_id to progress for daily quiz grouping
+    await client.query(`ALTER TABLE progress ADD COLUMN IF NOT EXISTS quiz_id TEXT`);
     console.log('✅ Database tables ready');
   } catch (e) {
     console.error('❌ DB init error:', e.message);

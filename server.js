@@ -301,13 +301,14 @@ app.get('/api/me', async (req, res) => {
 
 // ── SAVE ATTEMPT (PostgreSQL) ─────────────────────────────────
 app.post('/api/saveAttempt', authMiddleware, async (req, res) => {
-  const { qId, subject, year, result, timeTaken } = req.body || {};
+  const { qId, subject, year, result, timeTaken, mode, quizId } = req.body || {};
   if (!qId || !result) return res.status(400).json({ error: 'qId and result required' });
   try {
     await pool.query(
-      `INSERT INTO progress (user_id, q_id, subject, year, result, time_taken)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [req.user.id, qId, subject || null, year || null, result, timeTaken || 0]
+      `INSERT INTO progress (user_id, q_id, subject, year, result, time_taken, mode, quiz_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [req.user.id, qId, subject || null, year || null, result, timeTaken || 0,
+       mode || 'practice', quizId || null]
     );
     res.json({ success: true });
   } catch(e) {
@@ -416,6 +417,190 @@ app.post('/api/saveMockResult', authMiddleware, async (req, res) => {
   } catch(e) {
     console.error('saveMockResult error:', e.message);
     res.status(500).json({ error: 'Could not save mock result' });
+  }
+});
+
+// ── TRACK PROGRESS (comprehensive 8-section) ──────────────────
+app.get('/api/trackProgress', authMiddleware, async (req, res) => {
+  try {
+    const uid = req.user.id;
+
+    // All raw attempts + user info
+    const [progRows, userRow, mockRows] = await Promise.all([
+      pool.query(
+        `SELECT q_id, subject, year, result, time_taken, mode, quiz_id, attempted_at
+         FROM progress WHERE user_id = $1 ORDER BY attempted_at ASC`, [uid]),
+      pool.query(`SELECT exam_date, name FROM users WHERE id = $1`, [uid]),
+      pool.query(
+        `SELECT id, score, total, time_taken, subject_breakdown, settings, taken_at
+         FROM mock_history WHERE user_id = $1 ORDER BY taken_at DESC`, [uid])
+    ]);
+
+    const allRows = progRows.rows;
+    const user    = userRow.rows[0] || {};
+
+    // ── Deduplicate per mode: keep latest per (q_id, mode) ──
+    const latestByModeKey = {};
+    allRows.forEach(r => {
+      const key = `${r.q_id}__${r.mode || 'practice'}`;
+      latestByModeKey[key] = r;
+    });
+    const deduped = Object.values(latestByModeKey);
+
+    // ── SECTION 1: Summary strip ───────────────────────────────
+    const totalDone = new Set(deduped.map(r => r.q_id)).size;
+    const correct   = deduped.filter(r => r.result === 'correct').length;
+    const wrong     = deduped.filter(r => r.result === 'wrong').length;
+    const accuracy  = (correct + wrong) > 0 ? Math.round(correct / (correct + wrong) * 100) : 0;
+
+    // Streak
+    const today = new Date().toDateString();
+    const yest  = new Date(Date.now() - 86400000).toDateString();
+    const daySet = {};
+    allRows.forEach(r => { daySet[new Date(r.attempted_at).toDateString()] = true; });
+    const dayKeys = Object.keys(daySet).sort((a,b) => new Date(b) - new Date(a));
+    let streak = 0;
+    if (dayKeys.length && (dayKeys[0] === today || dayKeys[0] === yest)) {
+      streak = 1;
+      for (let i = 1; i < dayKeys.length; i++) {
+        if ((new Date(dayKeys[i-1]) - new Date(dayKeys[i])) / 86400000 <= 1.5) streak++;
+        else break;
+      }
+    }
+
+    // Days to exam
+    let daysToExam = null;
+    if (user.exam_date) {
+      const diff = new Date(user.exam_date) - new Date();
+      daysToExam = Math.max(0, Math.ceil(diff / 86400000));
+    }
+
+    // Exam readiness score (0-100): weighted formula
+    const readiness = Math.min(100, Math.round(
+      (accuracy * 0.4) + (Math.min(streak, 30) / 30 * 30) + (Math.min(totalDone, 500) / 500 * 30)
+    ));
+
+    // ── SECTION 2: Mode bifurcation ───────────────────────────
+    const modes = { practice: {done:0,correct:0,wrong:0}, quiz: {done:0,correct:0,wrong:0}, mock: {done:0,correct:0,wrong:0} };
+    deduped.forEach(r => {
+      const m = modes[r.mode] || modes.practice;
+      m.done++;
+      if (r.result === 'correct') m.correct++;
+      if (r.result === 'wrong') m.wrong++;
+    });
+    // Mock count from mock_history
+    modes.mock.mockCount = mockRows.rows.length;
+    Object.values(modes).forEach(m => {
+      m.accuracy = (m.correct + m.wrong) > 0 ? Math.round(m.correct / (m.correct + m.wrong) * 100) : 0;
+    });
+
+    // ── SECTION 3: Year-wise PYQ coverage ────────────────────
+    const yearMap = {};
+    deduped.forEach(r => {
+      if (!r.year) return;
+      if (!yearMap[r.year]) yearMap[r.year] = { done:0, correct:0, wrong:0 };
+      yearMap[r.year].done++;
+      if (r.result === 'correct') yearMap[r.year].correct++;
+      if (r.result === 'wrong') yearMap[r.year].wrong++;
+    });
+
+    // ── SECTION 4: Repeat questions mastery ──────────────────
+    // Deduplicate globally — questions that appeared in multiple years
+    const qYearMap = {};
+    allRows.forEach(r => {
+      if (!r.q_id || !r.year) return;
+      if (!qYearMap[r.q_id]) qYearMap[r.q_id] = { years: new Set(), results: [] };
+      qYearMap[r.q_id].years.add(r.year);
+      qYearMap[r.q_id].results.push(r.result);
+    });
+    // q_ids that appear in 2+ distinct years (high-priority repeats)
+    const repeatQIds = Object.entries(qYearMap)
+      .filter(([,v]) => v.years.size >= 2)
+      .map(([qId, v]) => ({
+        qId,
+        years: [...v.years].sort(),
+        lastResult: v.results[v.results.length - 1],
+        attempts: v.results.length
+      }));
+    const repeatStats = {
+      total: repeatQIds.length,
+      attempted: repeatQIds.filter(r => r.attempts > 0).length,
+      correct: repeatQIds.filter(r => r.lastResult === 'correct').length,
+      wrong: repeatQIds.filter(r => r.lastResult === 'wrong').length
+    };
+
+    // ── SECTION 5: Mock test history (already loaded) ─────────
+    const mockHistory = mockRows.rows.map(m => ({
+      id: m.id,
+      score: m.score,
+      total: m.total,
+      timeTaken: m.time_taken,
+      subjectBreakdown: m.subject_breakdown || {},
+      settings: m.settings || {},
+      takenAt: m.taken_at,
+      pct: m.total > 0 ? Math.round(m.score / m.total * 100) : 0
+    }));
+
+    // ── SECTION 6: Wrong question bank ────────────────────────
+    // Unique wrong answers per question (latest attempt = wrong)
+    const wrongBank = deduped
+      .filter(r => r.result === 'wrong')
+      .map(r => ({ qId: r.q_id, subject: r.subject, year: r.year, attemptedAt: r.attempted_at }))
+      .sort((a,b) => new Date(b.attemptedAt) - new Date(a.attemptedAt));
+
+    // ── SECTION 7: Subject trend (last 14 days vs prev 14) ───
+    const now14  = Date.now() - 14 * 86400000;
+    const now28  = Date.now() - 28 * 86400000;
+    const subTrend = {};
+    allRows.forEach(r => {
+      if (!r.subject) return;
+      const t = new Date(r.attempted_at).getTime();
+      if (!subTrend[r.subject]) subTrend[r.subject] = { curr:{c:0,t:0}, prev:{c:0,t:0} };
+      if (t >= now14) { subTrend[r.subject].curr.t++; if (r.result==='correct') subTrend[r.subject].curr.c++; }
+      else if (t >= now28) { subTrend[r.subject].prev.t++; if (r.result==='correct') subTrend[r.subject].prev.c++; }
+    });
+    Object.values(subTrend).forEach(s => {
+      s.currAcc = s.curr.t > 0 ? Math.round(s.curr.c / s.curr.t * 100) : null;
+      s.prevAcc = s.prev.t > 0 ? Math.round(s.prev.c / s.prev.t * 100) : null;
+      s.trend = (s.currAcc !== null && s.prevAcc !== null) ? (s.currAcc - s.prevAcc) : null;
+    });
+
+    // ── SECTION 8: Activity calendar (365 days) ───────────────
+    const calMap = {};
+    allRows.forEach(r => {
+      const d = new Date(r.attempted_at).toISOString().slice(0,10);
+      if (!calMap[d]) calMap[d] = { total:0, correct:0, wrong:0 };
+      calMap[d].total++;
+      if (r.result === 'correct') calMap[d].correct++;
+      if (r.result === 'wrong') calMap[d].wrong++;
+    });
+
+    res.json({
+      summary: { totalDone, correct, wrong, accuracy, streak, daysToExam, readiness, userName: user.name },
+      modes,
+      yearMap,
+      repeatStats,
+      repeatQIds: repeatQIds.slice(0, 50), // top 50 only
+      mockHistory,
+      wrongBank: wrongBank.slice(0, 100),  // top 100 recent wrongs
+      subjectTrend: subTrend,
+      calendarData: calMap
+    });
+  } catch(e) {
+    console.error('trackProgress error:', e.message);
+    res.status(500).json({ error: 'Could not load progress' });
+  }
+});
+
+// ── SET EXAM DATE ─────────────────────────────────────────────
+app.post('/api/setExamDate', authMiddleware, async (req, res) => {
+  const { examDate } = req.body || {};
+  if (!examDate) return res.status(400).json({ error: 'examDate required' });
+  try {
+    await pool.query(`UPDATE users SET exam_date = $1 WHERE id = $2`, [examDate, req.user.id]);
+    res.json({ success: true });
+  } catch(e) {
+    res.status(500).json({ error: 'Could not save exam date' });
   }
 });
 
