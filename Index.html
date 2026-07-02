@@ -4713,21 +4713,7 @@ function openQTMatrixDrill(sub, typeRaw) {
 
   const LABELS   = ['A','B','C','D'];
   const OPT_KEYS = ['optA','optB','optC','optD'];
-  document.getElementById('sydBody').innerHTML = cell.questions.map((q,i) => {
-    const opts = OPT_KEYS.map((k,j) => q[k]
-      ? `<div class="syd-opt${q.answer===LABELS[j]?' correct':''}">
-          ${LABELS[j]}. ${q[k]}${q.answer===LABELS[j]?' ✓':''}
-         </div>` : '').join('');
-    const rep = q.repeatsIn && q.repeatsIn.length
-      ? `<span style="color:var(--amber);font-size:10px;">↻ repeats</span>` : '';
-    return `<div class="syd-qblock">
-      <div class="syd-qnum">Q${i+1} · ${q.year||''} ${rep}</div>
-      <div class="syd-qtext">${q.question}</div>
-      ${opts?`<div class="syd-opts">${opts}</div>`:''}
-      ${q.explanation?`<div class="syd-exp">💡 ${q.explanation}</div>`:''}
-    </div>`;
-  }).join('');
-
+  document.getElementById('sydBody').innerHTML = cell.questions.map((q,i) => buildSydQBlock(q,i)).join('');
   document.getElementById('sydOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -4747,10 +4733,18 @@ function openQTypeDrill() {
   const OPT_KEYS = ['optA','optB','optC','optD'];
 
   document.getElementById('sydBody').innerHTML = qs.length
-    ? qs.map((q, i) => {
-        const opts = OPT_KEYS.map((k, j) => q[k]
-          ? `<div class="syd-opt${q.answer === LABELS[j] ? ' correct' : ''}">
-              ${LABELS[j]}. ${q[k]}${q.answer === LABELS[j] ? ' ✓' : ''}
+    ? qs.map((q, i) => buildSydQBlock(q, i)).join('')
+    : `<p style="color:var(--text3);padding:24px 0;text-align:center;">No questions found.</p>`;
+  document.getElementById('sydOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function _openQTypeDrillLEGACY_UNUSED() {
+  // kept for reference only
+  const qs = [];
+  qs.map((q, i) => {
+        const opts = [].map((k, j) => q[k]
+          ? `<div class="syd-opt${q.answer === ''? ' correct' : ''}">
+              ${''}. ${q[k]}${q.answer === '' ? ' ✓' : ''}
              </div>`
           : '').join('');
         const repTag = q.repeatsIn && q.repeatsIn.length
@@ -4919,25 +4913,7 @@ function openSGQuestions() {
   const OPT_KEYS = ['optA','optB','optC','optD'];
   const LCOLS    = { A:'#378ADD', B:'#1D9E75', C:'#7F77DD', D:'#EF9F27' };
 
-  document.getElementById('sydBody').innerHTML = qs.map((q, i) => {
-    const opts = OPT_KEYS.map((k, j) => q[k]
-      ? `<div class="syd-opt${q.answer === LABELS[j] ? ' correct' : ''}">
-          ${LABELS[j]}. ${q[k]}${q.answer === LABELS[j] ? ' ✓' : ''}
-         </div>` : '').join('');
-    const ansCol = LCOLS[q.answer] || '#555';
-    const rep = q.repeatsIn && q.repeatsIn.length
-      ? `<span style="color:var(--amber);font-size:10px;margin-left:6px;">↻ repeats</span>` : '';
-    return `<div class="syd-qblock">
-      <div class="syd-qnum">
-        Q${i+1} · ${q.year||''} · ${q.subject||''}
-        · <strong style="color:${ansCol};">Ans: ${q.answer||'?'}</strong>${rep}
-      </div>
-      <div class="syd-qtext">${q.question}</div>
-      ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
-      ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
-    </div>`;
-  }).join('');
-
+  document.getElementById('sydBody').innerHTML = qs.map((q,i) => buildSydQBlock(q,i)).join('');
   document.getElementById('sydOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -5017,22 +4993,7 @@ function openSGMatrixDrill(sub, typeRaw, bestAns) {
   const LABELS   = ['A','B','C','D'];
   const OPT_KEYS = ['optA','optB','optC','optD'];
 
-  document.getElementById('sydBody').innerHTML = cell.questions.map((q,i) => {
-    const opts = OPT_KEYS.map((k,j) => q[k]
-      ? `<div class="syd-opt${q.answer===LABELS[j]?' correct':''}">
-          ${LABELS[j]}. ${q[k]}${q.answer===LABELS[j]?' ✓':''}
-         </div>` : '').join('');
-    const ansCol = LCOLS[q.answer]||'#555';
-    const rep = q.repeatsIn&&q.repeatsIn.length
-      ? `<span style="color:var(--amber);font-size:10px;margin-left:6px;">↻ repeats</span>` : '';
-    return `<div class="syd-qblock">
-      <div class="syd-qnum">Q${i+1} · ${q.year||''} · <strong style="color:${ansCol};">Ans: ${q.answer||'?'}</strong>${rep}</div>
-      <div class="syd-qtext">${q.question}</div>
-      ${opts?`<div class="syd-opts">${opts}</div>`:''}
-      ${q.explanation?`<div class="syd-exp">💡 ${q.explanation}</div>`:''}
-    </div>`;
-  }).join('');
-
+  document.getElementById('sydBody').innerHTML = cell.questions.map((q,i) => buildSydQBlock(q,i)).join('');
   document.getElementById('sydOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -5965,14 +5926,23 @@ function selectMockOpt(type, el) {
 }
 
 function launchMockTest() {
+  // Guest/expired: cap mock at 10 questions
+  if (!hasFullAccess()) {
+    const cap = 10;
+    if (mockSettings.count > cap) {
+      mockSettings.count = cap;
+      showToast(`Free users get ${cap}-question mock. Register for full tests.`);
+    }
+  }
+
   closeMockModal();
   mockActive = true;
   answers    = {};
   mockQTimes = {};
   mockQIdx   = 0;
 
-  // Build question pool
-  let pool = [...allQuestions];
+  // Build question pool — guests only get unlocked questions
+  let pool = hasFullAccess() ? [...allQuestions] : [...allQuestions].filter(q => !isLocked(q));
   if (mockSettings.year  && mockSettings.year  !== "all") pool = pool.filter(q => String(q.year) === String(mockSettings.year));
   if (mockSettings.sub   !== "all") pool = pool.filter(q => q.subject === mockSettings.sub);
   if (mockSettings.topic !== "all") pool = pool.filter(q =>
@@ -8713,21 +8683,9 @@ function _renderSYD(subject, year, pool) {
   document.getElementById('sydTitle').textContent =
     `${subject} · ${year} — ${qs.length} question${qs.length !== 1 ? 's' : ''}`;
 
-  const LABELS   = ['A','B','C','D'];
-  const OPT_KEYS = ['optA','optB','optC','optD'];
-
-  document.getElementById('sydBody').innerHTML = qs.length ? qs.map((q, i) => {
-    const opts = OPT_KEYS.map((k, j) => q[k]
-      ? `<div class="syd-opt${q.answer === LABELS[j] ? ' correct' : ''}">${LABELS[j]}. ${q[k]}${q.answer === LABELS[j] ? ' ✓' : ''}</div>`
-      : '').join('');
-    return `
-      <div class="syd-qblock">
-        <div class="syd-qnum">Q${i+1} · ${q.id||''} · ${q.difficulty||'Medium'}${q.repeatsIn?` · ↻ ${q.repeatsIn.split(',').length} yrs`:''}</div>
-        <div class="syd-qtext">${q.question}</div>
-        ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
-        ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
-      </div>`;
-  }).join('') : `<p style="color:var(--text3);padding:24px 0;text-align:center;">No questions found for ${subject} ${year}.</p>`;
+  document.getElementById('sydBody').innerHTML = qs.length
+    ? qs.map((q,i) => buildSydQBlock(q,i)).join('')
+    : `<p style="color:var(--text3);padding:24px 0;text-align:center;">No questions found for ${subject} ${year}.</p>`;
 }
 
 async function openSYD(subject, year) {
@@ -8788,21 +8746,9 @@ async function openAnswerDrill(year, letter) {
   document.getElementById('sydTitle').textContent =
     `${year} · Correct answer = ${letter} — ${qs.length} question${qs.length !== 1 ? 's' : ''}`;
 
-  const LABELS   = ['A','B','C','D'];
-  const OPT_KEYS = ['optA','optB','optC','optD'];
-  document.getElementById('sydBody').innerHTML = qs.length ? qs.map((q, i) => {
-    const opts = OPT_KEYS.map((k, j) => q[k]
-      ? `<div class="syd-opt${q.answer === LABELS[j] ? ' correct' : ''}">${LABELS[j]}. ${q[k]}${q.answer === LABELS[j] ? ' ✓' : ''}</div>`
-      : '').join('');
-    return `
-      <div class="syd-qblock">
-        <div class="syd-qnum">Q${i+1} · ${q.subject||''} · ${q.difficulty||'Medium'}</div>
-        <div class="syd-qtext">${q.question}</div>
-        ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
-        ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
-      </div>`;
-  }).join('') :
-    `<p style="color:var(--text3);padding:24px;text-align:center;">No questions found for ${year} with answer ${letter}.</p>`;
+  document.getElementById('sydBody').innerHTML = qs.length
+    ? qs.map((q,i) => buildSydQBlock(q,i)).join('')
+    : `<p style="color:var(--text3);padding:24px;text-align:center;">No questions found for ${year} with answer ${letter}.</p>`;
 }
 
 // Download the orange or blue card as PNG or PDF
@@ -9269,7 +9215,7 @@ function getLockedQIds() {
     byYear[q.year].push(q.id);
   });
   Object.values(byYear).forEach(ids => {
-    const cutoff = Math.ceil(ids.length / 2);
+    const cutoff = Math.ceil(ids.length * 0.3); // 30% open, 70% locked
     ids.slice(cutoff).forEach(id => _lockedQIds.add(String(id)));
   });
   return _lockedQIds;
@@ -9283,9 +9229,7 @@ function isLocked(q) {
 }
 
 function lockOverlayHTML() {
-  const msg = currentUser
-    ? 'Your trial ended. Subscribe for ₹100/month'
-    : 'Register free for 30-day full access';
+  const msg    = currentUser ? 'Your trial ended. Subscribe for ₹100/month' : 'Register free for 30-day full access';
   const btnTxt = currentUser ? 'Subscribe ₹100/month' : 'Register Free';
   const btnAct = currentUser ? "openAuthModal('login')" : "openAuthModal('register')";
   return `<div class="q-lock-overlay">
@@ -9293,6 +9237,40 @@ function lockOverlayHTML() {
     <div class="q-lock-msg">${msg}</div>
     <button class="q-lock-btn" onclick="${btnAct}">${btnTxt}</button>
   </div>`;
+}
+
+// Shared helper for all drill/analytics modals (syd-qblock)
+// Guests see max 4 questions in any drill modal
+const SYD_FREE_LIMIT = 4;
+function buildSydQBlock(q, i) {
+  if (!hasFullAccess() && i >= SYD_FREE_LIMIT) {
+    return `<div class="syd-qblock q-locked" style="min-height:80px;">
+      ${lockOverlayHTML()}
+      <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">
+        <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''}</div>
+        <div class="syd-qtext">${q.question}</div>
+      </div>
+    </div>`;
+  }
+  const LABELS   = ['A','B','C','D'];
+  const OPT_KEYS = ['optA','optB','optC','optD'];
+  const opts = OPT_KEYS.map((k,j) => q[k]
+    ? `<div class="syd-opt${q.answer===LABELS[j]?' correct':''}">${LABELS[j]}. ${q[k]}${q.answer===LABELS[j]?' ✓':''}</div>`
+    : '').join('');
+  const repTag = q.repeatsIn && q.repeatsIn.includes(',')
+    ? `<span style="color:var(--amber);font-size:10px;">↻ repeats ${q.repeatsIn}</span>` : '';
+  const inner = `
+    <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''} ${repTag}</div>
+    <div class="syd-qtext">${q.question}</div>
+    ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
+    ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}`;
+  if (isLocked(q)) {
+    return `<div class="syd-qblock q-locked" style="min-height:80px;">
+      ${lockOverlayHTML()}
+      <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">${inner}</div>
+    </div>`;
+  }
+  return `<div class="syd-qblock">${inner}</div>`;
 }
 
 // Close modal on backdrop click
