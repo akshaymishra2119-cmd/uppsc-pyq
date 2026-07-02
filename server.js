@@ -115,7 +115,7 @@ function fetchSheetQuestions() {
 
           _sheetsCache     = merged;
           _sheetsCacheTime = Date.now();
-          console.log(`✅ Sheet synced: ${merged.length} questions loaded`);
+  console.log('UPPSC Study Portal started on port ' + PORT);
           resolve(merged);
         } catch (err) {
           reject(new Error('Sheet parse error: ' + err.message));
@@ -918,60 +918,47 @@ app.post('/api/getDailyQuiz', async (req, res) => {
 });
 
 
-// ── RSS NEWS FETCHER ─────────────────────────────────────────
+// ── RSS NEWS FETCHER (via rss2json proxy) ────────────────────
 const _newsCache = { uppsc: null, ca: null };
 const _newsCacheTime = { uppsc: 0, ca: 0 };
 const NEWS_TTL = 60 * 60 * 1000; // 1 hour
 
-function fetchRSS(url) {
+// Fetch an RSS feed via rss2json.com proxy (avoids 403 blocks on cloud servers)
+function fetchFeedViaProxy(rssUrl) {
   return new Promise((resolve, reject) => {
-    const mod = url.startsWith('https') ? https : require('http');
-    const req = mod.get(url, { headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; UPPSCBot/1.0)',
-      'Accept': 'application/rss+xml, application/xml, text/xml'
-    }}, res => {
-      // follow redirect
+    const apiUrl = 'https://api.rss2json.com/v1/api.json?count=50&rss_url=' + encodeURIComponent(rssUrl);
+    https.get(apiUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } }, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return fetchRSS(res.headers.location).then(resolve).catch(reject);
+        return fetchFeedViaProxy(res.headers.location).then(resolve).catch(reject);
       }
       let raw = '';
       res.on('data', c => raw += c);
-      res.on('end', () => resolve(raw));
-    });
-    req.on('error', reject);
-    req.setTimeout(8000, () => { req.destroy(); reject(new Error('timeout')); });
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(raw);
+          if (json.status !== 'ok') return resolve([]);
+          const items = (json.items || []).map(it => {
+            const d = it.pubDate ? new Date(it.pubDate) : new Date();
+            if (Date.now() - d.getTime() > 20 * 86400000) return null; // skip >20 days old
+            return {
+              title:   (it.title   || '').replace(/<[^>]+>/g,'').trim(),
+              desc:    (it.description || it.content || '').replace(/<[^>]+>/g,'').slice(0,400).trim(),
+              dateStr: d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}),
+              link:    it.link || '',
+              source:  it.author || json.feed?.title || '',
+              ts:      d.getTime()
+            };
+          }).filter(Boolean);
+          resolve(items);
+        } catch(e) { resolve([]); }
+      });
+    }).on('error', () => resolve([])).setTimeout(10000, function(){ this.destroy(); resolve([]); });
   });
-}
-
-function parseRSS(xml) {
-  const items = [];
-  const blocks = xml.match(/<item[\s>][\s\S]*?<\/item>/g) || [];
-  blocks.forEach(block => {
-    const get = tag => {
-      const cdata = block.match(new RegExp('<' + tag + '[^>]*><!\[CDATA\[([\s\S]*?)\]\]><\/' + tag + '>'));
-      if (cdata) return cdata[1].trim();
-      const plain = block.match(new RegExp('<' + tag + '[^>]*>([\s\S]*?)<\/' + tag + '>'));
-      return plain ? plain[1].replace(/<[^>]+>/g,'').trim() : '';
-    };
-    const title   = get('title');
-    const desc    = get('description').replace(/<[^>]+>/g,'').slice(0,400).trim();
-    const pubDate = get('pubDate');
-    const link    = get('link') || (block.match(/<link>(.*?)<\/link>/) || [])[1] || '';
-    const srcM    = block.match(/<source[^>]+>([^<]*)<\/source>/);
-    const source  = srcM ? srcM[1].trim() : '';
-    if (!title || title.length < 10) return;
-    const d = pubDate ? new Date(pubDate) : new Date();
-    // Only last 20 days
-    if (Date.now() - d.getTime() > 20 * 86400000) return;
-    const dateStr = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-    items.push({ title, desc, dateStr, link, source, ts: d.getTime() });
-  });
-  return items;
 }
 
 function categorizeUPPSC(t) {
   const s = t.toLowerCase();
-  if (/polity|constitution|governor|vidhan|assembly|election|mla|mp|panchayat|raj|chief minister|yogi/.test(s)) return 'UP Polity';
+  if (/polity|constitution|governor|vidhan|assembly|election|mla|mp|panchayat|chief minister|yogi/.test(s)) return 'UP Polity';
   if (/economy|gdp|budget|finance|tax|revenue|msme|industry|invest|export/.test(s)) return 'UP Economy';
   if (/road|highway|expressway|metro|railway|airport|bridge|infra|project/.test(s)) return 'UP Infrastructure';
   if (/farm|farmer|agriculture|crop|wheat|sugarcane|kisan|agri/.test(s)) return 'UP Agriculture';
@@ -984,7 +971,7 @@ function categorizeUPPSC(t) {
 
 function categorizeCA(t) {
   const s = t.toLowerCase();
-  if (/parliament|election|cabinet|president|vice president|pm |prime minister|governor|constitution/.test(s)) return 'Polity';
+  if (/parliament|election|cabinet|president|prime minister|governor|constitution|lok sabha|rajya sabha/.test(s)) return 'Polity';
   if (/rbi|economy|gdp|budget|inflation|trade|export|import|sebi|market|rupee/.test(s)) return 'Economy';
   if (/isro|space|missile|nuclear|technology|ai |robot|cyber|satellite|chandrayaan/.test(s)) return 'Science & Tech';
   if (/environment|climate|forest|wildlife|pollution|disaster|flood|earthquake/.test(s)) return 'Environment';
@@ -994,7 +981,7 @@ function categorizeCA(t) {
   return 'Current Affairs';
 }
 
-function relevance(cat) {
+function newsRelevance(cat) {
   const high = ['UP Polity','PCS Exam','Polity','Economy','UP Economy'];
   const med  = ['UP Schemes','UP Infrastructure','Government Schemes','International','Science & Tech'];
   return high.includes(cat) ? 'High' : med.includes(cat) ? 'Medium' : 'Low';
@@ -1009,30 +996,26 @@ app.get('/api/getUPPSCNews', async (req, res) => {
   try {
     const feeds = [
       'https://news.google.com/rss/search?q=Uttar+Pradesh+government+scheme+yojana&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=UP+Yogi+policy+infrastructure+economy&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=UP+Yogi+infrastructure+economy+policy&hl=en-IN&gl=IN&ceid=IN:en',
       'https://news.google.com/rss/search?q=UPPSC+UP+PSC+exam+recruitment&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=Uttar+Pradesh+agriculture+culture+heritage&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=Uttar+Pradesh+law+order+crime+court&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=Uttar+Pradesh+agriculture+kisan+flood&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=Uttar+Pradesh+law+order+court+police&hl=en-IN&gl=IN&ceid=IN:en',
     ];
-    const xmls = await Promise.all(feeds.map(u => fetchRSS(u).catch(() => '')));
+    const results = await Promise.all(feeds.map(u => fetchFeedViaProxy(u)));
     const seen = new Set();
     const rows = [];
-    xmls.forEach(xml => {
-      parseRSS(xml).forEach(item => {
+    results.forEach(items => {
+      items.forEach(item => {
+        if (!item.title || item.title.length < 10) return;
         const k = item.title.slice(0,60);
         if (seen.has(k)) return;
         seen.add(k);
         const cat = categorizeUPPSC(item.title + ' ' + item.desc);
         rows.push({
-          headline: item.title,
-          detail: item.desc || item.title,
-          date: item.dateStr,
-          category: cat,
-          relevance: relevance(cat),
-          source: item.source,
-          link: item.link,
-          tags: cat,
-          _ts: item.ts
+          headline: item.title, detail: item.desc || item.title,
+          date: item.dateStr, category: cat,
+          relevance: newsRelevance(cat), source: item.source,
+          link: item.link, tags: cat, _ts: item.ts
         });
       });
     });
@@ -1055,31 +1038,27 @@ app.get('/api/getCurrentAffairs', async (req, res) => {
   try {
     const feeds = [
       'https://news.google.com/rss/search?q=India+government+policy+scheme+budget&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=India+parliament+election+cabinet+constitution&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=India+parliament+cabinet+constitution+election&hl=en-IN&gl=IN&ceid=IN:en',
       'https://news.google.com/rss/search?q=India+economy+RBI+inflation+trade+export&hl=en-IN&gl=IN&ceid=IN:en',
       'https://news.google.com/rss/search?q=India+ISRO+science+technology+environment&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=India+international+bilateral+UN+G20+BRICS&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3',
+      'https://news.google.com/rss/search?q=India+international+G20+BRICS+bilateral&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=India+award+sports+medal+cricket+rank&hl=en-IN&gl=IN&ceid=IN:en',
     ];
-    const xmls = await Promise.all(feeds.map(u => fetchRSS(u).catch(() => '')));
+    const results = await Promise.all(feeds.map(u => fetchFeedViaProxy(u)));
     const seen = new Set();
     const rows = [];
-    xmls.forEach(xml => {
-      parseRSS(xml).forEach(item => {
+    results.forEach(items => {
+      items.forEach(item => {
+        if (!item.title || item.title.length < 10) return;
         const k = item.title.slice(0,60);
         if (seen.has(k)) return;
         seen.add(k);
         const cat = categorizeCA(item.title + ' ' + item.desc);
         rows.push({
-          headline: item.title,
-          detail: item.desc || item.title,
-          date: item.dateStr,
-          category: cat,
-          relevance: relevance(cat),
-          source: item.source || 'PIB',
-          link: item.link,
-          tags: cat,
-          _ts: item.ts
+          headline: item.title, detail: item.desc || item.title,
+          date: item.dateStr, category: cat,
+          relevance: newsRelevance(cat), source: item.source,
+          link: item.link, tags: cat, _ts: item.ts
         });
       });
     });
@@ -1224,4 +1203,16 @@ function _syncLeaderboard(db, userName) {
     existing.attempted = correct + wrong;
     existing.lastActive = formatDate(new Date());
   } else {
-    db.lea
+    db.leaderboard.push({
+      name: userName, score, accuracy,
+      attempted: correct + wrong,
+      lastActive: formatDate(new Date())
+    });
+  }
+}
+
+// ── START ─────────────────────────────────────────────────────
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('UPPSC Study Portal started on port ' + PORT);
+  console.log('UPPSC Study Portal started on port ' + PORT);
+});
