@@ -6667,10 +6667,13 @@ let caActiveFilter = 'all';
 function loadCA() {
   document.getElementById("caDayList").innerHTML =
     '<div class="loading" style="padding:20px 14px;font-size:12px;"><i class="ti ti-loader"></i> Loading...</div>';
-  google.script.run
-    .withSuccessHandler(items => { caAllItems = items || []; buildCASidebar(); })
-    .withFailureHandler(showError)
-    .getCurrentAffairs({ limit: 300 });
+  fetch('/api/getCurrentAffairs')
+    .then(r => r.json())
+    .then(items => { caAllItems = items || []; buildCASidebar(); })
+    .catch(() => {
+      document.getElementById("caDayList").innerHTML =
+        '<div style="padding:16px 14px;font-size:12px;color:var(--red);">Could not load news.</div>';
+    });
 }
 
 // ── SEARCH FUNCTIONS ─────────────────────────────────────────
@@ -7936,10 +7939,21 @@ function loadUPPSCNews() {
   const feed   = document.getElementById("uppscFeed");
   feed.innerHTML = '<div class="loading"><i class="ti ti-loader"></i> Loading UP news...</div>';
 
-  google.script.run
-    .withSuccessHandler(rows => renderUPPSCFeed(rows, dateF))
-    .withFailureHandler(() => { feed.innerHTML = '<div class="empty">Could not load UP news.</div>'; })
-    .getUPPSCNews({ category: cat, search });
+  fetch('/api/getUPPSCNews')
+    .then(r => r.json())
+    .then(rows => {
+      // Client-side filter by category + search
+      let filtered = rows;
+      if (cat && cat !== 'all') filtered = filtered.filter(r => r.category === cat);
+      if (search) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(r =>
+          (r.headline||'').toLowerCase().includes(q) ||
+          (r.detail||'').toLowerCase().includes(q));
+      }
+      renderUPPSCFeed(filtered, dateF);
+    })
+    .catch(() => { feed.innerHTML = '<div class="empty">Could not load UP news.</div>'; });
 }
 
 let _uppscAllRows = [];

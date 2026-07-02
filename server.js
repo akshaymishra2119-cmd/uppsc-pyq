@@ -917,6 +917,182 @@ app.post('/api/getDailyQuiz', async (req, res) => {
   res.json(result.slice(0, count));
 });
 
+
+// ── RSS NEWS FETCHER ─────────────────────────────────────────
+const _newsCache = { uppsc: null, ca: null };
+const _newsCacheTime = { uppsc: 0, ca: 0 };
+const NEWS_TTL = 60 * 60 * 1000; // 1 hour
+
+function fetchRSS(url) {
+  return new Promise((resolve, reject) => {
+    const mod = url.startsWith('https') ? https : require('http');
+    const req = mod.get(url, { headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; UPPSCBot/1.0)',
+      'Accept': 'application/rss+xml, application/xml, text/xml'
+    }}, res => {
+      // follow redirect
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return fetchRSS(res.headers.location).then(resolve).catch(reject);
+      }
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => resolve(raw));
+    });
+    req.on('error', reject);
+    req.setTimeout(8000, () => { req.destroy(); reject(new Error('timeout')); });
+  });
+}
+
+function parseRSS(xml) {
+  const items = [];
+  const blocks = xml.match(/<item[\s>][\s\S]*?<\/item>/g) || [];
+  blocks.forEach(block => {
+    const get = tag => {
+      const cdata = block.match(new RegExp('<' + tag + '[^>]*><!\[CDATA\[([\s\S]*?)\]\]><\/' + tag + '>'));
+      if (cdata) return cdata[1].trim();
+      const plain = block.match(new RegExp('<' + tag + '[^>]*>([\s\S]*?)<\/' + tag + '>'));
+      return plain ? plain[1].replace(/<[^>]+>/g,'').trim() : '';
+    };
+    const title   = get('title');
+    const desc    = get('description').replace(/<[^>]+>/g,'').slice(0,400).trim();
+    const pubDate = get('pubDate');
+    const link    = get('link') || (block.match(/<link>(.*?)<\/link>/) || [])[1] || '';
+    const srcM    = block.match(/<source[^>]+>([^<]*)<\/source>/);
+    const source  = srcM ? srcM[1].trim() : '';
+    if (!title || title.length < 10) return;
+    const d = pubDate ? new Date(pubDate) : new Date();
+    // Only last 20 days
+    if (Date.now() - d.getTime() > 20 * 86400000) return;
+    const dateStr = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    items.push({ title, desc, dateStr, link, source, ts: d.getTime() });
+  });
+  return items;
+}
+
+function categorizeUPPSC(t) {
+  const s = t.toLowerCase();
+  if (/polity|constitution|governor|vidhan|assembly|election|mla|mp|panchayat|raj|chief minister|yogi/.test(s)) return 'UP Polity';
+  if (/economy|gdp|budget|finance|tax|revenue|msme|industry|invest|export/.test(s)) return 'UP Economy';
+  if (/road|highway|expressway|metro|railway|airport|bridge|infra|project/.test(s)) return 'UP Infrastructure';
+  if (/farm|farmer|agriculture|crop|wheat|sugarcane|kisan|agri/.test(s)) return 'UP Agriculture';
+  if (/culture|heritage|temple|festival|art|tourism|varanasi|ayodhya|mathura|kumbh/.test(s)) return 'UP Culture & Heritage';
+  if (/environment|forest|wildlife|pollution|river|yamuna|ganga|flood/.test(s)) return 'UP Environment';
+  if (/crime|law|order|police|encounter|arrest|court|judge|atrocity/.test(s)) return 'UP Law & Order';
+  if (/uppsc|pcs|exam|recruitment|vacancy|syllabus|admit|result/.test(s)) return 'PCS Exam';
+  return 'UP Schemes';
+}
+
+function categorizeCA(t) {
+  const s = t.toLowerCase();
+  if (/parliament|election|cabinet|president|vice president|pm |prime minister|governor|constitution/.test(s)) return 'Polity';
+  if (/rbi|economy|gdp|budget|inflation|trade|export|import|sebi|market|rupee/.test(s)) return 'Economy';
+  if (/isro|space|missile|nuclear|technology|ai |robot|cyber|satellite|chandrayaan/.test(s)) return 'Science & Tech';
+  if (/environment|climate|forest|wildlife|pollution|disaster|flood|earthquake/.test(s)) return 'Environment';
+  if (/bilateral|treaty|un |who |g20|brics|quad|sco|foreign|international|war|ukraine|china|pakistan/.test(s)) return 'International';
+  if (/award|medal|sport|olympic|cricket|chess|rank|prize|padma|bharat ratna/.test(s)) return 'Awards & Sports';
+  if (/scheme|yojana|welfare|housing|health|education|skill|pm kisan|pmgsy/.test(s)) return 'Government Schemes';
+  return 'Current Affairs';
+}
+
+function relevance(cat) {
+  const high = ['UP Polity','PCS Exam','Polity','Economy','UP Economy'];
+  const med  = ['UP Schemes','UP Infrastructure','Government Schemes','International','Science & Tech'];
+  return high.includes(cat) ? 'High' : med.includes(cat) ? 'Medium' : 'Low';
+}
+
+// ── GET /api/getUPPSCNews ─────────────────────────────────────
+app.get('/api/getUPPSCNews', async (req, res) => {
+  const now = Date.now();
+  if (_newsCache.uppsc && (now - _newsCacheTime.uppsc) < NEWS_TTL) {
+    return res.json(_newsCache.uppsc);
+  }
+  try {
+    const feeds = [
+      'https://news.google.com/rss/search?q=Uttar+Pradesh+government+scheme+yojana&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=UP+Yogi+policy+infrastructure+economy&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=UPPSC+UP+PSC+exam+recruitment&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=Uttar+Pradesh+agriculture+culture+heritage&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=Uttar+Pradesh+law+order+crime+court&hl=en-IN&gl=IN&ceid=IN:en',
+    ];
+    const xmls = await Promise.all(feeds.map(u => fetchRSS(u).catch(() => '')));
+    const seen = new Set();
+    const rows = [];
+    xmls.forEach(xml => {
+      parseRSS(xml).forEach(item => {
+        const k = item.title.slice(0,60);
+        if (seen.has(k)) return;
+        seen.add(k);
+        const cat = categorizeUPPSC(item.title + ' ' + item.desc);
+        rows.push({
+          headline: item.title,
+          detail: item.desc || item.title,
+          date: item.dateStr,
+          category: cat,
+          relevance: relevance(cat),
+          source: item.source,
+          link: item.link,
+          tags: cat,
+          _ts: item.ts
+        });
+      });
+    });
+    rows.sort((a,b) => b._ts - a._ts);
+    _newsCache.uppsc = rows;
+    _newsCacheTime.uppsc = now;
+    res.json(rows);
+  } catch(e) {
+    console.error('getUPPSCNews error:', e.message);
+    res.json(_newsCache.uppsc || []);
+  }
+});
+
+// ── GET /api/getCurrentAffairs ────────────────────────────────
+app.get('/api/getCurrentAffairs', async (req, res) => {
+  const now = Date.now();
+  if (_newsCache.ca && (now - _newsCacheTime.ca) < NEWS_TTL) {
+    return res.json(_newsCache.ca);
+  }
+  try {
+    const feeds = [
+      'https://news.google.com/rss/search?q=India+government+policy+scheme+budget&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=India+parliament+election+cabinet+constitution&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=India+economy+RBI+inflation+trade+export&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=India+ISRO+science+technology+environment&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://news.google.com/rss/search?q=India+international+bilateral+UN+G20+BRICS&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3',
+    ];
+    const xmls = await Promise.all(feeds.map(u => fetchRSS(u).catch(() => '')));
+    const seen = new Set();
+    const rows = [];
+    xmls.forEach(xml => {
+      parseRSS(xml).forEach(item => {
+        const k = item.title.slice(0,60);
+        if (seen.has(k)) return;
+        seen.add(k);
+        const cat = categorizeCA(item.title + ' ' + item.desc);
+        rows.push({
+          headline: item.title,
+          detail: item.desc || item.title,
+          date: item.dateStr,
+          category: cat,
+          relevance: relevance(cat),
+          source: item.source || 'PIB',
+          link: item.link,
+          tags: cat,
+          _ts: item.ts
+        });
+      });
+    });
+    rows.sort((a,b) => b._ts - a._ts);
+    _newsCache.ca = rows;
+    _newsCacheTime.ca = now;
+    res.json(rows);
+  } catch(e) {
+    console.error('getCurrentAffairs error:', e.message);
+    res.json(_newsCache.ca || []);
+  }
+});
+
 // ── API: getUPPSCNews ─────────────────────────────────────────
 app.post('/api/getUPPSCNews', (req, res) => {
   const filters = req.body || {};
@@ -1048,213 +1224,4 @@ function _syncLeaderboard(db, userName) {
     existing.attempted = correct + wrong;
     existing.lastActive = formatDate(new Date());
   } else {
-    db.leaderboard.push({
-      name: userName, score, accuracy,
-      attempted: correct + wrong,
-      lastActive: formatDate(new Date())
-    });
-  }
-}
-
-// ── API: ingestNews — POST scraped items into db.json ─────────
-// Called by scraper.js cron or Claude scheduled task
-app.post('/api/ingestNews', (req, res) => {
-  try {
-    const { uppscNews = [], currentAffairs = [], source = 'auto-scraper' } = req.body;
-    if (!uppscNews.length && !currentAffairs.length) {
-      return res.json({ ok: false, message: 'No items provided' });
-    }
-
-    const db      = loadDB();
-    const dateStr = uppscNews[0]?.date || currentAffairs[0]?.date || '';
-
-    // Deduplicate by headline — don't re-add same day's headlines
-    const existingUP = new Set((db.uppscNews    || []).map(n => n.headline));
-    const existingCA = new Set((db.currentAffairs || []).map(n => n.headline));
-
-    const newUP = uppscNews.filter(n => !existingUP.has(n.headline));
-    const newCA = currentAffairs.filter(n => !existingCA.has(n.headline));
-
-    db.uppscNews     = [...(db.uppscNews    || []), ...newUP];
-    db.currentAffairs = [...(db.currentAffairs || []), ...newCA];
-
-    // Keep only last 90 days of news (avoid bloat)
-    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 90);
-    const inRange = item => { try { return new Date(item.date) >= cutoff; } catch { return true; } };
-    db.uppscNews      = db.uppscNews.filter(inRange);
-    db.currentAffairs = db.currentAffairs.filter(inRange);
-
-    saveDB(db);
-    console.log(`📥 ingestNews [${source}]: +${newUP.length} UPPSC, +${newCA.length} CA  (date: ${dateStr})`);
-    res.json({ ok: true, added: { uppsc: newUP.length, ca: newCA.length }, date: dateStr });
-  } catch (e) {
-    console.error('ingestNews error:', e.message);
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
-// ── API: scrapeStatus — last scrape summary ───────────────────
-let _lastScrapeReport = null;
-app.get('/api/scrapeStatus', (req, res) => {
-  res.json(_lastScrapeReport || { status: 'never_run', message: 'No scrape has run yet' });
-});
-
-// ── Cron disabled on Railway (no node-cron dependency) ─────────
-// Scraping is handled by Claude scheduled tasks via /api/ingestNews
-
-// ── LEFT PANEL — local docx readers ──────────────────────────
-const mammoth = require('mammoth');
-
-const LEFT_PANEL_DIRS = {
-  editorial: 'D:\\editorial_national',
-  upnews:    'D:\\Editorial_UP',
-  mcq:       'D:\\1_liner_UPPSC',
-};
-const LEFT_PANEL_PREFIX = { editorial: 'CA_', upnews: 'UPPSC_', mcq: 'Questions_' };
-
-function getTodayDocx(type) {
-  const dir    = LEFT_PANEL_DIRS[type];
-  const prefix = LEFT_PANEL_PREFIX[type];
-  if (!fs.existsSync(dir)) return null;
-  const today  = new Date();
-  const months = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
-  const name   = `${prefix}${today.getDate()}${months[today.getMonth()]}${today.getFullYear()}.docx`;
-  const exact  = path.join(dir, name);
-  if (fs.existsSync(exact)) return exact;
-  // fallback: most recent docx in folder
-  try {
-    const files = fs.readdirSync(dir)
-      .filter(f => f.endsWith('.docx'))
-      .sort();
-    if (files.length) return path.join(dir, files[files.length - 1]);
-  } catch(e) {}
-  return null;
-}
-
-async function parseDocxText(filepath) {
-  const result = await mammoth.extractRawText({ path: filepath });
-  return result.value;
-}
-
-// Parse editorial text → array of {title, bullets[], takeaway}
-function parseEditorial(text) {
-  const sections = [];
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  let current = null;
-  for (const line of lines) {
-    // Numbered section heading like "1. India–New Zealand FTA"
-    if (/^\d+\.\s+[A-Z]/.test(line)) {
-      if (current) sections.push(current);
-      current = { title: line.replace(/^\d+\.\s+/, ''), bullets: [], takeaway: '' };
-    } else if (current && /^Takeaway:/i.test(line)) {
-      current.takeaway = line.replace(/^Takeaway:\s*/i, '');
-    } else if (current) {
-      current.bullets.push(line);
-    }
-  }
-  if (current) sections.push(current);
-  return sections;
-}
-
-// Parse UP news text → array of {category, headline, detail}
-function parseUPNews(text) {
-  const items = [];
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  let category = 'General';
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-    // Category headers (short, no period, title-case)
-    if (line.length < 50 && !line.endsWith('.') && /^[A-Z]/.test(line) && !/^\d/.test(line) && !line.startsWith('Source')) {
-      category = line;
-    } else if (/^[A-Z]/.test(line) && line.length > 40) {
-      // Headline — next lines are detail
-      const detail = [];
-      let j = i + 1;
-      while (j < lines.length && lines[j].length > 20 && /^[A-Za-z]/.test(lines[j]) && !/^[A-Z][a-z]+ [A-Z]/.test(lines[j])) {
-        detail.push(lines[j]);
-        j++;
-      }
-      items.push({ category, headline: line, detail: detail.join(' ').slice(0, 250) });
-      i = j;
-      continue;
-    }
-    i++;
-  }
-  return items;
-}
-
-// Parse MCQ text → array of {qno, question, options:{a,b,c,d}, answer}
-function parseMCQ(text) {
-  const questions = [];
-  const blocks = text.split(/(?=Q\d+\.)/);
-  for (const block of blocks) {
-    const qMatch = block.match(/Q(\d+)\.\s*([\s\S]*?)(?=\(a\))/i);
-    const aMatch = block.match(/\(a\)\s*(.+)/i);
-    const bMatch = block.match(/\(b\)\s*(.+)/i);
-    const cMatch = block.match(/\(c\)\s*(.+)/i);
-    const dMatch = block.match(/\(d\)\s*(.+)/i);
-    const ansMatch = block.match(/Answer:\s*\(([abcd])\)/i);
-    if (qMatch && ansMatch) {
-      questions.push({
-        qno:      parseInt(qMatch[1]),
-        question: qMatch[2].trim(),
-        options:  {
-          a: aMatch ? aMatch[1].trim() : '',
-          b: bMatch ? bMatch[1].trim() : '',
-          c: cMatch ? cMatch[1].trim() : '',
-          d: dMatch ? dMatch[1].trim() : '',
-        },
-        answer: ansMatch[1].toLowerCase(),
-      });
-    }
-  }
-  return questions;
-}
-
-// Helper: parse docx → items, save to db.json, return items
-async function getStudyItems(type, parseFn) {
-  const file = getTodayDocx(type);
-  if (file) {
-    // Running locally — read docx, save to db.json so Railway can serve it
-    const text  = await parseDocxText(file);
-    const items = parseFn(text);
-    // Persist to db.json
-    const db = loadDB();
-    if (!db.studyContent) db.studyContent = {};
-    db.studyContent[type] = { items, file: path.basename(file), date: new Date().toDateString() };
-    saveDB(db);
-    return { ok: true, items, file: path.basename(file) };
-  }
-  // Running on Railway — fall back to db.json
-  const db = loadDB();
-  const cached = db.studyContent && db.studyContent[type];
-  if (cached && cached.items && cached.items.length) {
-    return { ok: true, items: cached.items, file: cached.file, cached: true };
-  }
-  return { ok: false, items: [] };
-}
-
-app.get('/api/leftPanel/editorial', async (req, res) => {
-  try { res.json(await getStudyItems('editorial', parseEditorial)); }
-  catch(e) { res.json({ ok: false, items: [], error: e.message }); }
-});
-
-app.get('/api/leftPanel/upnews', async (req, res) => {
-  try { res.json(await getStudyItems('upnews', parseUPNews)); }
-  catch(e) { res.json({ ok: false, items: [], error: e.message }); }
-});
-
-app.get('/api/leftPanel/mcq', async (req, res) => {
-  try { res.json(await getStudyItems('mcq', parseMCQ)); }
-  catch(e) { res.json({ ok: false, items: [], error: e.message }); }
-});
-
-// ── START ─────────────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
-  console.log('\n✅ UPPSC Study Portal — Server started');
-  console.log(`🌐 Listening on port ${PORT}`);
-  console.log('📁 Data stored in: db.json');
-  console.log('🔧 Admin mode: ON\n');
-});
+    db.lea
