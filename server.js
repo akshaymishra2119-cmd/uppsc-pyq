@@ -8,6 +8,8 @@ const fs           = require('fs');
 const path         = require('path');
 const https        = require('https');
 const bcrypt       = require('bcryptjs');
+const { Resend }   = require('resend');
+const resend       = new Resend(process.env.RESEND_API_KEY);
 const jwt          = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const { pool, initDB } = require('./db');
@@ -218,6 +220,67 @@ app.post('/api/login', async (req, res) => {
 
 // ── LOGOUT ────────────────────────────────────────────────────
 app.post('/api/logout', (req, res) => { res.clearCookie('token'); res.json({ success: true }); });
+
+// ── FORGOT PASSWORD ──────────────────────────────────────────
+app.post('/api/forgot-password', async (req, res) => {
+  const { email } = req.body || {};
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  try {
+    const result = await pool.query('SELECT id, name FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+    // Always respond success (don't reveal if email exists)
+    if (!result.rows.length) return res.json({ success: true });
+    const user = result.rows[0];
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 min
+    await pool.query('UPDATE users SET reset_otp=$1, reset_otp_expires=$2 WHERE id=$3', [otp, expires, user.id]);
+    await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: email.toLowerCase().trim(),
+      subject: 'UPPSC Portal — Password Reset OTP',
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;border:1px solid #e0e0e0;border-radius:12px;">
+          <h2 style="color:#1D9E75;margin-bottom:8px;">🔐 Password Reset</h2>
+          <p>Hi <strong>${user.name}</strong>,</p>
+          <p>Your OTP to reset your password on <strong>Ghatna Chakra UPPSC Portal</strong>:</p>
+          <div style="font-size:36px;font-weight:800;letter-spacing:10px;text-align:center;
+            color:#1D9E75;background:#E1F5EE;border-radius:8px;padding:20px;margin:20px 0;">
+            ${otp}
+          </div>
+          <p style="color:#666;font-size:13px;">This OTP is valid for <strong>15 minutes</strong>. Do not share it with anyone.</p>
+          <p style="color:#999;font-size:12px;margin-top:24px;">If you didn't request this, ignore this email.</p>
+        </div>`
+    });
+    res.json({ success: true });
+  } catch(e) {
+    console.error('Forgot password error:', e.message);
+    res.status(500).json({ error: 'Failed to send OTP, try again' });
+  }
+});
+
+// ── RESET PASSWORD ────────────────────────────────────────────
+app.post('/api/reset-password', async (req, res) => {
+  const { email, otp, newPassword } = req.body || {};
+  if (!email || !otp || !newPassword) return res.status(400).json({ error: 'All fields required' });
+  if (newPassword.length < 6) return res.status(400).json({ error: 'Password min 6 characters' });
+  try {
+    const result = await pool.query(
+      'SELECT id, reset_otp, reset_otp_expires FROM users WHERE email = $1',
+      [email.toLowerCase().trim()]
+    );
+    if (!result.rows.length) return res.status(400).json({ error: 'Email not found' });
+    const user = result.rows[0];
+    if (!user.reset_otp || user.reset_otp !== otp.trim())
+      return res.status(400).json({ error: 'Invalid OTP' });
+    if (new Date() > new Date(user.reset_otp_expires))
+      return res.status(400).json({ error: 'OTP expired, request a new one' });
+    const hash = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password_hash=$1, reset_otp=NULL, reset_otp_expires=NULL WHERE id=$2', [hash, user.id]);
+    res.json({ success: true });
+  } catch(e) {
+    console.error('Reset password error:', e.message);
+    res.status(500).json({ error: 'Reset failed, try again' });
+  }
+});
 
 // ── CHECK SESSION ─────────────────────────────────────────────
 app.get('/api/me', async (req, res) => {

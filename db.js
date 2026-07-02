@@ -21,7 +21,9 @@ async function initDB() {
         registered_on TIMESTAMPTZ DEFAULT NOW(),
         trial_expires_on TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '30 days'),
         subscription_paid_till TIMESTAMPTZ,
-        status        TEXT DEFAULT 'trial'
+        status        TEXT DEFAULT 'trial',
+      reset_otp         VARCHAR(6),
+      reset_otp_expires TIMESTAMPTZ
       );
 
       CREATE TABLE IF NOT EXISTS progress (
@@ -50,6 +52,9 @@ async function initDB() {
       CREATE INDEX IF NOT EXISTS idx_progress_q_id    ON progress(q_id);
       CREATE INDEX IF NOT EXISTS idx_mock_user        ON mock_history(user_id);
     `);
+    // Add OTP columns if not yet present (safe on existing DB)
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_otp VARCHAR(6)`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_otp_expires TIMESTAMPTZ`);
     console.log('✅ Database tables ready');
   } catch (e) {
     console.error('❌ DB init error:', e.message);

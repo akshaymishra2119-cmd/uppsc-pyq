@@ -9079,6 +9079,12 @@ function closeImgLightbox(e) {
       <label class="auth-check"><input type="checkbox" id="rememberMe" checked /> Remember me 30 days</label>
       <div class="auth-err" id="loginErr"></div>
       <button class="auth-btn" onclick="doLogin()">Login &rarr;</button>
+      <div style="text-align:center;margin-top:10px;">
+        <a href="#" onclick="showForgotStep(1);return false;"
+           style="font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;">
+          Forgot password?
+        </a>
+      </div>
     </div>
     <div id="authRegisterForm" style="display:none;">
       <input class="auth-field" id="regName" type="text" placeholder="Your full name" />
@@ -9088,6 +9094,51 @@ function closeImgLightbox(e) {
       <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:10px;text-align:center;">✅ 30 days free full access after registration</div>
       <div class="auth-err" id="regErr"></div>
       <button class="auth-btn" onclick="doRegister()">Create free account &rarr;</button>
+    </div>
+
+    <!-- ── FORGOT PASSWORD: Step 1 — Enter email ── -->
+    <div id="forgotStep1" style="display:none;">
+      <div style="text-align:center;margin-bottom:14px;">
+        <div style="font-size:28px;">🔐</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin:6px 0 4px;">Forgot Password</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.45);">Enter your registered email — we'll send an OTP</div>
+      </div>
+      <input class="auth-field" id="fpEmail" type="email" placeholder="Your registered email" />
+      <div class="auth-err" id="fpErr1"></div>
+      <button class="auth-btn" onclick="doSendOTP()">Send OTP &rarr;</button>
+      <div style="text-align:center;margin-top:10px;">
+        <a href="#" onclick="showForgotStep(0);return false;"
+           style="font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;">← Back to Login</a>
+      </div>
+    </div>
+
+    <!-- ── FORGOT PASSWORD: Step 2 — Enter OTP + new password ── -->
+    <div id="forgotStep2" style="display:none;">
+      <div style="text-align:center;margin-bottom:14px;">
+        <div style="font-size:28px;">📩</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin:6px 0 4px;">Check your email</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.45);">Enter the 6-digit OTP sent to your email</div>
+      </div>
+      <input class="auth-field" id="fpOTP" type="text" maxlength="6" placeholder="6-digit OTP"
+        style="letter-spacing:8px;text-align:center;font-size:20px;font-weight:700;" />
+      <input class="auth-field" id="fpNewPass" type="password" placeholder="New password (min 6 chars)" />
+      <input class="auth-field" id="fpConfPass" type="password" placeholder="Confirm new password" />
+      <div class="auth-err" id="fpErr2"></div>
+      <button class="auth-btn" onclick="doResetPassword()">Reset Password &rarr;</button>
+      <div style="text-align:center;margin-top:10px;display:flex;justify-content:center;gap:16px;">
+        <a href="#" onclick="showForgotStep(1);return false;"
+           style="font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;">Resend OTP</a>
+        <a href="#" onclick="showForgotStep(0);return false;"
+           style="font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;">← Back to Login</a>
+      </div>
+    </div>
+
+    <!-- ── FORGOT PASSWORD: Step 3 — Success ── -->
+    <div id="forgotStep3" style="display:none;text-align:center;padding:16px 0;">
+      <div style="font-size:40px;margin-bottom:12px;">✅</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">Password Reset!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px;">You can now login with your new password.</div>
+      <button class="auth-btn" onclick="showForgotStep(0)">Go to Login</button>
     </div>
   </div>
 </div>
@@ -9137,6 +9188,73 @@ async function doRegister() {
     onAuthSuccess(data.user);
   } catch(e) { showAuthError("regErr", "Server error"); }
 }
+// ── FORGOT PASSWORD FLOW ────────────────────────────────────────────────
+let _fpEmail = '';
+
+function showForgotStep(step) {
+  // Hide all panels
+  ['authLoginForm','authRegisterForm','forgotStep1','forgotStep2','forgotStep3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  // Hide tabs when in forgot flow
+  const tabs = document.querySelector('.auth-tabs');
+  if (tabs) tabs.style.display = step === 0 ? '' : 'none';
+  // Clear errors
+  ['fpErr1','fpErr2'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent=''; });
+
+  if (step === 0) {
+    document.getElementById('authLoginForm').style.display = '';
+    if (tabs) tabs.style.display = '';
+  } else if (step === 1) {
+    document.getElementById('forgotStep1').style.display = '';
+    const emailEl = document.getElementById('fpEmail');
+    if (emailEl && _fpEmail) emailEl.value = _fpEmail;
+  } else if (step === 2) {
+    document.getElementById('forgotStep2').style.display = '';
+  } else if (step === 3) {
+    document.getElementById('forgotStep3').style.display = '';
+  }
+}
+
+async function doSendOTP() {
+  const email = document.getElementById('fpEmail').value.trim();
+  if (!email) return document.getElementById('fpErr1').textContent = 'Enter your email';
+  _fpEmail = email;
+  const btn = document.querySelector('#forgotStep1 .auth-btn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const res = await fetch('/api/forgot-password', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})
+    });
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('fpErr1').textContent = data.error || 'Failed'; }
+    else { showForgotStep(2); }
+  } catch(e) { document.getElementById('fpErr1').textContent = 'Server error, try again'; }
+  finally { btn.disabled=false; btn.textContent='Send OTP →'; }
+}
+
+async function doResetPassword() {
+  const otp     = document.getElementById('fpOTP').value.trim();
+  const newPass = document.getElementById('fpNewPass').value;
+  const confPass= document.getElementById('fpConfPass').value;
+  if (!otp || otp.length !== 6) return document.getElementById('fpErr2').textContent = 'Enter the 6-digit OTP';
+  if (!newPass || newPass.length < 6) return document.getElementById('fpErr2').textContent = 'Password min 6 characters';
+  if (newPass !== confPass) return document.getElementById('fpErr2').textContent = 'Passwords do not match';
+  const btn = document.querySelector('#forgotStep2 .auth-btn');
+  btn.disabled=true; btn.textContent='Resetting…';
+  try {
+    const res = await fetch('/api/reset-password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:_fpEmail, otp, newPassword:newPass})
+    });
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('fpErr2').textContent = data.error || 'Failed'; }
+    else { showForgotStep(3); }
+  } catch(e) { document.getElementById('fpErr2').textContent = 'Server error, try again'; }
+  finally { btn.disabled=false; btn.textContent='Reset Password →'; }
+}
+
 async function doLogout() {
   await fetch("/api/logout", { method:"POST" });
   currentUser = null;
