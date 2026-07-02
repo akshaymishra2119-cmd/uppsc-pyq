@@ -416,6 +416,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   background:var(--bg2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;}
 .study-nav-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue);}
 .study-nav-btn[disabled]{opacity:0.35;cursor:not-allowed;}
+/* Slideshow fullscreen overlay */
+#slideshowOverlay{display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.92);flex-direction:column;align-items:center;justify-content:center;}
+#slideshowOverlay.open{display:flex;}
+.ss-topbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;
+  justify-content:space-between;padding:12px 20px;background:rgba(0,0,0,0.5);}
+.ss-counter{color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;}
+.ss-close{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:.7;}
+.ss-close:hover{opacity:1;}
+.ss-progress{position:absolute;top:0;left:0;height:3px;background:var(--teal);transition:width linear;}
+.ss-card-wrap{width:100%;max-width:560px;padding:16px;overflow-y:auto;max-height:calc(100vh - 120px);}
+.ss-controls{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;
+  justify-content:center;gap:16px;padding:14px 20px;background:rgba(0,0,0,0.5);}
+.ss-btn{padding:8px 22px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.3);
+  background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-weight:600;cursor:pointer;}
+.ss-btn:hover:not([disabled]){background:rgba(255,255,255,0.18);}
+.ss-btn[disabled]{opacity:0.3;cursor:not-allowed;}
+.ss-btn.play{background:var(--teal);border-color:var(--teal);color:#fff;}
+.ss-btn.play:hover{background:var(--teal-dark);}
 .card-view-btn{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);
   background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;
   display:flex;align-items:center;gap:6px;color:var(--text2);transition:.15s;}
@@ -5574,69 +5593,135 @@ function buildShareCard(q, idx) {
   </div>`;
 }
 
+// ── STUDY MODE: all cards scrollable, locked = blurred ──────────────────────
 function renderCardView() {
-  _studyIdx = Math.max(0, Math.min(_studyIdx, Math.max(0, filteredQ.length - 1)));
-  renderStudyCard(_studyIdx);
-  setupStudySwipe();
-}
-
-function renderStudyCard(idx) {
-  _studyIdx = idx;
   const el = document.getElementById('qContainer');
-  const total = filteredQ.length;
-  if (!total) {
+  if (!filteredQ.length) {
     el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);">No questions match these filters.</div>';
     return;
   }
-  const autoBtn = _slideTimer
-    ? `<button class="study-nav-btn" onclick="stopSlideshow()" style="padding:8px 12px;border-color:var(--red);color:var(--red);" title="Stop autoplay">⏸</button>`
-    : `<button class="study-nav-btn" onclick="startSlideshow()" style="padding:8px 12px;" title="Auto-play cards">▶</button>`;
-  const nav = `<div class="study-nav">
-    <button class="study-nav-btn" onclick="stopSlideshow();renderStudyCard(${idx-1})" ${idx===0?'disabled':''}>← Prev</button>
-    ${autoBtn}
-    <span class="study-counter">Q ${idx+1} <span style="color:var(--text3);font-weight:400;">of</span> ${total}</span>
-    <button class="study-nav-btn" onclick="stopSlideshow();renderStudyCard(${idx+1})" ${idx===total-1?'disabled':''}>Next →</button>
+  // Slideshow launch button at top
+  const ssBtn = `<div style="text-align:right;margin-bottom:12px;">
+    <button onclick="openSlideshow(0)" style="padding:8px 18px;border-radius:8px;
+      background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;
+      display:inline-flex;align-items:center;gap:6px;">
+      ▶ Slideshow <span style="font-size:11px;opacity:.8;">(auto 5s)</span>
+    </button>
   </div>`;
-  const q = filteredQ[idx];
-  if (isLocked(q)) {
-    el.innerHTML = nav + `<div class="pyq-scard q-locked" style="min-height:220px;">${lockOverlayHTML()}<div style="filter:blur(5px);opacity:0.5;pointer-events:none;">${buildShareCard(q,idx)}</div></div>`;
-    return;
-  }
-  el.innerHTML = nav + buildShareCard(q, idx);
+  const cards = filteredQ.map((q, idx) => {
+    if (isLocked(q)) {
+      return `<div class="pyq-scard q-locked" style="min-height:180px;margin-bottom:14px;cursor:pointer;"
+        onclick="openSlideshow(${idx})">
+        ${lockOverlayHTML()}
+        <div style="filter:blur(5px);opacity:0.5;pointer-events:none;">${buildShareCard(q,idx)}</div>
+      </div>`;
+    }
+    return `<div style="margin-bottom:14px;cursor:pointer;" onclick="openSlideshow(${idx})">
+      ${buildShareCard(q,idx)}
+    </div>`;
+  }).join('');
+  el.innerHTML = ssBtn + cards;
 }
 
-function setupStudySwipe() {
-  const el = document.getElementById('qContainer');
-  if (!el || el._swipeReady) return;
-  el._swipeReady = true;
-  let sx = 0;
-  el.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
-  el.addEventListener('touchend', e => {
-    if (_qView !== 'card') return;
-    const dx = e.changedTouches[0].clientX - sx;
-    if (Math.abs(dx) < 50) return;
-    if (dx < 0 && _studyIdx < filteredQ.length - 1) renderStudyCard(_studyIdx + 1);
-    if (dx > 0 && _studyIdx > 0) renderStudyCard(_studyIdx - 1);
-  }, { passive: true });
+// ── SLIDESHOW overlay ────────────────────────────────────────────────────────
+let _ssIdx = 0;
+let _ssTimer = null;
+const SS_SPEED = 5000;
+
+function openSlideshow(startIdx) {
+  _ssIdx = startIdx || 0;
+  document.getElementById('slideshowOverlay').classList.add('open');
+  _ssRendering = false;
+  renderSSCard();
+  startSSTimer();
 }
 
-function startSlideshow() {
-  stopSlideshow();
-  _slideTimer = setInterval(() => {
-    if (_qView !== 'card') { stopSlideshow(); return; }
-    if (_studyIdx < filteredQ.length - 1) {
-      renderStudyCard(_studyIdx + 1);
+function closeSlideshow() {
+  stopSSTimer();
+  document.getElementById('slideshowOverlay').classList.remove('open');
+}
+
+let _ssRendering = false;
+function renderSSCard() {
+  const total = filteredQ.length;
+  if (!total) return;
+  _ssIdx = Math.max(0, Math.min(_ssIdx, total - 1));
+  const q = filteredQ[_ssIdx];
+  const pct = ((_ssIdx) / Math.max(total-1,1)) * 100;
+
+  // progress bar
+  const prog = document.getElementById('ssProgress');
+  if (prog) prog.style.width = pct + '%';
+
+  // counter
+  const ctr = document.getElementById('ssCounter');
+  if (ctr) ctr.textContent = `Q ${_ssIdx+1} of ${total}`;
+
+  // card
+  const wrap = document.getElementById('ssCardWrap');
+  if (wrap) {
+    if (isLocked(q)) {
+      wrap.innerHTML = `<div class="pyq-scard q-locked" style="min-height:220px;">
+        ${lockOverlayHTML()}
+        <div style="filter:blur(5px);opacity:0.5;pointer-events:none;">${buildShareCard(q,_ssIdx)}</div>
+      </div>`;
     } else {
-      stopSlideshow(); // reached end
+      wrap.innerHTML = buildShareCard(q, _ssIdx);
+    }
+  }
+
+  // prev/next buttons
+  const prev = document.getElementById('ssPrev');
+  const next = document.getElementById('ssNext');
+  if (prev) prev.disabled = _ssIdx === 0;
+  if (next) next.disabled = _ssIdx === total - 1;
+
+  // play/pause button
+  updateSSPlayBtn();
+}
+
+function startSSTimer() {
+  stopSSTimer();
+  _ssTimer = setInterval(() => {
+    if (_ssIdx < filteredQ.length - 1) {
+      _ssIdx++;
+      renderSSCard();
+    } else {
+      stopSSTimer();
+      updateSSPlayBtn();
       showToast('Slideshow complete!');
     }
-  }, _slideSpeed);
-  renderStudyCard(_studyIdx); // re-render nav to show pause button
+  }, SS_SPEED);
+  updateSSPlayBtn();
 }
 
-function stopSlideshow() {
-  if (_slideTimer) { clearInterval(_slideTimer); _slideTimer = null; }
+function stopSSTimer() {
+  if (_ssTimer) { clearInterval(_ssTimer); _ssTimer = null; }
 }
+
+function toggleSSPlay() {
+  if (_ssTimer) { stopSSTimer(); } else { startSSTimer(); }
+  updateSSPlayBtn();
+}
+
+function updateSSPlayBtn() {
+  const btn = document.getElementById('ssPlayBtn');
+  if (!btn) return;
+  if (_ssTimer) {
+    btn.textContent = '⏸ Pause';
+    btn.classList.add('play');
+  } else {
+    btn.textContent = '▶ Play';
+    btn.classList.remove('play');
+  }
+}
+
+function ssPrev() { stopSSTimer(); _ssIdx = Math.max(0, _ssIdx-1); renderSSCard(); }
+function ssNext() { stopSSTimer(); _ssIdx = Math.min(filteredQ.length-1, _ssIdx+1); renderSSCard(); }
+
+// legacy stubs (no-ops now)
+function startSlideshow() { openSlideshow(_ssIdx); }
+function stopSlideshow() { closeSlideshow(); }
 
 async function downloadCardsPNG() {
   const btn = document.getElementById('btnDownloadCards');
@@ -9207,6 +9292,12 @@ document.addEventListener("keydown", e => {
     else updateAuthNavBtn();
   } catch(e) { updateAuthNavBtn(); }
 })();
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSlideshow();
+  if (e.key === 'ArrowRight' && document.getElementById('slideshowOverlay').classList.contains('open')) ssNext();
+  if (e.key === 'ArrowLeft'  && document.getElementById('slideshowOverlay').classList.contains('open')) ssPrev();
+});
 </script>
 
 <!-- ── Subject-Year Drill-down Modal ──────────────────────── -->
@@ -9217,6 +9308,21 @@ document.addEventListener("keydown", e => {
       <button class="syd-close" onclick="closeSYD()">✕</button>
     </div>
     <div class="syd-body" id="sydBody"></div>
+  </div>
+</div>
+
+<!-- ── SLIDESHOW OVERLAY ───────────────────────────────────────── -->
+<div id="slideshowOverlay">
+  <div id="ssProgress" class="ss-progress" style="width:0%"></div>
+  <div class="ss-topbar">
+    <span class="ss-counter" id="ssCounter">Q 1 of 0</span>
+    <button class="ss-close" onclick="closeSlideshow()">✕</button>
+  </div>
+  <div class="ss-card-wrap" id="ssCardWrap"></div>
+  <div class="ss-controls">
+    <button class="ss-btn" id="ssPrev" onclick="ssPrev()">← Prev</button>
+    <button class="ss-btn play" id="ssPlayBtn" onclick="toggleSSPlay()">⏸ Pause</button>
+    <button class="ss-btn" id="ssNext" onclick="ssNext()">Next →</button>
   </div>
 </div>
 </body>
