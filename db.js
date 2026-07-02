@@ -61,6 +61,23 @@ async function initDB() {
     await client.query(`ALTER TABLE progress ADD COLUMN IF NOT EXISTS mode TEXT DEFAULT 'practice'`);
     // Add quiz_id to progress for daily quiz grouping
     await client.query(`ALTER TABLE progress ADD COLUMN IF NOT EXISTS quiz_id TEXT`);
+    // News items table (persistent, survives deploys)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS news_items (
+        id         SERIAL PRIMARY KEY,
+        type       TEXT NOT NULL,
+        headline   TEXT NOT NULL,
+        detail     TEXT,
+        date       TEXT,
+        category   TEXT,
+        relevance  TEXT,
+        source     TEXT,
+        tags       TEXT,
+        link       TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_news_type ON news_items(type)`);
     console.log('✅ Database tables ready');
   } catch (e) {
     console.error('❌ DB init error:', e.message);

@@ -994,12 +994,24 @@ app.get('/api/getUPPSCNews', async (req, res) => {
     return res.json(_newsCache.uppsc);
   }
   try {
+    // Pull manually-ingested news from PostgreSQL first
+    const pgRes = await pool.query(
+      `SELECT * FROM news_items WHERE type='uppsc' ORDER BY created_at DESC LIMIT 200`
+    );
+    if (pgRes.rows.length > 0) {
+      const rows = pgRes.rows.map(r => ({
+        headline: r.headline, detail: r.detail, date: r.date,
+        category: r.category, relevance: r.relevance, source: r.source,
+        tags: r.tags, link: r.link
+      }));
+      _newsCache.uppsc = rows;
+      _newsCacheTime.uppsc = now;
+      return res.json(rows);
+    }
+    // Fallback: try RSS proxy (often blocked from cloud)
     const feeds = [
       'https://news.google.com/rss/search?q=Uttar+Pradesh+government+scheme+yojana&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=UP+Yogi+infrastructure+economy+policy&hl=en-IN&gl=IN&ceid=IN:en',
       'https://news.google.com/rss/search?q=UPPSC+UP+PSC+exam+recruitment&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=Uttar+Pradesh+agriculture+kisan+flood&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=Uttar+Pradesh+law+order+court+police&hl=en-IN&gl=IN&ceid=IN:en',
     ];
     const results = await Promise.all(feeds.map(u => fetchFeedViaProxy(u)));
     const seen = new Set();
@@ -1036,13 +1048,24 @@ app.get('/api/getCurrentAffairs', async (req, res) => {
     return res.json(_newsCache.ca);
   }
   try {
+    // Pull manually-ingested news from PostgreSQL first
+    const pgRes = await pool.query(
+      `SELECT * FROM news_items WHERE type='ca' ORDER BY created_at DESC LIMIT 200`
+    );
+    if (pgRes.rows.length > 0) {
+      const rows = pgRes.rows.map(r => ({
+        headline: r.headline, detail: r.detail, date: r.date,
+        category: r.category, relevance: r.relevance, source: r.source,
+        tags: r.tags, link: r.link
+      }));
+      _newsCache.ca = rows;
+      _newsCacheTime.ca = now;
+      return res.json(rows);
+    }
+    // Fallback: try RSS proxy
     const feeds = [
       'https://news.google.com/rss/search?q=India+government+policy+scheme+budget&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=India+parliament+cabinet+constitution+election&hl=en-IN&gl=IN&ceid=IN:en',
       'https://news.google.com/rss/search?q=India+economy+RBI+inflation+trade+export&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=India+ISRO+science+technology+environment&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=India+international+G20+BRICS+bilateral&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=India+award+sports+medal+cricket+rank&hl=en-IN&gl=IN&ceid=IN:en',
     ];
     const results = await Promise.all(feeds.map(u => fetchFeedViaProxy(u)));
     const seen = new Set();
@@ -1114,6 +1137,41 @@ app.post('/api/bulkAddCurrentAffairs', (req, res) => {
   res.json({ success: true, added: rows.length });
 });
 
+// ── API: ingestNews — store in PostgreSQL (persistent across deploys) ──
+app.post('/api/ingestNews', async (req, res) => {
+  try {
+    const { uppscNews = [], currentAffairs = [] } = req.body || {};
+    let added = 0;
+    for (const r of uppscNews) {
+      if (!r.headline) continue;
+      await pool.query(
+        `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        ['uppsc', r.headline, r.detail||'', r.date||formatDate(new Date()),
+         r.category||'General', r.relevance||'Medium', r.source||'', r.tags||'', r.link||'']
+      );
+      added++;
+    }
+    for (const r of currentAffairs) {
+      if (!r.headline) continue;
+      await pool.query(
+        `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        ['ca', r.headline, r.detail||'', r.date||formatDate(new Date()),
+         r.category||'General', r.relevance||'Medium', r.source||'', r.tags||'', r.link||'']
+      );
+      added++;
+    }
+    // Invalidate cache so GET endpoints pick up new data immediately
+    _newsCacheTime.uppsc = 0;
+    _newsCacheTime.ca = 0;
+    res.json({ success: true, added });
+  } catch(e) {
+    console.error('ingestNews error:', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 // ── API: getDigest — fetch DAILY_DIGEST sheet tab ────────────
 let _digestCache = null;
 let _digestCacheTime = 0;
@@ -1182,13 +1240,12 @@ app.get('/api/digest', async (req, res) => {
   }
 });
 
-// ── API: checkAdmin ───────────────────────────────────────────
+// -- API: checkAdmin
 app.post('/api/checkAdmin', (req, res) => {
-  // In local dev, you are always admin
   res.json({ isAdmin: true, email: 'local@dev.local' });
 });
 
-// ── HELPER: sync leaderboard after progress save ──────────────
+// -- HELPER: sync leaderboard after progress save
 function _syncLeaderboard(db, userName) {
   const rows    = db.progress.filter(r => r.userName === userName);
   const correct = rows.filter(r => r.result === 'correct').length;
@@ -1211,7 +1268,7 @@ function _syncLeaderboard(db, userName) {
   }
 }
 
-// ── START ─────────────────────────────────────────────────────
+// -- START
 app.listen(PORT, '0.0.0.0', () => {
   console.log('UPPSC Study Portal started on port ' + PORT);
   console.log('UPPSC Study Portal started on port ' + PORT);
