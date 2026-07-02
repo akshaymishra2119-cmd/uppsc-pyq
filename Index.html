@@ -548,7 +548,8 @@ textarea{resize:vertical;min-height:70px;}
   padding:16px;margin-bottom:10px;}
 .q-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;align-items:center;}
 .q-num{font-size:12px;color:var(--text3);margin-right:4px;}
-.q-text{font-size:14px;color:var(--text);margin-bottom:14px;line-height:1.6;}
+.q-text{font-size:14px;color:var(--text);margin-bottom:14px;line-height:1.7;}
+.q-stmt-num{font-weight:700;color:var(--blue);font-size:13px;}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
 @media(max-width:600px){.opts{grid-template-columns:1fr;}}
 .opt{padding:9px 12px;font-size:13px;border-radius:var(--radius);
@@ -2167,7 +2168,7 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
       <button class="card-view-btn" id="btnCardView" onclick="setQView('card')" title="Card view">
         <i class="ti ti-cards"></i> Cards
       </button>
-      <button class="card-dl-btn" id="btnDownloadCards" onclick="downloadCardsPNG()" style="display:none;" title="Download all visible cards as PNG images">
+      <button class="card-dl-btn" id="btnDownloadCards" onclick="downloadCardsPNG()" style="display:none;" title="Download all visible cards as PNG images (Admin only)">
         <i class="ti ti-download"></i> Download Cards
       </button>
     </div>
@@ -3012,6 +3013,37 @@ function highlightDangerWords(text) {
   return text.replace(DANGER_WORDS, w => `<mark class="kw-danger">${w}</mark>`);
 }
 
+// ── Format question text — break numbered statements onto own lines ──
+function formatQText(text) {
+  if (!text) return '';
+  // Insert <br> before patterns like: 1. 2. 3. 4.  OR  (1) (2) (3)  OR  (i) (ii) (iii)  OR  I. II. III.
+  // But only if there are at least 2 such items (it's a list, not just a sentence starting with "1.")
+  let out = text;
+
+  // Pattern: " 2." " 3." etc — numbered list inline (most common in UPPSC)
+  // Replace " 2. " / " 3. " etc with line break + number
+  out = out.replace(/\s+(\d+)\.\s+/g, (match, num) => {
+    if (parseInt(num) >= 2) return `<br><span class="q-stmt-num">${num}.</span> `;
+    return match; // leave "1." as-is (it's the start, already on its own line)
+  });
+
+  // If text starts with "1." wrap first item too
+  out = out.replace(/^(\d+)\.\s+/, (match, num) =>
+    `<span class="q-stmt-num">${num}.</span> `);
+
+  // Pattern: "(1)" "(2)" inline
+  out = out.replace(/\s+\((\d+)\)\s+/g, (match, num) => {
+    if (parseInt(num) >= 2) return `<br><span class="q-stmt-num">(${num})</span> `;
+    return match;
+  });
+
+  // Pattern: "A." "B." "C." as sub-items (assertion-reason type)
+  out = out.replace(/\s+(Assertion|Reason)\s*:/gi, (m, word) =>
+    `<br><strong>${word}:</strong>`);
+
+  return out;
+}
+
 function highlightSearch(text, term) {
   if (!term || !text) return text || '';
   try {
@@ -3098,7 +3130,7 @@ function renderClusterView() {
           <span class="badge" style="background:var(--bg3);color:var(--text2);">${q.year}</span>
           <span class="badge ${q.difficulty==='Hard'?'badge-red':q.difficulty==='Medium'?'badge-amber':'badge-green'}">${q.difficulty}</span>
         </div>
-        <div class="q-text" style="font-size:13px;">${highlightDangerWords(q.question)}</div>
+        <div class="q-text" style="font-size:13px;">${highlightDangerWords(formatQText(q.question))}</div>
         <div class="opts" style="gap:4px;">${opts}</div>
         ${exp}
       </div>`;
@@ -5521,7 +5553,7 @@ function renderQuestions() {
         <span style="margin-left:auto;font-size:11px;color:var(--text3);margin-right:28px;">${q.subTopic||""}</span>
       </div>
       ${confUI}
-      <div class="q-text">${highlightSearch(highlightDangerWords(q.question), searchQuery)}</div>
+      <div class="q-text">${highlightSearch(highlightDangerWords(formatQText(q.question)), searchQuery)}</div>
       <div class="opts">${opts}</div>
       ${explanation}
       ${skipBtn}
@@ -5610,7 +5642,7 @@ function setQView(view) {
   _qView = view;
   document.getElementById('btnListView').classList.toggle('active', view === 'list');
   document.getElementById('btnCardView').classList.toggle('active', view === 'card');
-  document.getElementById('btnDownloadCards').style.display = view === 'card' ? 'flex' : 'none';
+  document.getElementById('btnDownloadCards').style.display = (view === 'card' && isAdmin) ? 'flex' : 'none';
   renderQuestions();
 }
 
@@ -5652,7 +5684,7 @@ function buildShareCard(q, idx) {
     <div class="pyq-scard-body">
       <div class="pyq-scard-qwrap">
         <div class="pyq-scard-qicon">❓</div>
-        <div class="pyq-scard-q">${q.question}</div>
+        <div class="pyq-scard-q">${formatQText(q.question)}</div>
       </div>
       <div class="pyq-scard-opts">${optsHtml}</div>
       <div class="pyq-scard-expl">
