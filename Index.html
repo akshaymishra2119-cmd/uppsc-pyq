@@ -4738,29 +4738,6 @@ function openQTypeDrill() {
   document.getElementById('sydOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-function _openQTypeDrillLEGACY_UNUSED() {
-  // kept for reference only
-  const qs = [];
-  qs.map((q, i) => {
-        const opts = [].map((k, j) => q[k]
-          ? `<div class="syd-opt${q.answer === ''? ' correct' : ''}">
-              ${''}. ${q[k]}${q.answer === '' ? ' ✓' : ''}
-             </div>`
-          : '').join('');
-        const repTag = q.repeatsIn && q.repeatsIn.length
-          ? `<span style="color:var(--amber);font-size:10px;">↻ repeats</span>` : '';
-        return `<div class="syd-qblock">
-          <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''} ${repTag}</div>
-          <div class="syd-qtext">${q.question}</div>
-          ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
-          ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}
-        </div>`;
-      }).join('')
-    : `<p style="color:var(--text3);padding:24px;text-align:center;">No questions found.</p>`;
-
-  document.getElementById('sydOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
 
 // ── Smart Guess Strategy ─────────────────────────────────────
 function initSmartGuess(questions) {
