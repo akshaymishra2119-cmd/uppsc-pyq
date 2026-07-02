@@ -3294,9 +3294,27 @@ function openRepeatModal(qId) {
     </div>`;
   };
 
+  // Guest banner — compare modal always shows full questions, but prompts registration
+  const guestBanner = !hasFullAccess() ? `
+    <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:12px;
+                padding:16px 18px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:22px;margin-bottom:6px;">📖</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Compare Preview</div>
+      <div style="font-size:13px;opacity:.9;margin-bottom:12px;">
+        ${currentUser
+          ? 'Your trial has ended. Subscribe to unlock all questions & features.'
+          : 'Register free — get 30 days full access to all questions, analytics & mock tests.'}
+      </div>
+      <button onclick="closeRepeatModal();openAuthModal('${currentUser ? 'login' : 'register'}')"
+        style="padding:9px 22px;background:#fff;color:#6366f1;border:none;border-radius:8px;
+               font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+        ${currentUser ? '💳 Subscribe ₹100/month' : '🚀 Register Free — It\'s Quick!'}
+      </button>
+    </div>` : '';
+
   document.getElementById('repeatModalTitle').textContent =
     `Topic: "${topic || 'repeat'}" — appeared in ${toShow.map(q=>q.year).join(', ')}`;
-  document.getElementById('repeatModalBody').innerHTML = toShow.map((q,i) => renderCard(q,i)).join('');
+  document.getElementById('repeatModalBody').innerHTML = guestBanner + toShow.map((q,i) => renderCard(q,i)).join('');
   document.getElementById('repeatModal').style.display = 'block';
   document.body.style.overflow = 'hidden';
 }
@@ -9141,12 +9159,25 @@ function lockOverlayHTML() {
 // Guests see max 4 questions in any drill modal
 const SYD_FREE_LIMIT = 4;
 function buildSydQBlock(q, i) {
+  const isRepeat = q.repeatsIn && q.repeatsIn.includes(',');
+  // Compare button always accessible — sits outside any blur/pointer-events:none zone
+  const compareBtn = isRepeat
+    ? `<button onclick="event.stopPropagation();openRepeatModal('${q.id}')"
+         style="margin:8px 0 2px;padding:6px 16px;background:var(--amber,#EF9F27);color:#fff;
+                border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;
+                display:inline-flex;align-items:center;gap:5px;">
+         🔁 Compare across years</button>`
+    : '';
+
   if (!hasFullAccess() && i >= SYD_FREE_LIMIT) {
-    return `<div class="syd-qblock q-locked" style="min-height:80px;">
-      ${lockOverlayHTML()}
-      <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">
-        <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''}</div>
-        <div class="syd-qtext">${q.question}</div>
+    return `<div style="margin-bottom:12px;">
+      ${compareBtn}
+      <div class="syd-qblock q-locked" style="min-height:80px;margin-bottom:0;">
+        ${lockOverlayHTML()}
+        <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">
+          <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''}</div>
+          <div class="syd-qtext">${q.question}</div>
+        </div>
       </div>
     </div>`;
   }
@@ -9155,7 +9186,7 @@ function buildSydQBlock(q, i) {
   const opts = OPT_KEYS.map((k,j) => q[k]
     ? `<div class="syd-opt${q.answer===LABELS[j]?' correct':''}">${LABELS[j]}. ${q[k]}${q.answer===LABELS[j]?' ✓':''}</div>`
     : '').join('');
-  const repTag = q.repeatsIn && q.repeatsIn.includes(',')
+  const repTag = isRepeat
     ? `<span style="color:var(--amber);font-size:10px;">↻ repeats ${q.repeatsIn}</span>` : '';
   const inner = `
     <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''} ${repTag}</div>
@@ -9163,12 +9194,15 @@ function buildSydQBlock(q, i) {
     ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
     ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}`;
   if (isLocked(q)) {
-    return `<div class="syd-qblock q-locked" style="min-height:80px;">
-      ${lockOverlayHTML()}
-      <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">${inner}</div>
+    return `<div style="margin-bottom:12px;">
+      ${compareBtn}
+      <div class="syd-qblock q-locked" style="min-height:80px;margin-bottom:0;">
+        ${lockOverlayHTML()}
+        <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">${inner}</div>
+      </div>
     </div>`;
   }
-  return `<div class="syd-qblock">${inner}</div>`;
+  return `<div class="syd-qblock">${inner}${compareBtn}</div>`;
 }
 
 // Close modal on backdrop click
