@@ -9112,11 +9112,13 @@ function closeImgLightbox(e) {
       <button class="auth-btn" onclick="doLogin()">Login &rarr;</button>
     </div>
     <div id="authRegisterForm" style="display:none;">
-      <input class="auth-field" id="regName" type="text" placeholder="Your name" />
+      <input class="auth-field" id="regName" type="text" placeholder="Your full name" />
       <input class="auth-field" id="regEmail" type="email" placeholder="Email address" />
+      <input class="auth-field" id="regPhone" type="tel" placeholder="Phone number (optional)" />
       <input class="auth-field" id="regPassword" type="password" placeholder="Password (min 6 chars)" />
+      <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:10px;text-align:center;">✅ 30 days free full access after registration</div>
       <div class="auth-err" id="regErr"></div>
-      <button class="auth-btn" onclick="doRegister()">Create account &rarr;</button>
+      <button class="auth-btn" onclick="doRegister()">Create free account &rarr;</button>
     </div>
   </div>
 </div>
@@ -9156,10 +9158,11 @@ async function doLogin() {
 async function doRegister() {
   const name     = document.getElementById("regName").value.trim();
   const email    = document.getElementById("regEmail").value.trim();
+  const phone    = document.getElementById("regPhone").value.trim();
   const password = document.getElementById("regPassword").value;
   if (!name || !email || !password) return showAuthError("regErr", "All fields required");
   try {
-    const res  = await fetch("/api/register", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name,email,password}) });
+    const res  = await fetch("/api/register", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name,email,phone,password}) });
     const data = await res.json();
     if (!res.ok) return showAuthError("regErr", data.error || "Registration failed");
     onAuthSuccess(data.user);
@@ -9174,6 +9177,7 @@ function onAuthSuccess(user) {
   currentUser = user;
   closeAuthModal();
   updateAuthNavBtn();
+  updateTrialBanner();
   refreshDashboardStats();
 }
 function updateAuthNavBtn() {
@@ -9190,6 +9194,36 @@ function updateAuthNavBtn() {
     btn.onclick = () => openAuthModal("login");
     btn.title = "";
   }
+}
+function updateTrialBanner() {
+  let banner = document.getElementById("trialBanner");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "trialBanner";
+    banner.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:8000;text-align:center;padding:9px 16px;font-size:12px;font-weight:600;display:none;";
+    document.body.appendChild(banner);
+  }
+  if (!currentUser) { banner.style.display = "none"; return; }
+  const status = currentUser.status;
+  if (status === "trial" && currentUser.trialExpiresOn) {
+    const days = Math.ceil((new Date(currentUser.trialExpiresOn) - new Date()) / 86400000);
+    if (days > 0) {
+      banner.style.cssText += "background:#f59e0b;color:#000;display:block;";
+      banner.innerHTML = `⏳ Free trial: <strong>${days} day${days!==1?'s':''} left</strong> — Subscribe for ₹100/month to keep full access`;
+    } else { banner.style.display = "none"; }
+  } else if (status === "expired") {
+    banner.style.cssText += "background:#ef4444;color:#fff;display:block;";
+    banner.innerHTML = `🔒 Your trial has ended. <strong>Subscribe for ₹100/month</strong> to unlock full access`;
+  } else if (status === "active") {
+    banner.style.display = "none";
+  } else {
+    banner.style.display = "none";
+  }
+}
+// Returns true if user has full access (trial or paid), false if guest/expired
+function hasFullAccess() {
+  if (!currentUser) return false;
+  return currentUser.status === "trial" || currentUser.status === "active";
 }
 
 // Close modal on backdrop click
