@@ -996,7 +996,7 @@ app.get('/api/getUPPSCNews', async (req, res) => {
   try {
     // Pull manually-ingested news from PostgreSQL first
     const pgRes = await pool.query(
-      `SELECT * FROM news_items WHERE type='uppsc' ORDER BY TO_DATE(date, 'DD Mon YYYY') DESC, created_at DESC LIMIT 200`
+      `SELECT * FROM news_items WHERE type='uppsc' ORDER BY created_at DESC LIMIT 200`
     );
     if (pgRes.rows.length > 0) {
       const rows = pgRes.rows.map(r => ({
@@ -1004,6 +1004,11 @@ app.get('/api/getUPPSCNews', async (req, res) => {
         category: r.category, relevance: r.relevance, source: r.source,
         tags: r.tags, link: r.link, mcq: r.mcq || ''
       }));
+      rows.sort((a, b) => {
+        const da = a.date ? new Date(a.date).getTime() : 0;
+        const db = b.date ? new Date(b.date).getTime() : 0;
+        return (da && db) ? db - da : 0;
+      });
       _newsCache.uppsc = rows;
       _newsCacheTime.uppsc = now;
       return res.json(rows);
@@ -1050,7 +1055,7 @@ app.get('/api/getCurrentAffairs', async (req, res) => {
   try {
     // Pull manually-ingested news from PostgreSQL first
     const pgRes = await pool.query(
-      `SELECT * FROM news_items WHERE type='ca' ORDER BY TO_DATE(date, 'DD Mon YYYY') DESC, created_at DESC LIMIT 200`
+      `SELECT * FROM news_items WHERE type='ca' ORDER BY created_at DESC LIMIT 200`
     );
     if (pgRes.rows.length > 0) {
       const rows = pgRes.rows.map(r => ({
@@ -1058,6 +1063,11 @@ app.get('/api/getCurrentAffairs', async (req, res) => {
         category: r.category, relevance: r.relevance, source: r.source,
         tags: r.tags, link: r.link, mcq: r.mcq || ''
       }));
+      rows.sort((a, b) => {
+        const da = a.date ? new Date(a.date).getTime() : 0;
+        const db = b.date ? new Date(b.date).getTime() : 0;
+        return (da && db) ? db - da : 0;
+      });
       _newsCache.ca = rows;
       _newsCacheTime.ca = now;
       return res.json(rows);
