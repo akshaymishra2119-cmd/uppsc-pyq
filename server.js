@@ -1154,6 +1154,8 @@ app.post('/api/ingestNews', async (req, res) => {
     let added = 0;
     for (const r of uppscNews) {
       if (!r.headline) continue;
+      const dupU = await pool.query(`SELECT id FROM news_items WHERE type='uppsc' AND headline=$1 LIMIT 1`, [r.headline]);
+      if (dupU.rows.length > 0) continue;
       await pool.query(
         `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link, mcq)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
@@ -1164,6 +1166,8 @@ app.post('/api/ingestNews', async (req, res) => {
     }
     for (const r of currentAffairs) {
       if (!r.headline) continue;
+      const dupC = await pool.query(`SELECT id FROM news_items WHERE type='ca' AND headline=$1 LIMIT 1`, [r.headline]);
+      if (dupC.rows.length > 0) continue;
       await pool.query(
         `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link, mcq)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
