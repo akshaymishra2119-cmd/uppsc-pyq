@@ -57,6 +57,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .nav-btn.nav-coral.active{color:#C2410C;border-bottom-color:#EA580C;background:#FFF7ED;}
 .nav-btn.admin-btn{margin-left:auto;color:#9CA3AF;}
 .nav-btn.admin-btn.active{color:#EF4444;border-bottom-color:#EF4444;}
+.nav-btn.nav-pyq{color:#92400e;background:#FAEEDA;}
+.nav-btn.nav-pyq:hover{color:#78350f;background:#FEF3C7;}
+.nav-btn.nav-pyq.active{color:#92400e;border-bottom-color:#EF9F27;background:#FEF3C7;font-weight:700;}
+.nav-pyq-badge{font-size:10px;background:#EF9F27;color:#fff;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:2px;vertical-align:middle;}
+.nav-btn.nav-green{color:#166534;background:#f0fdf4;}
+.nav-btn.nav-green:hover{color:#14532d;background:#dcfce7;}
+.nav-btn.nav-green.active{color:#166534;border-bottom-color:#22c55e;background:#dcfce7;font-weight:700;}
+.nav-green-badge{font-size:10px;background:#22c55e;color:#fff;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:2px;vertical-align:middle;}
 
 /* ── NEW HERO BANNER (light theme) ──────────────── */
 .hero-grid-new{display:grid;grid-template-columns:1fr 260px;gap:14px;margin-bottom:16px;}
@@ -1402,8 +1410,13 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn active" onclick="showTab('home',this)">
     <i class="ti ti-home" aria-hidden="true"></i> Home
   </button>
-  <button class="nav-btn nav-blue" onclick="showTab('pyq',this)">
+  <button class="nav-btn nav-pyq" onclick="showTab('pyq',this)">
     <i class="ti ti-books" aria-hidden="true"></i> PYQ Practice
+    <span class="nav-pyq-badge">TOP</span>
+  </button>
+  <button class="nav-btn nav-pyq" onclick="showTab('pyq-analytics',this)">
+    <i class="ti ti-calendar-stats" aria-hidden="true"></i> PYQ Analytics
+    <span class="nav-pyq-badge">NEW</span>
   </button>
   <button class="nav-btn nav-teal" onclick="showTab('ca',this)">
     <i class="ti ti-news" aria-hidden="true"></i> Current Affairs
@@ -1414,14 +1427,12 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn nav-blue" onclick="showTab('daily-quiz',this)">
     <i class="ti ti-bolt" aria-hidden="true"></i> Daily Quiz
   </button>
-  <button class="nav-btn nav-purple" onclick="showTab('progress',this)">
-    <i class="ti ti-chart-bar" aria-hidden="true"></i> Track Progress
+  <button class="nav-btn nav-green" onclick="showTab('progress',this)">
+    <i class="ti ti-chart-line" aria-hidden="true"></i> My Progress
+    <span class="nav-green-badge">LIVE</span>
   </button>
   <button class="nav-btn nav-coral" onclick="showTab('leaderboard',this)">
     <i class="ti ti-trophy" aria-hidden="true"></i> Leaderboard
-  </button>
-  <button class="nav-btn nav-amber" onclick="showTab('pyq-analytics',this)">
-    <i class="ti ti-calendar-stats" aria-hidden="true"></i> PYQ Analytics
   </button>
   <button class="nav-btn nav-purple" onclick="showTab('study',this)">
     <i class="ti ti-book-2" aria-hidden="true"></i> Study Material
@@ -1705,7 +1716,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
         <span id="todayDate" style="font-size:11px;color:var(--text3);margin-left:auto;"></span>
       </div>
       <div id="homeCAfeed"><div class="loading"><i class="ti ti-loader"></i>Loading...</div></div>
-      <button class="btn btn-sm" style="margin-top:8px;color:var(--pink);border-color:var(--pink);" onclick="showTab('ca',document.querySelectorAll('.nav-btn')[2])">
+      <button class="btn btn-sm" style="margin-top:8px;color:var(--pink);border-color:var(--pink);" onclick="showTab('ca',document.querySelector('.nav-btn[onclick*="ca"]'))">
         View all CA <i class="ti ti-arrow-right"></i>
       </button>
     </div>
@@ -6439,7 +6450,7 @@ function endMockTest() {
         <button class="btn" onclick="exitMockToList()">
           <i class="ti ti-list"></i> Back to practice
         </button>
-        <button class="btn" onclick="showTab('progress',document.querySelectorAll('.nav-btn')[3])">
+        <button class="btn" onclick="showTab('progress',document.querySelector('.nav-btn[onclick*="progress"]'))">
           <i class="ti ti-chart-bar"></i> View progress
         </button>
       </div>
@@ -6646,7 +6657,7 @@ function endQuiz() {
         <button class="btn btn-primary" onclick="location.reload()">
           <i class="ti ti-refresh" aria-hidden="true"></i> New session
         </button>
-        <button class="btn" onclick="showTab('progress',document.querySelectorAll('.nav-btn')[3])">
+        <button class="btn" onclick="showTab('progress',document.querySelector('.nav-btn[onclick*="progress"]'))">
           <i class="ti ti-chart-bar" aria-hidden="true"></i> View progress
         </button>
       </div>
