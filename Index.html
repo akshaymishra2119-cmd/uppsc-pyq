@@ -7248,36 +7248,13 @@ function renderServerProgress(data) {
       var label= d===todayStr?'Today':d===yestStr?'Yesterday'
         :new Date(d).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
       var sub  = (d===todayStr||d===yestStr)?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'';
-      var qCards= tot===0
-        ? '<div class="dp-empty">No questions for this mode on this day.</div>'
-        : qs.map(function(q,qi){
-            var key ='dp_'+idx+'_'+qi;
-            window._dpQMap[key]=q;
-            var icon= q.result==='correct'?'ti-circle-check dp-icon-ok':'ti-circle-x dp-icon-err';
-            var meta= (q.year||'')+(q.year&&q.subject?' · ':'')+(q.subject||'')+' · #'+q.q_id;
-            return '<div class="dp-qcard dp-q-'+q.result+'" data-result="'+q.result+'"'
-              +' onclick="dpOpenQuestion(\''+key+'\')" style="cursor:pointer;">'
-              +'<i class="ti '+icon+'" aria-hidden="true"></i>'
-              +'<div class="dp-qtext">'
-              +'<div class="dp-qtitle">'+(q.question||'Q#'+q.q_id)+'</div>'
-              +'<div class="dp-qmeta">'+meta+' <span style="color:var(--blue);font-size:10px;">view ›</span></div>'
-              +'</div></div>';
-          }).join('');
-      return '<div class="dp-row" data-idx="'+idx+'" onclick="dpToggle(this)">'
+      return '<div class="dp-row" data-d="'+d+'" onclick="tpExpandDay(\''+d+'\')">'
         +'<div class="dp-date"><div class="dp-label">'+label+'</div><div class="dp-sub">'+sub+'</div></div>'
         +'<div class="dp-stat">'+tot+'</div>'
         +'<div class="dp-stat dp-correct">'+corr+'</div>'
         +'<div class="dp-stat dp-wrong">'+wrng+'</div>'
         +'<div class="dp-stat">'+pill(acc)+'</div>'
-        +'<div class="dp-chevron"><i class="ti ti-chevron-right dp-icon" aria-hidden="true"></i></div>'
-        +'</div>'
-        +'<div class="dp-expand" id="dpExp'+idx+'" style="display:none;">'
-        +'<div class="dp-filter-row">'
-        +'<button class="dp-filter active" onclick="dpFilter(event,\'all\','+idx+')">All ('+tot+')</button>'
-        +'<button class="dp-filter" onclick="dpFilter(event,\'correct\','+idx+')">Correct ('+corr+')</button>'
-        +'<button class="dp-filter" onclick="dpFilter(event,\'wrong\','+idx+')">Wrong ('+wrng+')</button>'
-        +'</div>'
-        +'<div class="dp-qlist" id="dpQlist'+idx+'">'+qCards+'</div>'
+        +'<div class="dp-view">▼ view</div>'
         +'</div>';
     }).join('');
   }
@@ -7294,8 +7271,9 @@ function renderServerProgress(data) {
       +'<div class="dp-stat dp-correct" style="font-size:11px;">Correct</div>'
       +'<div class="dp-stat dp-wrong" style="font-size:11px;">Wrong</div>'
       +'<div class="dp-stat" style="font-size:11px;color:var(--text3);">Accuracy</div>'
-      +'<div class="dp-chevron"></div></div>'
+      +'<div class="dp-view"></div></div>'
       +buildDpRows(modeFilter)
+      +'<div id="dpDayDetail" style="margin-top:10px;"></div>'
       +'</div>';
   }
   var sec9 = buildSec9('all');
@@ -7502,9 +7480,9 @@ function renderServerProgress(data) {
     +'.tp-trend-row{display:grid;grid-template-columns:130px 1fr 44px 70px;gap:8px;align-items:center;margin-bottom:8px;}'
     +'.tp-trend-sub{font-size:12px;font-weight:500;}.tp-trend-bar-wrap{background:var(--border);border-radius:4px;height:8px;overflow:hidden;}'
     +'.tp-empty{font-size:12px;color:var(--text3);padding:8px 0;}'
-    +'.dp-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;padding:6px 12px;border-bottom:1px solid var(--border);}'
-    +'.dp-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;padding:11px 12px;border-bottom:1px solid var(--border);cursor:pointer;align-items:center;transition:background .12s;}'
-    +'.dp-row:hover,.dp-row.dp-open{background:var(--bg2);}'
+    +'.dp-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 48px;padding:6px 12px;border-bottom:1px solid var(--border);}'
+    +'.dp-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 48px;padding:11px 12px;border-bottom:1px solid var(--border);cursor:pointer;align-items:center;transition:background .12s;}'
+    +'.dp-row:hover,.dp-row.dp-active{background:var(--bg2);}'
     +'.dp-date{display:flex;flex-direction:column;}.dp-label{font-size:13px;font-weight:500;color:var(--text);}'
     +'.dp-sub{font-size:11px;color:var(--text3);margin-top:2px;}'
     +'.dp-stat{text-align:center;font-size:14px;font-weight:600;color:var(--text);}'
@@ -7523,7 +7501,7 @@ function renderServerProgress(data) {
     +'.dp-qtext{flex:1;min-width:0;}.dp-qtitle{font-size:13px;color:var(--text);line-height:1.45;}'
     +'.dp-qmeta{font-size:11px;color:var(--text3);margin-top:3px;}'
     +'.dp-empty{font-size:12px;color:var(--text3);padding:8px 0;}'
-    +'@media(max-width:560px){.dp-head,.dp-row{grid-template-columns:2fr 1fr 1fr 1fr 28px;}.dp-stat:nth-child(4){display:none;}}'
+    +'.dp-view{text-align:center;font-size:11px;color:var(--text3);}@media(max-width:560px){.dp-head,.dp-row{grid-template-columns:2fr 1fr 1fr 1fr 48px;}.dp-stat:nth-child(4){display:none;}}'
     +'</style>';
 
   tl.innerHTML = css + secTimeline + sec1 + sec2 + sec9 + sec3 + sec5 + sec7;
@@ -7651,6 +7629,64 @@ function tpYrToggleQ(expId) {
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
+function tpExpandDay(d) {
+  var el = document.getElementById('dpDayDetail');
+  if (!el) return;
+  // Toggle off if same day clicked again
+  if (window._dpActiveDayDetail === d) {
+    el.innerHTML = '';
+    window._dpActiveDayDetail = null;
+    document.querySelectorAll('.dp-row').forEach(function(r){r.classList.remove('dp-active');});
+    return;
+  }
+  window._dpActiveDayDetail = d;
+  document.querySelectorAll('.dp-row').forEach(function(r){
+    r.classList.toggle('dp-active', r.getAttribute('data-d') === d);
+  });
+  var dh   = (window._tpData && window._tpData.dailyHistory) || {};
+  var mode = window._dpActiveMode || 'all';
+  var day  = dh[d] || {};
+  var todayStr = new Date().toDateString();
+  var yestStr  = new Date(Date.now()-86400000).toDateString();
+  var label = d===todayStr?'Today':d===yestStr?'Yesterday'
+    :new Date(d).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short',year:'numeric'});
+  var qs = (day.questions||[]).filter(function(q){ return mode==='all'||q.mode===mode; });
+  var correct = qs.filter(function(q){return q.result==='correct';}).length;
+  var wrong   = qs.filter(function(q){return q.result==='wrong';}).length;
+  var acc = (correct+wrong)>0 ? Math.round(correct/(correct+wrong)*100) : 0;
+  var accCol = acc>=70?'#1D9E75':acc>=50?'#EF9F27':'#E24B4A';
+  var qCards = qs.length === 0
+    ? '<div style="padding:16px;color:var(--text3);font-size:13px;">No questions for this day.</div>'
+    : qs.map(function(q, qi) {
+        var isOk  = q.result === 'correct';
+        var isBad = q.result === 'wrong';
+        var icon  = isOk  ? '<span style="color:#1D9E75;font-weight:700;">\u2713</span>'
+                  : isBad ? '<span style="color:#E24B4A;font-weight:700;">\u2717</span>'
+                  : '<span style="color:var(--text3);">\u25CB</span>';
+        var bg    = isOk ? '#f0fdf4' : isBad ? '#fff5f5' : 'var(--bg)';
+        var border= isOk ? '#86efac' : isBad ? '#fca5a5' : 'var(--border)';
+        var expId = 'dpDayQExp_' + qi;
+        var opts  = ['A','B','C','D'].map(function(l,i){
+          var txt = [q.optA,q.optB,q.optC,q.optD][i]; if(!txt) return '';
+          var isAns = l === q.answer;
+          return '<div style="padding:5px 8px;border-radius:5px;background:'+(isAns?'#dcfce7':'var(--bg2)')+';color:'+(isAns?'#166534':'var(--text)')+';font-weight:'+(isAns?'700':'400')+';margin-bottom:3px;font-size:12px;">'+ l+'. '+txt+(isAns?' \u2713':'')+'</div>';
+        }).join('');
+        var expl = q.explanation ? '<div style="margin-top:8px;padding:7px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;font-size:11px;color:var(--text3);"><b>Explanation:</b> '+q.explanation+'</div>' : '';
+        return '<div onclick="tpYrToggleQ(\''+expId+'\')" style="cursor:pointer;background:'+bg+';border:1px solid '+border+';border-radius:8px;padding:10px 14px;margin-bottom:6px;">'
+          + '<div style="display:flex;align-items:flex-start;gap:8px;">'
+          + '<span style="min-width:20px;margin-top:1px;">'+icon+'</span>'
+          + '<div style="flex:1;"><div style="font-size:13px;font-weight:500;line-height:1.4;">'+(q.question||'Q#'+q.q_id)+'</div>'
+          + '<div style="font-size:11px;color:var(--text3);margin-top:3px;">'+(q.subject||'')+' \u00B7 #'+q.q_id+'</div></div></div>'
+          + '<div id="'+expId+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid '+border+';font-size:12px;">'+opts+expl+'</div></div>';
+      }).join('');
+  el.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
+    + '<div style="font-size:14px;font-weight:700;">'+label+' — Questions</div>'
+    + '<div style="font-size:12px;color:var(--text3);">'+qs.length+' attempted \u00B7 <span style="color:#1D9E75;">\u2713'+correct+'</span> \u00B7 <span style="color:#E24B4A;">\u2717'+wrong+'</span> \u00B7 <span style="color:'+accCol+';font-weight:700;">'+acc+'%</span></div>'
+    + '</div>' + qCards + '</div>';
+  el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
 function dpSetMode(mode) {
   window._dpActiveMode = mode;
 
@@ -7732,6 +7768,7 @@ function dpSetMode(mode) {
       });
     } else if (window._buildDpRows) {
       var mLabels = { all:'All Modes', practice:'Casual Practice', quiz:'Daily Quiz' };
+      window._dpActiveDayDetail = null;
       sec9wrap.innerHTML = '<div class="tp-sec-hdr">\u{1F4C6} Daily Breakdown'
         +' <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">\u2014 '+(mLabels[mode]||mode)+'</span></div>'
         +'<div class="dp-head">'
@@ -7740,8 +7777,9 @@ function dpSetMode(mode) {
         +'<div class="dp-stat dp-correct" style="font-size:11px;">Correct</div>'
         +'<div class="dp-stat dp-wrong" style="font-size:11px;">Wrong</div>'
         +'<div class="dp-stat" style="font-size:11px;color:var(--text3);">Accuracy</div>'
-        +'<div class="dp-chevron"></div></div>'
-        + window._buildDpRows(mode);
+        +'<div class="dp-view"></div></div>'
+        + window._buildDpRows(mode)
+        +'<div id="dpDayDetail" style="margin-top:10px;"></div>';
     }
   }
 
