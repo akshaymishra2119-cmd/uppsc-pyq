@@ -3379,12 +3379,15 @@ function initPortal() {
   if (ctEl) ctEl.textContent = today.toLocaleDateString("en-IN", opts);
 
   // Check admin
-  google.script.run
-    .withSuccessHandler(r => {
-      isAdmin = r.isAdmin;
-      if (isAdmin) document.getElementById("adminNavBtn").style.display = "flex";
-    })
-    .checkAdmin();
+  const _adminTok = localStorage.getItem('jwtToken');
+  if (_adminTok) {
+    fetch('/api/checkAdmin', { headers: { Authorization: 'Bearer ' + _adminTok } })
+      .then(r => r.json())
+      .then(r => {
+        isAdmin = r.isAdmin;
+        if (isAdmin) document.getElementById('adminNavBtn').style.display = 'flex';
+      }).catch(function(){});
+  }
 
   // Load home data
   loadHome();

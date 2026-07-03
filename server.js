@@ -1365,8 +1365,10 @@ app.get('/api/digest', async (req, res) => {
 });
 
 // -- API: checkAdmin
-app.post('/api/checkAdmin', (req, res) => {
-  res.json({ isAdmin: true, email: 'local@dev.local' });
+app.get('/api/checkAdmin', authMiddleware, (req, res) => {
+  const ADMIN_EMAILS = ['data.work.official2026@gmail.com'];
+  const isAdmin = ADMIN_EMAILS.includes((req.user.email || '').toLowerCase());
+  res.json({ isAdmin });
 });
 
 // -- HELPER: sync leaderboard after progress save
