@@ -592,7 +592,8 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
     let qMapTP = {};
     try {
       const qs = await loadQuestions();
-      qs.forEach(q => { qMapTP[String(q.id)] = { question: q.question, subject: q.subject, year: q.year }; });
+      qs.forEach(q => { qMapTP[String(q.id)] = { question: q.question, subject: q.subject, year: q.year,
+        optA: q.optA, optB: q.optB, optC: q.optC, optD: q.optD, answer: q.answer, answerText: q.answerText, explanation: q.explanation }; });
     } catch(_) {}
     const dailyHistoryMap = {};
     allRows.forEach(r => {
@@ -603,11 +604,18 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
       if (r.result === 'wrong')   dailyHistoryMap[d].wrong++;
       const qi = qMapTP[String(r.q_id)] || {};
       dailyHistoryMap[d].questions.push({
-        q_id:     r.q_id,
-        question: qi.question || '',
-        subject:  r.subject   || qi.subject || '',
-        year:     r.year      || qi.year    || '',
-        result:   r.result
+        q_id:       r.q_id,
+        question:   qi.question   || '',
+        subject:    r.subject     || qi.subject || '',
+        year:       r.year        || qi.year    || '',
+        result:     r.result,
+        optA:       qi.optA       || '',
+        optB:       qi.optB       || '',
+        optC:       qi.optC       || '',
+        optD:       qi.optD       || '',
+        answer:     qi.answer     || '',
+        answerText: qi.answerText || '',
+        explanation:qi.explanation|| ''
       });
     });
 
