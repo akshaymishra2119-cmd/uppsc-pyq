@@ -7701,72 +7701,9 @@ function dpSetMode(mode) {
   var sec9wrap = document.getElementById('sec9wrap');
   if (sec9wrap) {
     if (mode === 'mock') {
-      // Mock mode: show session history from mock_history, not question breakdown
-      var mocks = (window._tpData && window._tpData.mockHistory) || [];
-      var mockRows = mocks.length === 0
-        ? '<div class="dp-empty" style="padding:16px 12px;">No mock tests taken yet. Go to the Mock Test tab to take one.</div>'
-        : mocks.map(function(mk, mIdx) {
-            var d = new Date(mk.takenAt).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-            var col = mk.pct>=70?'#1D9E75':mk.pct>=50?'#EF9F27':'#E24B4A';
-            var accBg = mk.pct>=70?'#dcfce7':mk.pct>=50?'#FAEEDA':'#FCEBEB';
-            var sets = mk.settings||{};
-            var tag = (sets.year&&sets.year!=='all'?sets.year:'All Yrs')
-              + (sets.subject&&sets.subject!=='all'?' . '+sets.subject:'');
-            var mins = Math.floor((mk.timeTaken||0)/60);
-            var secs = (mk.timeTaken||0)%60;
-            var sb = mk.subjectBreakdown || {};
-            var sbRows = Object.entries(sb).map(function(e){
-              var sub=e[0], sd=e[1];
-              var sa=(sd.c+sd.w)>0?Math.round(sd.c/(sd.c+sd.w)*100):0;
-              var sc=sa>=70?'#1D9E75':sa>=50?'#EF9F27':'#E24B4A';
-              return '<tr><td style="padding:5px 8px;">'+sub+'</td>'
-                +'<td style="text-align:center;color:#1D9E75;font-weight:600;">'+sd.c+'</td>'
-                +'<td style="text-align:center;color:#E24B4A;font-weight:600;">'+sd.w+'</td>'
-                +'<td style="text-align:center;color:var(--text3);">'+((sd.t||0)-sd.c-sd.w)+'</td>'
-                +'<td style="text-align:center;font-weight:700;color:'+sc+';">'+sa+'%</td></tr>';
-            }).join('');
-            var expId = 'tpMkExp_'+mIdx;
-            return '<div style="border-bottom:1px solid var(--border);">'
-              +'<div data-exp="'+expId+'" class="tp-mock-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;padding:11px 12px;align-items:center;cursor:pointer;">'
-              +'<div><div style="font-size:13px;font-weight:500;">'+d+'</div>'
-              +'<div style="font-size:11px;color:var(--text3);margin-top:2px;">'+tag+' . '+mins+'m '+secs+'s</div></div>'
-              +'<div style="text-align:center;font-size:14px;font-weight:600;">'+mk.total+'</div>'
-              +'<div style="text-align:center;font-size:14px;font-weight:600;color:#1D9E75;">'+mk.score+'</div>'
-              +'<div style="text-align:center;font-size:14px;font-weight:600;color:#E24B4A;">'+(mk.total-mk.score)+'</div>'
-              +'<div style="text-align:center;"><span style="background:'+accBg+';color:'+col+';padding:2px 9px;border-radius:12px;font-size:12px;font-weight:700;">'+mk.pct+'%</span></div>'
-              +'</div>'
-              +'<div id="'+expId+'" style="display:none;background:var(--bg2);padding:10px 14px;border-top:1px solid var(--border);">'
-              +(sbRows.length===0
-                ? '<div style="color:var(--text3);font-size:12px;">No subject breakdown.</div>'
-                : '<table style="width:100%;font-size:12px;border-collapse:collapse;">'
-                  +'<thead><tr style="font-weight:700;color:var(--text3);font-size:11px;">'
-                  +'<th style="text-align:left;padding:4px 8px;">Subject</th>'
-                  +'<th style="text-align:center;color:#1D9E75;">Correct</th>'
-                  +'<th style="text-align:center;color:#E24B4A;">Wrong</th>'
-                  +'<th style="text-align:center;">Skipped</th>'
-                  +'<th style="text-align:center;">Accuracy</th></tr></thead>'
-                  +'<tbody>'+sbRows+'</tbody></table>')
-              +'</div>'
-              +'</div>';
-          }).join('');
-      sec9wrap.innerHTML = '<div class="tp-sec-hdr">🏆 Mock Test Sessions'
-        +'<span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">'+mocks.length+' session'+(mocks.length!==1?'s':'')+' taken</span></div>'
-        +'<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;padding:6px 12px;border-bottom:1px solid var(--border);">'
-        +'<div style="font-size:11px;font-weight:600;color:var(--text3);">Date</div>'
-        +'<div style="font-size:11px;color:var(--text3);text-align:center;">Total</div>'
-        +'<div style="font-size:11px;color:#1D9E75;text-align:center;">Correct</div>'
-        +'<div style="font-size:11px;color:#E24B4A;text-align:center;">Wrong</div>'
-        +'<div style="font-size:11px;color:var(--text3);text-align:center;">Accuracy</div></div>'
-        + mockRows;
-      // Attach click listeners to session rows
-      sec9wrap.querySelectorAll('.tp-mock-row').forEach(function(row) {
-        row.addEventListener('click', function() {
-          var expId = row.getAttribute('data-exp');
-          var expDiv = expId && document.getElementById(expId);
-          if (expDiv) expDiv.style.display = expDiv.style.display === 'none' ? 'block' : 'none';
-        });
-      });
-    } else if (window._buildDpRows) {
+      sec9wrap.style.display = 'none';
+    } else {
+      sec9wrap.style.display = '';
       var mLabels = { all:'All Modes', practice:'Casual Practice', quiz:'Daily Quiz' };
       window._dpActiveDayDetail = null;
       sec9wrap.innerHTML = '<div class="tp-sec-hdr">\u{1F4C6} Daily Breakdown'
