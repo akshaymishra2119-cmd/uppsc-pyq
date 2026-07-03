@@ -7353,7 +7353,7 @@ function renderServerProgress(data) {
     ${dhRows}
   </div>`;
 
-  const cssDp = `
+  const cssDp = `<style>
   .dp-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;padding:6px 12px;border-bottom:1px solid var(--border);}
   .dp-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;padding:11px 12px;
     border-bottom:1px solid var(--border);cursor:pointer;align-items:center;transition:background 0.12s;}
@@ -7386,7 +7386,7 @@ function renderServerProgress(data) {
   @media(max-width:560px){
     .dp-head,.dp-row{grid-template-columns:2fr 1fr 1fr 1fr 28px;}
     .dp-stat:nth-child(3){display:none;} /* hide correct col on mobile, keep wrong */
-  }`;
+  }</style>`;
 
   tl.innerHTML = css + cssDp + sec1 + sec2 + sec3 + sec4 + sec5 + sec6 + sec7 + sec8 + sec9;
   window._tpData = data;
