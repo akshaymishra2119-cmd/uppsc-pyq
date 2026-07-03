@@ -362,14 +362,27 @@ app.get('/api/myStats', authMiddleware, async (req, res) => {
       if (a.result==='wrong')   yearMap[a.year].wrong++;
     });
 
-    // Daily history (all rows, not deduplicated — for heatmap)
+    // Daily history (all rows, not deduplicated — for heatmap + question list)
+    let qMap = {};
+    try {
+      const qs = await loadQuestions();
+      qs.forEach(q => { qMap[String(q.id)] = { question: q.question, subject: q.subject, year: q.year }; });
+    } catch(_) {}
     const dailyMap = {};
     rows.forEach(a => {
       const d = new Date(a.attempted_at).toDateString();
-      if (!dailyMap[d]) dailyMap[d]={correct:0,wrong:0,total:0};
+      if (!dailyMap[d]) dailyMap[d] = { correct:0, wrong:0, total:0, questions:[] };
       dailyMap[d].total++;
       if (a.result==='correct') dailyMap[d].correct++;
       if (a.result==='wrong')   dailyMap[d].wrong++;
+      const qi = qMap[String(a.q_id)] || {};
+      dailyMap[d].questions.push({
+        q_id:     a.q_id,
+        question: qi.question || '',
+        subject:  a.subject   || qi.subject || '',
+        year:     a.year      || qi.year    || '',
+        result:   a.result
+      });
     });
 
     // Streak
@@ -575,6 +588,29 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
       if (r.result === 'wrong') calMap[d].wrong++;
     });
 
+    // ── SECTION 9: Daily history with question details ─────────
+    let qMapTP = {};
+    try {
+      const qs = await loadQuestions();
+      qs.forEach(q => { qMapTP[String(q.id)] = { question: q.question, subject: q.subject, year: q.year }; });
+    } catch(_) {}
+    const dailyHistoryMap = {};
+    allRows.forEach(r => {
+      const d = new Date(r.attempted_at).toDateString();
+      if (!dailyHistoryMap[d]) dailyHistoryMap[d] = { correct:0, wrong:0, total:0, questions:[] };
+      dailyHistoryMap[d].total++;
+      if (r.result === 'correct') dailyHistoryMap[d].correct++;
+      if (r.result === 'wrong')   dailyHistoryMap[d].wrong++;
+      const qi = qMapTP[String(r.q_id)] || {};
+      dailyHistoryMap[d].questions.push({
+        q_id:     r.q_id,
+        question: qi.question || '',
+        subject:  r.subject   || qi.subject || '',
+        year:     r.year      || qi.year    || '',
+        result:   r.result
+      });
+    });
+
     res.json({
       summary: { totalDone, correct, wrong, accuracy, streak, daysToExam, readiness, userName: user.name },
       modes,
@@ -584,7 +620,8 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
       mockHistory,
       wrongBank: wrongBank.slice(0, 100),  // top 100 recent wrongs
       subjectTrend: subTrend,
-      calendarData: calMap
+      calendarData: calMap,
+      dailyHistory: dailyHistoryMap
     });
   } catch(e) {
     console.error('trackProgress error:', e.message);
