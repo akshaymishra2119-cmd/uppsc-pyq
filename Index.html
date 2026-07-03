@@ -6997,6 +6997,9 @@ function renderServerProgress(data) {
 
   const s   = data.summary    || {};
   const m   = data.modes      || {};
+  // Add synthetic 'all' entry for the All Modes filter card
+  m.all = { done: (data.summary||{}).totalDone||0, correct:(data.summary||{}).correct||0,
+    wrong:(data.summary||{}).wrong||0, accuracy:(data.summary||{}).accuracy||0 };
   const ym  = data.yearMap    || {};
   const rs  = data.repeatStats|| {};
   const mh  = data.mockHistory|| [];
@@ -7059,55 +7062,60 @@ function renderServerProgress(data) {
     </div>
   </div>`;
 
-  /* ── SECTION 2: Mode Bifurcation ── */
-  function modeCard(key, label, emoji, col) {
+  /* ── SECTION 2: Mode Cards (clickable filters) ── */
+  function modeCard2(key, label, emoji, col) {
     const d = m[key] || {};
-    return `<div class="tp-mode-card" style="border-top:3px solid ${col};">
-      <div class="tp-mode-hdr">${emoji} ${label}</div>
-      <div class="tp-mode-val" style="color:${col};">${d.done||0}</div>
-      <div class="tp-mode-sub">questions</div>
-      <div class="tp-mode-row">✓${d.correct||0} &nbsp; ✗${d.wrong||0}</div>
-      <div class="tp-mode-acc" style="color:${col};">${d.accuracy||0}% accuracy</div>
-      ${key==='mock'?`<div class="tp-mode-sub">${d.mockCount||0} mock tests taken</div>`:''}
-    </div>`;
+    return '<div class="tp-mode-card tp-mode-filter" id="mf_' + key + '" '
+      + 'onclick="dpSetMode(\'' + key + '\')" '
+      + 'style="border-top:3px solid ' + col + ';cursor:pointer;">'
+      + '<div class="tp-mode-hdr">' + emoji + ' ' + label + '</div>'
+      + '<div class="tp-mode-val" style="color:' + col + ';">' + (d.done||0) + '</div>'
+      + '<div class="tp-mode-sub">questions</div>'
+      + '<div class="tp-mode-row">✓' + (d.correct||0) + ' &nbsp; ✗' + (d.wrong||0) + '</div>'
+      + '<div class="tp-mode-acc" style="color:' + col + ';">' + (d.accuracy||0) + '% accuracy</div>'
+      + (key==='mock'?'<div class="tp-mode-sub">' + (d.mockCount||0) + ' mock tests taken</div>':'')
+      + '</div>';
   }
-  const sec2 = `
-  <div class="tp-section">
-    <div class="tp-sec-hdr">🎯 Mode-wise Practice</div>
-    <div class="tp-mode-grid">
-      ${modeCard('practice','Casual Practice','📖','var(--teal)')}
-      ${modeCard('quiz','Daily Quiz','📝','var(--purple)')}
-      ${modeCard('mock','Mock Tests','🏆','var(--amber)')}
-    </div>
-  </div>`;
+  const sec2mod =
+    '<div class="tp-section">'
+    + '<div class="tp-sec-hdr">🎯 Mode-wise Practice <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">click a card to filter below</span></div>'
+    + '<div class="tp-mode-grid">'
+    + modeCard2('all','All Modes','📚','var(--blue)')
+    + modeCard2('practice','Casual Practice','📖','var(--teal)')
+    + modeCard2('quiz','Daily Quiz','📝','var(--purple)')
+    + modeCard2('mock','Mock Tests','🏆','var(--amber)')
+    + '</div></div>';
 
-  /* ── SECTION 3: Year-wise PYQ Coverage ── */
-  const yearRows = Object.keys(ym).sort((a,b)=>b-a).map(yr => {
-    const d = ym[yr];
-    const acc = (d.correct+d.wrong)>0 ? Math.round(d.correct/(d.correct+d.wrong)*100):0;
-    const col = acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
-    return `<tr class="tp-yr-row" onclick="tpExpandYear('${yr}')">
-      <td style="font-weight:600;">${yr}</td>
-      <td>${d.done||0}</td>
-      <td style="color:#1D9E75;">${d.correct||0}</td>
-      <td style="color:#E24B4A;">${d.wrong||0}</td>
-      <td style="font-weight:700;color:${col};">${acc}%</td>
-      <td style="color:var(--text3);font-size:12px;">▼ view</td>
-    </tr>`;
-  }).join('');
-  const sec3 = `
-  <div class="tp-section">
-    <div class="tp-sec-hdr">📅 Year-wise PYQ Coverage</div>
-    ${yearRows ? `
-    <div style="overflow-x:auto;">
-      <table class="tp-table">
-        <thead><tr><th>Year</th><th>Done</th><th>Correct</th><th>Wrong</th><th>Accuracy</th><th></th></tr></thead>
-        <tbody>${yearRows}</tbody>
-      </table>
-    </div>
-    <div id="tpYearDetail" style="margin-top:8px;"></div>`
-    : `<div class="tp-empty">No year-wise data yet. Start practising!</div>`}
-  </div>`;
+  /* ── SECTION 3 mod: Year Coverage (filterable) ── */
+  const ym2 = data.yearMap || {};
+  const ybm = data.yearMapByMode || {};
+  function buildYearTable(ymData) {
+    const rows = Object.keys(ymData).sort((a,b)=>b-a).map(yr => {
+      const d = ymData[yr];
+      const acc = (d.correct+d.wrong)>0?Math.round(d.correct/(d.correct+d.wrong)*100):0;
+      const col = acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
+      return '<tr class="tp-yr-row" onclick="tpExpandYear('' + yr + '')">'
+        + '<td style="font-weight:600;">' + yr + '</td>'
+        + '<td>' + (d.done||0) + '</td>'
+        + '<td style="color:#1D9E75;">' + (d.correct||0) + '</td>'
+        + '<td style="color:#E24B4A;">' + (d.wrong||0) + '</td>'
+        + '<td style="font-weight:700;color:' + col + ';">' + acc + '%</td>'
+        + '<td style="color:var(--text3);font-size:12px;">▼ view</td></tr>';
+    }).join('');
+    return rows || '<tr><td colspan="6" style="color:var(--text3);font-size:13px;padding:12px 0;">No data for this mode yet.</td></tr>';
+  }
+  window._tpYbm = ybm;
+  window._tpYm  = ym2;
+  const sec3mod =
+    '<div class="tp-section" id="sec3mod">'
+    + '<div class="tp-sec-hdr">📅 Year-wise PYQ Coverage <span id="sec3modeLabel" style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">— All modes</span></div>'
+    + '<table class="tp-table"><thead><tr>'
+    + '<th>Year</th><th>Done</th><th style="color:#1D9E75;">Correct</th><th style="color:#E24B4A;">Wrong</th><th>Accuracy</th><th></th>'
+    + '</tr></thead><tbody id="yearTableBody">'
+    + buildYearTable(ym2)
+    + '</tbody></table>'
+    + '<div id="tpYearDetail" style="margin-top:10px;"></div>'
+    + '</div>';
 
   /* ── SECTION 4: Repeat Questions Mastery ── */
   const sec4 = `
@@ -7235,19 +7243,41 @@ function renderServerProgress(data) {
     }
     return cells.join('');
   })();
-  const sec8 = `
-  <div class="tp-section">
-    <div class="tp-sec-hdr">🗓️ Activity Calendar
-      <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">last 365 days</span>
-    </div>
-    <div class="tp-cal-grid">${calCells}</div>
-    <div style="display:flex;gap:8px;margin-top:8px;align-items:center;font-size:11px;color:var(--text3);">
-      <span>Less</span>
-      ${['var(--bg2)','#B5E8D5','#5CC8A0','#1D9E75','#166B4F'].map(c=>
-        `<div style="width:12px;height:12px;border-radius:2px;background:${c};"></div>`).join('')}
-      <span>More</span>
-    </div>
-  </div>`;
+  /* ── secTimeline: 14-day question timeline (replaces calendar) ── */
+  const calMap2 = data.calendarData || {};
+  const tlDays = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    const day = calMap2[key] || { total:0, correct:0, wrong:0 };
+    tlDays.push({ key, label: d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}), ...day });
+  }
+  const maxVal = Math.max(1, ...tlDays.map(d => d.total));
+  const tlBars = tlDays.map(d => {
+    const hC = d.correct > 0 ? Math.round((d.correct/maxVal)*80) : 0;
+    const hW = d.wrong   > 0 ? Math.round((d.wrong  /maxVal)*80) : 0;
+    const isToday = d.key === new Date().toISOString().slice(0,10);
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:36px;flex:1;">'
+      + '<div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px;">'
+      + (d.total > 0 ? '<span style="color:var(--text2);">' + d.total + '</span>' : '')
+      + '</div>'
+      + '<div style="display:flex;gap:2px;align-items:flex-end;height:80px;">'
+      + '<div style="width:10px;background:#1D9E75;border-radius:3px 3px 0 0;height:' + hC + 'px;" title="' + d.correct + ' correct"></div>'
+      + '<div style="width:10px;background:#E24B4A;border-radius:3px 3px 0 0;height:' + hW + 'px;" title="' + d.wrong + ' wrong"></div>'
+      + '</div>'
+      + '<div style="font-size:10px;color:' + (isToday?'var(--blue)':'var(--text3)') + ';font-weight:' + (isToday?'700':'400') + ';text-align:center;margin-top:4px;white-space:nowrap;">'
+      + d.label + '</div>'
+      + '</div>';
+  }).join('');
+
+  const secTimeline =
+    '<div class="tp-section">'
+    + '<div class="tp-sec-hdr">📈 14-day Activity <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">'
+    + '<span style="display:inline-block;width:10px;height:10px;background:#1D9E75;border-radius:2px;margin-right:3px;"></span>correct &nbsp;'
+    + '<span style="display:inline-block;width:10px;height:10px;background:#E24B4A;border-radius:2px;margin-right:3px;"></span>wrong</span></div>'
+    + '<div style="display:flex;gap:4px;align-items:flex-end;overflow-x:auto;padding-bottom:4px;">'
+    + tlBars
+    + '</div></div>';
 
   /* ── CSS ── */
   const css = `<style>
@@ -7290,6 +7320,8 @@ function renderServerProgress(data) {
   .tp-cal-grid{display:grid;grid-template-columns:repeat(52,1fr);gap:3px;}
   @media(max-width:600px){.tp-cal-grid{grid-template-columns:repeat(26,1fr);}}
   .tp-cal-cell{aspect-ratio:1;border-radius:2px;}
+  .tp-mode-filter{transition:opacity 0.15s,transform 0.15s,box-shadow 0.15s;}
+  .tp-mode-filter:hover{opacity:0.85 !important;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
   .tp-empty{font-size:12px;color:var(--text3);padding:8px 0;}
   </style>`;
 
@@ -7392,7 +7424,7 @@ function renderServerProgress(data) {
     + '@media(max-width:560px){.dp-head,.dp-row{grid-template-columns:2fr 1fr 1fr 1fr 28px;}.dp-stat:nth-child(4){display:none;}}'
     + '</style>';
 
-  tl.innerHTML = css + cssDp + sec1 + sec9 + sec2 + sec3 + sec4 + sec5 + sec6 + sec7 + sec8;
+  tl.innerHTML = css + cssDp + sec1 + sec2mod + sec9 + sec3mod + sec4 + sec5 + sec6 + sec7 + secTimeline;
   window._tpData = data;
 }
 
@@ -7415,6 +7447,63 @@ function tpExpandYear(yr) {
       Click any question card in Practice Mode filtered to ${yr} to attempt these questions.
     </div>
   </div>`;
+}
+
+function dpSetMode(mode) {
+  window._dpActiveMode = mode;
+  // Highlight selected card
+  document.querySelectorAll('.tp-mode-filter').forEach(c => {
+    c.style.opacity = '0.55'; c.style.transform = 'scale(0.97)';
+  });
+  const sel = document.getElementById('mf_' + mode);
+  if (sel) { sel.style.opacity = '1'; sel.style.transform = 'scale(1.03)'; }
+
+  // Filter daily breakdown
+  const dh = (window._tpData || {}).dailyHistory || {};
+  document.querySelectorAll('.dp-qcard').forEach(card => {
+    const q = window._dpQMap && window._dpQMap[card.getAttribute('onclick').match(/'([^']+)'/)?.[1]];
+    if (!q) return;
+    const show = mode === 'all' || q.mode === mode;
+    card.style.display = show ? 'flex' : 'none';
+  });
+  // Update day row counts
+  document.querySelectorAll('.dp-expand').forEach(exp => {
+    const visible = exp.querySelectorAll('.dp-qcard:not([style*="display: none"]):not([style*="display:none"])').length;
+    const allBtn = exp.querySelector('.dp-filter.active');
+    // reset filters to All when mode changes
+    exp.querySelectorAll('.dp-filter').forEach(b => b.classList.remove('active'));
+    const allF = exp.querySelector('.dp-filter');
+    if (allF) allF.classList.add('active');
+    exp.querySelectorAll('.dp-qcard').forEach(c => {
+      const q2 = window._dpQMap && window._dpQMap[c.getAttribute('onclick').match(/'([^']+)'/)?.[1]];
+      if (!q2) return;
+      c.style.display = (mode === 'all' || q2.mode === mode) ? 'flex' : 'none';
+    });
+  });
+
+  // Update year table
+  const ybm = window._tpYbm || {};
+  const ym  = window._tpYm  || {};
+  const ymData = mode === 'all' ? ym : (ybm[mode] || {});
+  const tbody = document.getElementById('yearTableBody');
+  const lbl   = document.getElementById('sec3modeLabel');
+  const labels = { all:'All modes', practice:'Casual Practice', quiz:'Daily Quiz', mock:'Mock Tests' };
+  if (lbl) lbl.textContent = '— ' + (labels[mode] || mode);
+  if (tbody) {
+    const rows = Object.keys(ymData).sort((a,b)=>b-a).map(yr => {
+      const d = ymData[yr];
+      const acc = (d.correct+d.wrong)>0?Math.round(d.correct/(d.correct+d.wrong)*100):0;
+      const col = acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
+      return '<tr class="tp-yr-row" onclick="tpExpandYear(\'' + yr + '\')">'
+        + '<td style="font-weight:600;">' + yr + '</td>'
+        + '<td>' + (d.done||0) + '</td>'
+        + '<td style="color:#1D9E75;">' + (d.correct||0) + '</td>'
+        + '<td style="color:#E24B4A;">' + (d.wrong||0) + '</td>'
+        + '<td style="font-weight:700;color:' + col + ';">' + acc + '%</td>'
+        + '<td style="color:var(--text3);font-size:12px;">▼ view</td></tr>';
+    }).join('') || '<tr><td colspan="6" style="color:var(--text3);font-size:13px;padding:12px 0;">No data for this mode yet.</td></tr>';
+    tbody.innerHTML = rows;
+  }
 }
 
 function dpToggle(row) {

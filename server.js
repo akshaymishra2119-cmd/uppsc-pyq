@@ -609,6 +609,7 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
         subject:    r.subject     || qi.subject || '',
         year:       r.year        || qi.year    || '',
         result:     r.result,
+        mode:       r.mode        || 'practice',
         optA:       qi.optA       || '',
         optB:       qi.optB       || '',
         optC:       qi.optC       || '',
@@ -617,6 +618,17 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
         answerText: qi.answerText || '',
         explanation:qi.explanation|| ''
       });
+    });
+
+    // Year map broken down by mode (for frontend mode filtering)
+    const yearMapByMode = { practice:{}, quiz:{}, mock:{} };
+    allRows.forEach(r => {
+      if (!r.year) return;
+      const m = yearMapByMode[r.mode] || yearMapByMode.practice;
+      if (!m[r.year]) m[r.year] = { done:0, correct:0, wrong:0 };
+      m[r.year].done++;
+      if (r.result==='correct') m[r.year].correct++;
+      if (r.result==='wrong')   m[r.year].wrong++;
     });
 
     res.json({
@@ -629,7 +641,8 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
       wrongBank: wrongBank.slice(0, 100),  // top 100 recent wrongs
       subjectTrend: subTrend,
       calendarData: calMap,
-      dailyHistory: dailyHistoryMap
+      dailyHistory: dailyHistoryMap,
+      yearMapByMode
     });
   } catch(e) {
     console.error('trackProgress error:', e.message);
