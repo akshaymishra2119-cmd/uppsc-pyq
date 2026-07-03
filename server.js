@@ -488,10 +488,8 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
       daysToExam = Math.max(0, Math.ceil(diff / 86400000));
     }
 
-    // Exam readiness score (0-100): weighted formula
-    const readiness = Math.min(100, Math.round(
-      (accuracy * 0.4) + (Math.min(streak, 30) / 30 * 30) + (Math.min(totalDone, 500) / 500 * 30)
-    ));
+    // Readiness = accuracy (correct / total attempted)
+    const readiness = accuracy;
 
     // ── SECTION 2: Mode bifurcation ───────────────────────────
     const modes = { practice: {done:0,correct:0,wrong:0}, quiz: {done:0,correct:0,wrong:0}, mock: {done:0,correct:0,wrong:0} };

@@ -2620,20 +2620,7 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 
 <!-- ══ PROGRESS TAB ══════════════════════════════════════════ -->
 <div class="tab" id="tab-progress">
-  <!-- Heatmap card (always visible) -->
-  <div class="card" style="margin-bottom:12px;">
-    <div class="card-title"><i class="ti ti-calendar" style="color:var(--blue);"></i> Practice calendar — last 60 days</div>
-    <div class="heatmap-wrap"><div class="heatmap-grid" id="heatmapGrid"></div></div>
-    <div class="heatmap-legend">
-      Less&nbsp;
-      <div class="heatmap-legend-cell" style="background:#f0f0f0;"></div>
-      <div class="heatmap-legend-cell" data-lv="1" style="background:#d4edda;"></div>
-      <div class="heatmap-legend-cell" data-lv="2" style="background:#28a745;"></div>
-      <div class="heatmap-legend-cell" data-lv="3" style="background:#155724;"></div>
-      <div class="heatmap-legend-cell" data-lv="4" style="background:#0a3316;"></div>
-      &nbsp;More
-    </div>
-  </div>
+
   <div id="progressLoginPrompt" style="display:none;">
     <div class="tp-login-prompt">
       <div style="font-size:48px;margin-bottom:12px;">📊</div>
@@ -7046,8 +7033,8 @@ function renderServerProgress(data) {
     +'<circle cx="44" cy="44" r="36" fill="none" stroke="'+rCol+'" stroke-width="8"'
     +' stroke-dasharray="'+Math.round(2*3.14159*36*rRing/100)+' 999"'
     +' stroke-linecap="round" transform="rotate(-90 44 44)"/></svg>'
-    +'<div class="tp-ring-label"><div style="font-size:18px;font-weight:800;color:'+rCol+';">'+rRing+'</div>'
-    +'<div style="font-size:9px;color:var(--text3);font-weight:600;">READINESS</div></div></div>'
+    +'<div class="tp-ring-label"><div style="font-size:18px;font-weight:800;color:'+rCol+';">'+rRing+'%</div>'
+    +'<div style="font-size:9px;color:var(--text3);font-weight:600;">ACCURACY</div></div></div>'
     +'<div class="tp-sum-pills">'
     +'<div class="tp-pill"><div class="tp-pill-v" style="color:#1D9E75;">'+(s.totalDone||0)+'</div><div class="tp-pill-l">Questions done</div></div>'
     +'<div class="tp-pill"><div class="tp-pill-v" style="color:#1D9E75;">'+(s.accuracy||0)+'%</div><div class="tp-pill-l">Accuracy</div></div>'
@@ -7248,27 +7235,51 @@ function renderServerProgress(data) {
   var barW = numDays > 180 ? 6 : numDays > 90 ? 8 : numDays > 45 ? 10 : 14;
   var barH = 70;
   var totalDaysLabel = numDays === 1 ? '1 day' : numDays + ' days';
+  var totalCorrect = tlDays.reduce(function(a,d){return a+d.correct;},0);
+  var totalWrong   = tlDays.reduce(function(a,d){return a+d.wrong;},0);
+  var totalAttempted = tlDays.reduce(function(a,d){return a+d.total;},0);
   var tlBars = tlDays.map(function(d){
-    var hC = d.correct>0 ? Math.max(2,Math.round((d.correct/tlMax)*barH)) : 0;
-    var hW = d.wrong>0   ? Math.max(2,Math.round((d.wrong/tlMax)*barH)) : 0;
-    var hE = (!hC&&!hW&&d.total===0) ? 0 : 0;
-    var borderTop = d.isToday ? '1px solid var(--blue)' : 'none';
-    return '<div style="display:flex;flex-direction:column;align-items:center;min-width:'+(barW*2+3)+'px;">'
-      +(d.total>0?'<div style="font-size:9px;color:var(--text3);margin-bottom:1px;">'+d.total+'</div>':'<div style="font-size:9px;margin-bottom:1px;">&nbsp;</div>')
-      +'<div style="display:flex;gap:1px;align-items:flex-end;height:'+barH+'px;">'
-      +'<div style="width:'+barW+'px;background:'+(hC>0?'#1D9E75':'var(--border)')+';border-radius:2px 2px 0 0;height:'+(hC>0?hC:2)+'px;opacity:'+(hC>0?'1':'0.25')+';"></div>'
-      +'<div style="width:'+barW+'px;background:'+(hW>0?'#E24B4A':'var(--border)')+';border-radius:2px 2px 0 0;height:'+(hW>0?hW:2)+'px;opacity:'+(hW>0?'1':'0.25')+';"></div>'
-      +'</div>'
-      +'<div style="font-size:9px;color:'+(d.isToday?'var(--blue)':'var(--text3)')+';font-weight:'+(d.isToday?'700':'400')+';text-align:center;margin-top:3px;white-space:nowrap;min-height:14px;">'+d.label+'</div>'
-      +'</div>';
+    var hC = d.correct>0 ? Math.max(3,Math.round((d.correct/tlMax)*barH)) : 0;
+    var hW = d.wrong>0   ? Math.max(3,Math.round((d.wrong/tlMax)*barH)) : 0;
+    var hasData = d.total > 0;
+    var todayBg = d.isToday ? 'background:rgba(55,138,221,0.07);border-radius:4px;' : '';
+    var countLabel = hasData
+      ? '<div style="font-size:9px;color:var(--text2);font-weight:600;margin-bottom:2px;line-height:1;">'+d.correct+'/'+d.total+'</div>'
+      : '<div style="font-size:9px;margin-bottom:2px;">&nbsp;</div>';
+    var bars = hasData
+      ? '<div style="display:flex;gap:2px;align-items:flex-end;height:'+barH+'px;">'
+        +'<div title="'+d.correct+' correct" style="width:'+barW+'px;background:#1D9E75;border-radius:3px 3px 0 0;height:'+hC+'px;"></div>'
+        +'<div title="'+d.wrong+' wrong"   style="width:'+barW+'px;background:#E24B4A;border-radius:3px 3px 0 0;height:'+hW+'px;"></div>'
+        +'</div>'
+      : '<div style="display:flex;gap:2px;align-items:flex-end;height:'+barH+'px;">'
+        +'<div style="width:'+(barW*2+2)+'px;height:3px;background:var(--border);border-radius:2px;align-self:flex-end;opacity:0.4;"></div>'
+        +'</div>';
+    var dayLbl = '<div style="font-size:9px;color:'+(d.isToday?'var(--blue)':'var(--text3)')+';font-weight:'+(d.isToday?'700':'400')+';text-align:center;margin-top:3px;white-space:nowrap;min-height:13px;">'+d.label+'</div>';
+    return '<div style="display:flex;flex-direction:column;align-items:center;min-width:'+(barW*2+6)+'px;padding:2px 1px;'+todayBg+'">'
+      +countLabel+bars+dayLbl+'</div>';
   }).join('');
-  var secTimeline = '<div class="tp-section"><div class="tp-sec-hdr">📊 Your Practice Journey'
-    +' <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:6px;">'+totalDaysLabel+' since you started &nbsp;·&nbsp;'
-    +'<span style="display:inline-block;width:8px;height:8px;background:#1D9E75;border-radius:2px;margin:0 2px 0 4px;vertical-align:middle;"></span>correct &nbsp;'
-    +'<span style="display:inline-block;width:8px;height:8px;background:#E24B4A;border-radius:2px;margin:0 2px 0 2px;vertical-align:middle;"></span>wrong'
+  // Baseline line
+  var baselineBar = '<div style="position:relative;">'
+    +'<div style="position:absolute;bottom:13px;left:0;right:0;height:1px;background:var(--border);opacity:0.5;"></div>'
+    +'</div>';
+  var summaryLine = totalAttempted > 0
+    ? '<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">'
+      +'<span style="color:#1D9E75;font-weight:700;">'+totalCorrect+' correct</span>'
+      +' &nbsp;+&nbsp; <span style="color:#E24B4A;font-weight:700;">'+totalWrong+' wrong</span>'
+      +' &nbsp;=&nbsp; <span style="font-weight:700;">'+totalAttempted+' questions</span>'
+      +' over '+totalDaysLabel+'</div>'
+    : '';
+  var secTimeline = '<div class="tp-section">'
+    +'<div class="tp-sec-hdr">📊 Your Practice Journey'
+    +' <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:6px;">'
+    +'<span style="display:inline-block;width:8px;height:8px;background:#1D9E75;border-radius:2px;margin:0 3px 0 4px;vertical-align:middle;"></span>correct/total &nbsp;'
+    +'<span style="display:inline-block;width:8px;height:8px;background:#E24B4A;border-radius:2px;margin:0 3px 0 2px;vertical-align:middle;"></span>wrong'
     +'</span></div>'
+    +summaryLine
     +'<div style="overflow-x:auto;padding-bottom:6px;">'
-    +'<div style="display:flex;gap:2px;align-items:flex-end;min-width:max-content;padding:4px 2px 0;">'+tlBars+'</div>'
+    +'<div style="display:flex;gap:1px;align-items:flex-end;min-width:max-content;padding:4px 0 0;">'
+    +tlBars+'</div>'
+    +'<div style="height:1px;background:var(--border);opacity:0.4;margin-top:0;"></div>'
     +'</div></div>';
 
   // ── CSS ──────────────────────────────────────────────────────
