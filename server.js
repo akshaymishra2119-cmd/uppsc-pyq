@@ -419,12 +419,13 @@ app.get('/api/myStats', authMiddleware, async (req, res) => {
 
 // ── SAVE MOCK RESULT ──────────────────────────────────────────
 app.post('/api/saveMockResult', authMiddleware, async (req, res) => {
-  const { score, total, timeTaken, subjectBreakdown, settings } = req.body || {};
+  const { score, total, timeTaken, subjectBreakdown, settings, questions } = req.body || {};
   try {
     await pool.query(
-      `INSERT INTO mock_history (user_id, score, total, time_taken, subject_breakdown, settings)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [req.user.id, score||0, total||0, timeTaken||0, JSON.stringify(subjectBreakdown||{}), JSON.stringify(settings||{})]
+      `INSERT INTO mock_history (user_id, score, total, time_taken, subject_breakdown, settings, questions)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [req.user.id, score||0, total||0, timeTaken||0,
+       JSON.stringify(subjectBreakdown||{}), JSON.stringify(settings||{}), JSON.stringify(questions||[])]
     );
     res.json({ success: true });
   } catch(e) {
@@ -437,7 +438,7 @@ app.post('/api/saveMockResult', authMiddleware, async (req, res) => {
 app.get('/api/mockHistory', authMiddleware, async (req, res) => {
   try {
     const rows = await pool.query(
-      `SELECT id, score, total, time_taken, subject_breakdown, settings, taken_at
+      `SELECT id, score, total, time_taken, subject_breakdown, settings, questions, taken_at
        FROM mock_history WHERE user_id = $1 ORDER BY taken_at DESC LIMIT 20`,
       [req.user.id]
     );

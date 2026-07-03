@@ -61,6 +61,8 @@ async function initDB() {
     await client.query(`ALTER TABLE progress ADD COLUMN IF NOT EXISTS mode TEXT DEFAULT 'practice'`);
     // Add quiz_id to progress for daily quiz grouping
     await client.query(`ALTER TABLE progress ADD COLUMN IF NOT EXISTS quiz_id TEXT`);
+    // Add questions column to mock_history for per-question review
+    await client.query(`ALTER TABLE mock_history ADD COLUMN IF NOT EXISTS questions JSONB DEFAULT '[]'`);
     // News items table (persistent, survives deploys)
     await client.query(`
       CREATE TABLE IF NOT EXISTS news_items (

@@ -7514,24 +7514,70 @@ function renderServerProgress(data) {
 
 
 function tpExpandYear(yr) {
-  const d = (window._tpData||{}).yearMap || {};
-  const yData = d[yr] || {};
   const el = document.getElementById('tpYearDetail');
   if (!el) return;
   if (el.dataset.yr === yr) { el.innerHTML = ''; el.dataset.yr = ''; return; }
   el.dataset.yr = yr;
-  const acc = (yData.correct+yData.wrong)>0 ? Math.round(yData.correct/(yData.correct+yData.wrong)*100):0;
-  const col = acc>=80?'#1D9E75':acc>=60?'#BA7517':'#E24B4A';
-  el.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;
-    padding:12px 16px;font-size:13px;">
-    <b>${yr} details</b> — ${yData.done||0} done &nbsp;
-    <span style="color:#1D9E75;">✓${yData.correct||0}</span> &nbsp;
-    <span style="color:#E24B4A;">✗${yData.wrong||0}</span> &nbsp;
-    <span style="color:${col};font-weight:700;">${acc}% accuracy</span>
-    <div style="margin-top:8px;font-size:11px;color:var(--text3);">
-      Click any question card in Practice Mode filtered to ${yr} to attempt these questions.
-    </div>
-  </div>`;
+  var dh   = (window._tpData && window._tpData.dailyHistory) || {};
+  var mode = window._dpActiveMode || 'all';
+  var ym   = (window._tpData && window._tpData.yearMap) || {};
+  var yData = ym[yr] || {};
+  var acc = (yData.correct+yData.wrong)>0 ? Math.round(yData.correct/(yData.correct+yData.wrong)*100):0;
+  var accCol = acc>=70?'#1D9E75':acc>=50?'#EF9F27':'#E24B4A';
+  var qMap = {};
+  Object.values(dh).forEach(function(day) {
+    (day.questions||[]).forEach(function(q) {
+      if (String(q.year) !== String(yr)) return;
+      if (mode !== 'all' && q.mode !== mode) return;
+      if (!qMap[q.q_id]) qMap[q.q_id] = q;
+    });
+  });
+  var qs = Object.values(qMap);
+  var correct = qs.filter(function(q){return q.result==='correct';}).length;
+  var wrong   = qs.filter(function(q){return q.result==='wrong';}).length;
+  var qCards = qs.length === 0
+    ? '<div style="padding:16px;color:var(--text3);font-size:13px;">No questions attempted for ' + yr + ' yet. Go to PYQ Practice and attempt ' + yr + ' questions.</div>'
+    : qs.map(function(q, idx) {
+        var isOk  = q.result === 'correct';
+        var isBad = q.result === 'wrong';
+        var icon  = isOk  ? '<span style="color:#1D9E75;font-weight:700;">\u2713</span>'
+                  : isBad ? '<span style="color:#E24B4A;font-weight:700;">\u2717</span>'
+                  : '<span style="color:var(--text3);">\u25CB</span>';
+        var bg    = isOk ? '#f0fdf4' : isBad ? '#fff5f5' : 'var(--bg)';
+        var border= isOk ? '#86efac' : isBad ? '#fca5a5' : 'var(--border)';
+        var expId = 'tpYrQExp_' + idx + '_' + yr;
+        var opts  = ['A','B','C','D'].map(function(l,i){
+          var txt = [q.optA,q.optB,q.optC,q.optD][i]; if(!txt) return '';
+          var isAns = l === q.answer;
+          var optBg = isAns ? '#dcfce7' : 'var(--bg2)';
+          var optCo = isAns ? '#166534' : 'var(--text)';
+          return '<div style="padding:5px 8px;border-radius:5px;background:'+optBg+';color:'+optCo+';font-weight:'+(isAns?'700':'400')+';margin-bottom:3px;">' + l + '. ' + txt + (isAns?' \u2713':'') + '</div>';
+        }).join('');
+        var expl = q.explanation ? '<div style="margin-top:8px;padding:7px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;font-size:11px;color:var(--text3);"><b>Explanation:</b> ' + q.explanation + '</div>' : '';
+        return '<div onclick="tpYrToggleQ(\'' + expId + '\')" style="cursor:pointer;background:'+bg+';border:1px solid '+border+';border-radius:8px;padding:10px 14px;margin-bottom:6px;">'
+          + '<div style="display:flex;align-items:flex-start;gap:8px;">'
+          + '<span style="min-width:20px;margin-top:1px;">' + icon + '</span>'
+          + '<div style="flex:1;">'
+          + '<div style="font-size:13px;font-weight:500;line-height:1.4;">' + (q.question||'Q#'+q.q_id) + '</div>'
+          + '<div style="font-size:11px;color:var(--text3);margin-top:3px;">' + (q.subject||'') + ' \u00B7 #' + q.q_id + '</div>'
+          + '</div></div>'
+          + '<div id="' + expId + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid '+border+';font-size:12px;">'
+          + opts + expl + '</div>'
+          + '</div>';
+      }).join('');
+  el.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
+    + '<div style="font-size:14px;font-weight:700;">' + yr + ' — Questions Attempted</div>'
+    + '<div style="font-size:12px;color:var(--text3);">' + qs.length + ' attempted \u00B7 <span style="color:#1D9E75;">\u2713' + correct + '</span> \u00B7 <span style="color:#E24B4A;">\u2717' + wrong + '</span> \u00B7 <span style="color:' + accCol + ';font-weight:700;">' + acc + '%</span></div>'
+    + '</div>'
+    + qCards
+    + '</div>';
+}
+
+function tpYrToggleQ(expId) {
+  var el = document.getElementById(expId);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 function dpSetMode(mode) {
@@ -10005,12 +10051,29 @@ document.addEventListener('keydown', e => {
   function q(id){ return document.getElementById(id); }
 
   window.initMockTab = function() {
-    // Populate year buttons from allQuestions
-    if (typeof allQuestions !== 'undefined' && allQuestions.length) {
-      const years = [...new Set(allQuestions.map(q => String(q.year)).filter(Boolean))].sort((a,b)=>b-a);
+    // If allQuestions not loaded yet, show loading and retry
+    if (typeof allQuestions === 'undefined' || !allQuestions.length) {
       const wrap = q('mtYearOpts');
       if (wrap && wrap.children.length <= 1) {
-        years.forEach(yr => {
+        const loader = document.createElement('div');
+        loader.id = 'mtYearLoader';
+        loader.style.cssText = 'color:var(--text3);font-size:13px;padding:8px 0;';
+        loader.textContent = 'Loading questions...';
+        wrap.appendChild(loader);
+      }
+      setTimeout(window.initMockTab, 500);
+      return;
+    }
+    // Populate year buttons
+    const years = [...new Set(allQuestions.map(q => String(q.year)).filter(Boolean))].sort(function(a,b){ return b-a; });
+    const wrap = q('mtYearOpts');
+    if (wrap) {
+      // Remove loader if present
+      const loader = document.getElementById('mtYearLoader');
+      if (loader) loader.remove();
+      // Only build buttons once
+      if (wrap.children.length <= 1) {
+        years.forEach(function(yr) {
           const d = document.createElement('div');
           d.className = 'mt-opt'; d.dataset.val = yr;
           d.textContent = yr;
@@ -10221,7 +10284,19 @@ document.addEventListener('keydown', e => {
       body: JSON.stringify({
         score: correct, total: total, timeTaken: timeTaken,
         subjectBreakdown: subBreak,
-        settings: { year: mt.year, subject: mt.sub, time: mt.time }
+        settings: { year: mt.year, subject: mt.sub, time: mt.time },
+        questions: mt.questions.map(function(qq) {
+          return {
+            qId:     qq.id,
+            question: qq.question,
+            subject:  qq.subject,
+            year:     qq.year,
+            optA: qq.optA, optB: qq.optB, optC: qq.optC, optD: qq.optD,
+            answer:   qq.answer,
+            explanation: qq.explanation || '',
+            chosen:   mt.answers[String(qq.id)] || null
+          };
+        })
       })
     }).catch(function(){});
 
@@ -10327,27 +10402,106 @@ document.addEventListener('keydown', e => {
     fetch('/api/mockHistory', { headers: { Authorization: 'Bearer ' + token } })
       .then(function(r){ return r.json(); })
       .then(function(data) {
-        const rows = (data.history || []).slice(0,5);
+        const rows = data.history || [];
         if (!rows.length) return;
         const card = q('mtHistCard');
         if (card) card.style.display = 'block';
         const list = q('mtHistList');
         if (!list) return;
-        list.innerHTML = rows.map(function(r) {
-          const d = new Date(r.taken_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
-          const acc = r.total>0?Math.round(r.score/r.total*100):0;
-          const col = acc>=70?'#1D9E75':acc>=50?'#EF9F27':'#dc2626';
-          const sets = r.settings||{};
-          return '<div class="mt-hist-row">'
-            +'<div style="color:var(--text3);">'+d+'</div>'
-            +'<div style="font-weight:700;color:'+col+';">'+r.score+'/'+r.total+'</div>'
-            +'<div style="color:'+col+';font-weight:600;">'+acc+'%</div>'
-            +'<div style="color:var(--text3);">'+(sets.year&&sets.year!=='all'?sets.year:'All')+'</div>'
-            +'<div style="color:var(--text3);font-size:11px;">'+(sets.subject&&sets.subject!=='all'?sets.subject:'All Subj.')+'</div>'
-            +'</div>';
-        }).join('');
+
+        list.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+          + '<thead><tr style="background:var(--bg2);font-weight:700;font-size:11px;">'
+          + '<th style="padding:8px 10px;text-align:left;">Date</th>'
+          + '<th style="padding:8px 6px;text-align:center;">Year</th>'
+          + '<th style="padding:8px 6px;text-align:center;">Subject</th>'
+          + '<th style="padding:8px 6px;text-align:center;">Score</th>'
+          + '<th style="padding:8px 6px;text-align:center;">Accuracy</th>'
+          + '<th style="padding:8px 6px;text-align:center;">Time</th>'
+          + '<th style="padding:8px 6px;text-align:center;">Q&apos;s</th>'
+          + '</tr></thead><tbody id="mtHistTbody"></tbody></table>';
+
+        var tbody = document.getElementById('mtHistTbody');
+        if (!tbody) return;
+        var html = '';
+        rows.forEach(function(r, idx) {
+          var d   = new Date(r.taken_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
+          var acc = r.total>0 ? Math.round(r.score/r.total*100) : 0;
+          var col = acc>=70?'#1D9E75':acc>=50?'#EF9F27':'#dc2626';
+          var accBg = acc>=70?'#dcfce7':acc>=50?'#FAEEDA':'#fee2e2';
+          var sets = r.settings||{};
+          var yr  = sets.year&&sets.year!=='all' ? sets.year : 'All';
+          var sub = sets.subject&&sets.subject!=='all' ? sets.subject : 'All';
+          var mins = Math.floor((r.time_taken||0)/60);
+          var secs = (r.time_taken||0)%60;
+          var qs   = r.questions || [];
+          var rowBg = idx%2===0 ? 'var(--bg)' : 'var(--bg2)';
+
+          // Main row
+          html += '<tr style="background:'+rowBg+';border-bottom:1px solid var(--border);cursor:pointer;" onclick="mtHistToggle('+idx+')">';
+          html += '<td style="padding:9px 10px;font-weight:500;">'+d+'</td>';
+          html += '<td style="padding:9px 6px;text-align:center;color:var(--text3);">'+yr+'</td>';
+          html += '<td style="padding:9px 6px;text-align:center;color:var(--text3);font-size:11px;">'+sub+'</td>';
+          html += '<td style="padding:9px 6px;text-align:center;font-weight:700;">'+r.score+'/'+r.total+'</td>';
+          html += '<td style="padding:9px 6px;text-align:center;"><span style="background:'+accBg+';color:'+col+';padding:2px 8px;border-radius:10px;font-weight:700;">'+acc+'%</span></td>';
+          html += '<td style="padding:9px 6px;text-align:center;color:var(--text3);">'+mins+'m '+secs+'s</td>';
+          html += '<td style="padding:9px 6px;text-align:center;color:var(--blue);">'+qs.length+' ▾</td>';
+          html += '</tr>';
+
+          // Expanded question review row
+          html += '<tr id="mtHistExp_'+idx+'" style="display:none;"><td colspan="7" style="padding:0;">';
+          html += '<div style="background:var(--bg2);padding:12px 14px;border-bottom:2px solid var(--border);">';
+          if (qs.length === 0) {
+            html += '<div style="color:var(--text3);font-size:12px;padding:8px 0;">No question details stored for this test (taken before this feature was added).</div>';
+          } else {
+            qs.forEach(function(qq, qi) {
+              var isOk  = qq.chosen && qq.chosen === qq.answer;
+              var isBad = qq.chosen && qq.chosen !== qq.answer;
+              var icon  = isOk  ? '<span style="color:#1D9E75;font-weight:700;">\u2713</span>'
+                        : isBad ? '<span style="color:#E24B4A;font-weight:700;">\u2717</span>'
+                        : '<span style="color:var(--text3);">\u25CB</span>';
+              var cardBg = isOk ? '#f0fdf4' : isBad ? '#fff5f5' : 'var(--bg)';
+              var cardBorder = isOk ? '#86efac' : isBad ? '#fca5a5' : 'var(--border)';
+              var expId = 'mhqe_'+idx+'_'+qi;
+              html += '<div onclick="mtHistQToggle(\''+expId+'\')" style="cursor:pointer;background:'+cardBg+';border:1px solid '+cardBorder+';border-radius:7px;padding:9px 12px;margin-bottom:6px;">';
+              html += '<div style="display:flex;align-items:flex-start;gap:8px;">';
+              html += '<span style="min-width:18px;font-size:13px;">'+icon+'</span>';
+              html += '<div style="flex:1;">';
+              html += '<div style="font-size:12px;font-weight:500;line-height:1.4;">'+(qq.question||'Q#'+qq.qId)+'</div>';
+              html += '<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+(qq.subject||'')+' \u00B7 '+(qq.year||'')+'</div>';
+              html += '</div></div>';
+              html += '<div id="'+expId+'" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid '+cardBorder+';">';
+              var opts = ['A','B','C','D'];
+              opts.forEach(function(l, oi) {
+                var txt = [qq.optA,qq.optB,qq.optC,qq.optD][oi];
+                if (!txt) return;
+                var isAns    = l === qq.answer;
+                var isChosen = l === qq.chosen;
+                var obg = isAns ? '#dcfce7' : (isChosen && !isAns ? '#fee2e2' : 'var(--bg2)');
+                var ocol= isAns ? '#166534' : (isChosen && !isAns ? '#991b1b' : 'var(--text)');
+                var ofw = (isAns||isChosen) ? '700' : '400';
+                var suf = isAns ? ' \u2713' : (isChosen&&!isAns ? ' \u2717' : '');
+                html += '<div style="padding:4px 8px;border-radius:5px;background:'+obg+';color:'+ocol+';font-weight:'+ofw+';margin-bottom:3px;font-size:12px;">'+l+'. '+txt+suf+'</div>';
+              });
+              if (qq.explanation) html += '<div style="margin-top:6px;padding:6px 8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;font-size:11px;color:var(--text3);"><b>Exp:</b> '+qq.explanation+'</div>';
+              html += '</div></div>';
+            });
+          }
+          html += '</div></td></tr>';
+        });
+        tbody.innerHTML = html;
       }).catch(function(){});
   }
+
+  window.mtHistToggle = function(idx) {
+    var row = document.getElementById('mtHistExp_'+idx);
+    if (!row) return;
+    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+  };
+
+  window.mtHistQToggle = function(expId) {
+    var el = document.getElementById(expId);
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  };
 
   window.mtReset = function() {
     if (mt.timer) clearInterval(mt.timer);
