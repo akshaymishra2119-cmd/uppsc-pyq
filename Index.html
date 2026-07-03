@@ -10035,10 +10035,8 @@ document.addEventListener('keydown', e => {
 
   function mtGetPool() {
     if (typeof allQuestions === 'undefined') return [];
-    // Respect 70% lock for guests — same as PYQ Practice
-    let base = (typeof hasFullAccess === 'function' && hasFullAccess())
-      ? [...allQuestions]
-      : [...allQuestions].filter(function(q){ return typeof isLocked === 'function' ? !isLocked(q) : true; });
+    // ALL questions load — locked ones are blurred in render
+    let base = [...allQuestions];
     if (mt.year !== 'all') base = base.filter(function(q){ return String(q.year) === mt.year; });
     if (mt.sub  !== 'all') base = base.filter(function(q){ return q.subject === mt.sub; });
     return base;
@@ -10150,9 +10148,9 @@ document.addEventListener('keydown', e => {
       }).join('');
       const meta = (qq.year||'') + (qq.year && qq.subject ? ' · ' : '') + (qq.subject||'');
       const lockOverlay = locked
-        ? '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;gap:6px;">'
+        ? '<div class="q-lock-overlay">'
           + '<i class="ti ti-lock" style="font-size:22px;color:#7f1d1d;"></i>'
-          + '<div style="font-size:12px;font-weight:600;color:#7f1d1d;">Locked — '
+          + '<div style="font-size:12px;font-weight:600;color:#7f1d1d;text-align:center;">Locked · '
           + '<span style="cursor:pointer;text-decoration:underline;" onclick="openAuthModal(&quot;register&quot;)">Register free</span> to unlock</div></div>'
         : '';
       const cardStyle = locked ? 'position:relative;' : '';
