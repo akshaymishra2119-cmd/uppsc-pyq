@@ -608,6 +608,23 @@ textarea{resize:vertical;min-height:70px;}
 .opt.wrong{background:var(--red-light);border-color:var(--red);color:var(--red-dark);}
 .opt.reveal{background:var(--blue-light);border-color:var(--blue);color:var(--blue-dark);}
 .opt:disabled{cursor:default;}
+/* Match-type question table */
+.match-tbl-wrap{overflow-x:auto;margin:8px 0 12px;border-radius:var(--radius);border:1px solid var(--border);}
+.match-tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.match-tbl th{background:var(--bg2);color:var(--text2);font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;padding:7px 10px;border-bottom:2px solid var(--border2);}
+.match-tbl td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text);line-height:1.4;vertical-align:top;}
+.match-tbl tr:last-child td{border-bottom:none;}
+.match-tbl .mk{font-weight:700;color:var(--blue);white-space:nowrap;width:24px;}
+.match-tbl .div-col{width:12px;border-bottom:none;background:var(--bg2);}
+.match-tbl th.div-col{background:var(--bg2);}
+.mt-opts{grid-template-columns:1fr 1fr!important;}
+.mt-pairs{display:inline-flex;gap:5px;flex-wrap:wrap;}
+.mt-pair{background:var(--bg2);border-radius:4px;padding:1px 6px;font-size:12px;white-space:nowrap;}
+.mt-pair b{color:var(--blue);}
+.opt.mt-opt{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.5;}
+.opt.dimmed:disabled{opacity:0.4;}
+.opt.chosen{background:var(--blue-light);border-color:var(--blue);color:var(--blue-dark);}
 .explanation{background:var(--bg2);border-radius:var(--radius);padding:10px 12px;
   font-size:12px;color:var(--text2);line-height:1.6;margin-top:4px;}
 .explanation strong{color:var(--text);}
@@ -3203,6 +3220,95 @@ function highlightSearch(text, term) {
   } catch(e) { return text; }
 }
 
+// ── Match-type question UI helpers ──────────────────────────────────────────
+function parseMatchQuestion(qtext) {
+  // Extract List-I and List-II items from question text
+  var t = (qtext || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  var pat1 = /(?:List\s*[-–]\s*I(?!I)|सूची\s*[-–]?\s*(?:I(?!I)|1))\s*[:\|।]?\s*/i;
+  var pat2 = /(?:List\s*[-–]\s*II|सूची\s*[-–]?\s*(?:II|2))\s*[:\|।]?\s*/i;
+  var i1 = t.search(pat1), i2 = t.search(pat2);
+  if (i1 < 0 || i2 < 0) return null;
+
+  var l1text, l2text;
+  if (i1 < i2) {
+    var m1 = pat1.exec(t.slice(i1));
+    l1text = t.slice(i1 + m1[0].length, i2).trim();
+    var m2 = pat2.exec(t.slice(i2));
+    l2text = t.slice(i2 + m2[0].length).trim();
+  } else {
+    var m2b = pat2.exec(t.slice(i2));
+    l2text = t.slice(i2 + m2b[0].length, i1).trim();
+    var m1b = pat1.exec(t.slice(i1));
+    l1text = t.slice(i1 + m1b[0].length).trim();
+  }
+
+  function extractItems(text, keyPat) {
+    var items = [], re = new RegExp('(?:^|\\s)(' + keyPat + ')[.)\\u0964]\\s*(.+?)(?=\\s(?:' + keyPat + ')[.)\\u0964]|$)', 'g');
+    var m;
+    while ((m = re.exec(text)) !== null)
+      items.push({ key: m[1].toUpperCase(), val: m[2].trim() });
+    return items;
+  }
+
+  var l1 = extractItems(l1text, '[A-Da-d]');
+  var l2 = extractItems(l2text, '[1-4]');
+  if (!l1.length || !l2.length) return null;
+  return { list1: l1, list2: l2 };
+}
+
+function parseMatchOpts(raw) {
+  // "A-3,B-2,C-4,D-1" → [{from:'A',to:'3'}, ...]
+  if (!raw) return [];
+  return String(raw).split(',').map(function(p) {
+    var s = p.trim().split(/[-–]/);
+    return { from: (s[0] || '').trim(), to: (s[1] || '').trim() };
+  }).filter(function(p) { return p.from && p.to; });
+}
+
+function buildMatchUI(q, shown, correctAns, chosenLtr, onclickFn) {
+  // onclickFn(letter) → full onclick="..." string or ''
+  var parsed = parseMatchQuestion(q.question || '');
+  var tableHtml = '';
+  if (parsed) {
+    var len = Math.max(parsed.list1.length, parsed.list2.length);
+    var rows = '';
+    for (var i = 0; i < len; i++) {
+      var l1 = parsed.list1[i] || { key: '', val: '' };
+      var l2 = parsed.list2[i] || { key: '', val: '' };
+      rows += '<tr>'
+        + '<td class="mk">' + l1.key + (l1.key ? '.' : '') + '</td><td>' + l1.val + '</td>'
+        + '<td class="div-col"></td>'
+        + '<td class="mk">' + l2.key + (l2.key ? '.' : '') + '</td><td>' + l2.val + '</td>'
+        + '</tr>';
+    }
+    tableHtml = '<div class="match-tbl-wrap">'
+      + '<table class="match-tbl"><thead><tr>'
+      + '<th colspan="2">List-I</th>'
+      + '<th class="div-col"></th>'
+      + '<th colspan="2">List-II</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+  var optBtns = ['A', 'B', 'C', 'D'].map(function(letter, i) {
+    var raw = [q.optA, q.optB, q.optC, q.optD][i] || '';
+    var pairs = parseMatchOpts(raw);
+    var label = pairs.length
+      ? pairs.map(function(p) {
+          return '<span class="mt-pair"><b>' + p.from + '</b>→' + p.to + '</span>';
+        }).join('')
+      : raw;
+    var cls = 'opt mt-opt';
+    if (shown) {
+      if (letter === correctAns) cls += ' reveal correct';
+      else if (letter === chosenLtr) cls += ' wrong';
+      else cls += ' dimmed';
+    }
+    var oc = shown ? '' : onclickFn(letter);
+    return '<button class="' + cls + '" ' + (shown ? 'disabled' : '') + ' ' + oc + '>'
+      + '<strong>' + letter + '.</strong> <span class="mt-pairs">' + label + '</span></button>';
+  }).join('');
+  return tableHtml + '<div class="opts mt-opts">' + optBtns + '</div>';
+}
+
 function setConfidence(qId, level) {
   sessionConfidence[qId] = level;
   pyqConfidence[qId]     = level;
@@ -5544,7 +5650,10 @@ function renderQuestions() {
          </span>` : "";
     const isBk = pyqBookmarks.includes(String(q.id));
 
-    const opts = ["A","B","C","D"].map((letter,i) => {
+    const isMatchQ = q.qType === 'Match';
+    const matchBlock = isMatchQ ? buildMatchUI(q, shown, q.answer, answers[q.id+"_chosen"],
+      letter => `onclick="attemptQ('${q.id}','${letter}','${q.answer}',${idx})"`) : '';
+    const opts = isMatchQ ? '' : ["A","B","C","D"].map((letter,i) => {
       const rawOpt = [q.optA,q.optB,q.optC,q.optD][i];
       const text = highlightSearch(rawOpt||'', searchQuery);
       let cls = "opt";
@@ -5600,7 +5709,7 @@ function renderQuestions() {
       </div>
       ${confUI}
       <div class="q-text">${highlightSearch(highlightDangerWords(formatQText(q.question)), searchQuery)}</div>
-      <div class="opts">${opts}</div>
+      ${isMatchQ ? matchBlock : `<div class="opts">${opts}</div>`}
       ${explanation}
       ${skipBtn}
     </div>`;
@@ -5623,7 +5732,10 @@ function renderOneQ(idx) {
   const repeatFlag = (q.repeatsIn||"").includes(",")
     ? `<span class="badge badge-amber"><i class="ti ti-repeat" aria-hidden="true"></i> Repeats ${q.repeatsIn}</span>` : "";
 
-  const opts = ["A","B","C","D"].map((letter, i) => {
+  const isMatchQ = q.qType === 'Match';
+  const matchBlock = isMatchQ ? buildMatchUI(q, shown, q.answer, answers[q.id+"_chosen"],
+    letter => `onclick="attemptQ('${q.id}','${letter}','${q.answer}')"`) : '';
+  const opts = isMatchQ ? '' : ["A","B","C","D"].map((letter, i) => {
     const text = [q.optA, q.optB, q.optC, q.optD][i];
     let cls = "opt";
     if (shown) {
@@ -5657,7 +5769,7 @@ function renderOneQ(idx) {
         ${repeatFlag}
       </div>
       <div class="q-text">${highlightDangerWords(q.question)}</div>
-      <div class="opts">${opts}</div>
+      ${isMatchQ ? matchBlock : `<div class="opts">${opts}</div>`}
       ${explanation}
       <div style="margin-top:8px;">${skipBtn}</div>
     </div>`;
@@ -6236,11 +6348,14 @@ function renderAllMockQs() {
   mockQStartTime = new Date();
   const el = document.getElementById('qContainer');
   el.innerHTML = filteredQ.map((q, idx) => {
-    const opts = ['A','B','C','D'].map((letter, i) => {
+    const isMatchQ = q.qType === 'Match';
+    const opts = isMatchQ ? '' : ['A','B','C','D'].map((letter, i) => {
       const text = [q.optA,q.optB,q.optC,q.optD][i];
       if (!text) return '';
       return `<button class="opt" onclick="mockAttemptQ('${q.id}','${letter}','${q.answer}')"><strong>${letter}.</strong> ${text}</button>`;
     }).join('');
+    const matchBlock = isMatchQ ? buildMatchUI(q, false, q.answer, null,
+      letter => `onclick="mockAttemptQ('${q.id}','${letter}','${q.answer}')"`) : '';
     return `<div class="q-card" id="mockcard-${q.id}" style="margin-bottom:14px;">
       <div class="q-meta" style="margin-bottom:8px;">
         <span class="q-num" style="font-weight:700;">Q${idx+1}.</span>
@@ -6248,7 +6363,7 @@ function renderAllMockQs() {
         <span class="badge" style="background:var(--bg3);color:var(--text2);">${q.year||''}</span>
       </div>
       <div class="q-text">${highlightDangerWords(q.question)}</div>
-      <div class="opts" id="mockopts-${q.id}">${opts}</div>
+      ${isMatchQ ? `<div id="mockopts-${q.id}">${matchBlock}</div>` : `<div class="opts" id="mockopts-${q.id}">${opts}</div>`}
       <div class="explanation" id="mockexp-${q.id}" style="display:none;"></div>
     </div>`;
   }).join('');
@@ -6280,14 +6395,18 @@ function mockAttemptQ(qId, chosen, correct) {
   // Update options in-place
   const optsEl = document.getElementById('mockopts-' + qId);
   if (optsEl) {
-    optsEl.innerHTML = ['A','B','C','D'].map((letter, i) => {
-      const text = [q.optA,q.optB,q.optC,q.optD][i];
-      if (!text) return '';
-      let cls = 'opt';
-      if (letter === q.answer) cls += ' correct reveal';
-      else if (letter === chosen) cls += ' wrong';
-      return `<button class="${cls}" disabled><strong>${letter}.</strong> ${text}</button>`;
-    }).join('');
+    if (q.qType === 'Match') {
+      optsEl.innerHTML = buildMatchUI(q, true, q.answer, chosen, () => '');
+    } else {
+      optsEl.innerHTML = ['A','B','C','D'].map((letter, i) => {
+        const text = [q.optA,q.optB,q.optC,q.optD][i];
+        if (!text) return '';
+        let cls = 'opt';
+        if (letter === q.answer) cls += ' correct reveal';
+        else if (letter === chosen) cls += ' wrong';
+        return `<button class="${cls}" disabled><strong>${letter}.</strong> ${text}</button>`;
+      }).join('');
+    }
   }
   const expEl = document.getElementById('mockexp-' + qId);
   if (expEl) {
@@ -10292,14 +10411,24 @@ document.addEventListener('keydown', e => {
     if (!wrap) return;
     wrap.innerHTML = mt.questions.map(function(qq, idx) {
       const locked = typeof isLocked === 'function' && isLocked(qq);
-      const opts = ['A','B','C','D'].map(function(ltr, i) {
-        const txt = [qq.optA, qq.optB, qq.optC, qq.optD][i];
-        if (!txt) return '';
-        if (locked) return '<button class="mt-opt-btn" disabled style="filter:blur(4px);pointer-events:none;">'
-          + '<span class="mt-opt-ltr">'+ltr+'.</span><span>'+txt+'</span></button>';
-        return '<button class="mt-opt-btn" id="mto_'+qq.id+'_'+ltr+'" onclick="mtChoose(\''+qq.id+'\',\''+ltr+'\')">'
-          + '<span class="mt-opt-ltr">'+ltr+'.</span><span>'+txt+'</span></button>';
-      }).join('');
+      const isMatchQ = qq.qType === 'Match';
+      var optsHtml;
+      if (isMatchQ) {
+        optsHtml = buildMatchUI(qq, false, qq.answer, null, function(ltr) {
+          if (locked) return 'disabled style="filter:blur(4px);pointer-events:none;"';
+          return 'id="mto_'+qq.id+'_'+ltr+'" onclick="mtChoose(\''+qq.id+'\',\''+ltr+'\')"';
+        });
+      } else {
+        var opts = ['A','B','C','D'].map(function(ltr, i) {
+          const txt = [qq.optA, qq.optB, qq.optC, qq.optD][i];
+          if (!txt) return '';
+          if (locked) return '<button class="mt-opt-btn" disabled style="filter:blur(4px);pointer-events:none;">'
+            + '<span class="mt-opt-ltr">'+ltr+'.</span><span>'+txt+'</span></button>';
+          return '<button class="mt-opt-btn" id="mto_'+qq.id+'_'+ltr+'" onclick="mtChoose(\''+qq.id+'\',\''+ltr+'\')">'
+            + '<span class="mt-opt-ltr">'+ltr+'.</span><span>'+txt+'</span></button>';
+        }).join('');
+        optsHtml = '<div class="mt-opts-grid">'+opts+'</div>';
+      }
       const meta = (qq.year||'') + (qq.year && qq.subject ? ' · ' : '') + (qq.subject||'');
       const lockOverlay = locked
         ? '<div class="q-lock-overlay">'
@@ -10312,7 +10441,7 @@ document.addEventListener('keydown', e => {
         + lockOverlay
         + '<div class="mt-qnum'+(locked?' blur-text':'')+'">Q'+(idx+1)+' &nbsp;<span style="color:var(--text3);font-weight:400;">'+meta+'</span></div>'
         + '<div class="mt-qtext'+(locked?' blur-text':'')+'">'+qq.question+'</div>'
-        + '<div class="mt-opts-grid">'+opts+'</div>'
+        + ((!isMatchQ && locked) ? '<div style="filter:blur(4px);pointer-events:none;">'+optsHtml+'</div>' : optsHtml)
         + '</div>';
     }).join('');
   }
