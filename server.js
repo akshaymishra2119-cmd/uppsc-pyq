@@ -1080,9 +1080,9 @@ app.get('/api/getUPPSCNews', async (req, res) => {
     return res.json(_newsCache.uppsc);
   }
   try {
-    // Pull manually-ingested news from PostgreSQL first
+    // Pull manually-ingested news from PostgreSQL — only if recent (last 48h)
     const pgRes = await pool.query(
-      `SELECT * FROM news_items WHERE type='uppsc' ORDER BY created_at DESC LIMIT 200`
+      `SELECT * FROM news_items WHERE type='uppsc' AND created_at > NOW() - INTERVAL '48 hours' ORDER BY created_at DESC LIMIT 200`
     );
     if (pgRes.rows.length > 0) {
       const rows = pgRes.rows.map(r => ({
@@ -1139,9 +1139,9 @@ app.get('/api/getCurrentAffairs', async (req, res) => {
     return res.json(_newsCache.ca);
   }
   try {
-    // Pull manually-ingested news from PostgreSQL first
+    // Pull manually-ingested news from PostgreSQL — only if recent (last 48h)
     const pgRes = await pool.query(
-      `SELECT * FROM news_items WHERE type='ca' ORDER BY created_at DESC LIMIT 200`
+      `SELECT * FROM news_items WHERE type='ca' AND created_at > NOW() - INTERVAL '48 hours' ORDER BY created_at DESC LIMIT 200`
     );
     if (pgRes.rows.length > 0) {
       const rows = pgRes.rows.map(r => ({
@@ -1421,6 +1421,54 @@ app.post('/api/clearAllNews', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// ── DAILY AUTO-SCRAPE (runs every 6 hours on Railway) ────────
+const { scrapeAll } = require('./scraper');
+
+async function autoIngestNews() {
+  try {
+    console.log('[AutoScrape] Starting news fetch...');
+    const result = await scrapeAll();
+    const uppscNews     = result.uppscNews     || [];
+    const currentAffairs = result.currentAffairs || [];
+    let added = 0;
+    for (const r of uppscNews) {
+      if (!r.headline) continue;
+      const dup = await pool.query(`SELECT id FROM news_items WHERE type='uppsc' AND headline=$1 LIMIT 1`, [r.headline]);
+      if (dup.rows.length > 0) continue;
+      await pool.query(
+        `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link, mcq)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        ['uppsc', r.headline, r.detail||'', r.date||'', r.category||'General',
+         r.relevance||'Medium', r.source||'', r.tags||'', r.link||'', r.mcq||'']
+      );
+      added++;
+    }
+    for (const r of currentAffairs) {
+      if (!r.headline) continue;
+      const dup = await pool.query(`SELECT id FROM news_items WHERE type='ca' AND headline=$1 LIMIT 1`, [r.headline]);
+      if (dup.rows.length > 0) continue;
+      await pool.query(
+        `INSERT INTO news_items (type, headline, detail, date, category, relevance, source, tags, link, mcq)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        ['ca', r.headline, r.detail||'', r.date||'', r.category||'General',
+         r.relevance||'Medium', r.source||'', r.tags||'', r.link||'', r.mcq||'']
+      );
+      added++;
+    }
+    _newsCacheTime.uppsc = 0;
+    _newsCacheTime.ca    = 0;
+    console.log('[AutoScrape] Done — added ' + added + ' new items');
+  } catch(e) {
+    console.error('[AutoScrape] Error:', e.message);
+  }
+}
+
+// Run once on startup (after 30s delay to let DB init finish), then every 6 hours
+setTimeout(() => {
+  autoIngestNews();
+  setInterval(autoIngestNews, 6 * 60 * 60 * 1000);
+}, 30000);
 
 // -- START
 app.listen(PORT, '0.0.0.0', () => {
