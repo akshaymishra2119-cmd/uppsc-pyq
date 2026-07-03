@@ -7218,34 +7218,58 @@ function renderServerProgress(data) {
   var sec7 = '<div class="tp-section"><div class="tp-sec-hdr">📈 Subject Accuracy Trend <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">vs last 14 days</span></div>'
     +(trendRows||'<div class="tp-empty">Practice more questions to see trends.</div>')+'</div>';
 
-  // ── 14-day Timeline (replaces calendar) ─────────────────────
-  var tlDays=[];
-  for(var ti=13;ti>=0;ti--){
-    var td=new Date(); td.setDate(td.getDate()-ti);
-    var tk=td.toISOString().slice(0,10);
-    var tv=cal[tk]||{total:0,correct:0,wrong:0};
-    tlDays.push({key:tk, label:td.toLocaleDateString('en-IN',{day:'numeric',month:'short'}), total:tv.total, correct:tv.correct||0, wrong:tv.wrong||0});
+  // ── Full-history Timeline (from first activity to today) ──────
+  var todayKey = new Date().toISOString().slice(0,10);
+  // Find first activity date from calendarData
+  var calKeys = Object.keys(cal).sort();
+  var firstDateStr = calKeys.length > 0 ? calKeys[0] : todayKey;
+  var firstDate = new Date(firstDateStr);
+  var today2 = new Date(); today2.setHours(0,0,0,0);
+  // Build array of every day from firstDate to today
+  var tlDays = [];
+  var cur = new Date(firstDate);
+  while(cur <= today2){
+    var tk = cur.toISOString().slice(0,10);
+    var tv = cal[tk]||{total:0,correct:0,wrong:0};
+    var lbl;
+    // show label only for: first day, 1st of each month, today
+    var isFirst = tk === firstDateStr;
+    var isToday = tk === todayKey;
+    var isMonthStart = cur.getDate() === 1;
+    if(isFirst||isToday||isMonthStart){
+      lbl = cur.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    } else { lbl = ''; }
+    tlDays.push({key:tk, label:lbl, total:tv.total, correct:tv.correct||0, wrong:tv.wrong||0, isToday:isToday});
+    cur.setDate(cur.getDate()+1);
   }
-  var tlMax=Math.max(1,Math.max.apply(null,tlDays.map(function(d){return d.total;})));
-  var todayKey=new Date().toISOString().slice(0,10);
-  var tlBars=tlDays.map(function(d){
-    var hC=d.correct>0?Math.round((d.correct/tlMax)*80):0;
-    var hW=d.wrong>0?Math.round((d.wrong/tlMax)*80):0;
-    var isT=d.key===todayKey;
-    return '<div style="display:flex;flex-direction:column;align-items:center;min-width:36px;flex:1;">'
-      +'<div style="font-size:10px;color:var(--text3);margin-bottom:2px;">'+(d.total>0?d.total:'')+'</div>'
-      +'<div style="display:flex;gap:2px;align-items:flex-end;height:80px;">'
-      +'<div style="width:10px;background:#1D9E75;border-radius:3px 3px 0 0;height:'+hC+'px;"></div>'
-      +'<div style="width:10px;background:#E24B4A;border-radius:3px 3px 0 0;height:'+hW+'px;"></div>'
+  var tlMax = Math.max(1, Math.max.apply(null, tlDays.map(function(d){return d.total;})));
+  // Adaptive bar width based on number of days
+  var numDays = tlDays.length;
+  var barW = numDays > 180 ? 6 : numDays > 90 ? 8 : numDays > 45 ? 10 : 14;
+  var barH = 70;
+  var totalDaysLabel = numDays === 1 ? '1 day' : numDays + ' days';
+  var tlBars = tlDays.map(function(d){
+    var hC = d.correct>0 ? Math.max(2,Math.round((d.correct/tlMax)*barH)) : 0;
+    var hW = d.wrong>0   ? Math.max(2,Math.round((d.wrong/tlMax)*barH)) : 0;
+    var hE = (!hC&&!hW&&d.total===0) ? 0 : 0;
+    var borderTop = d.isToday ? '1px solid var(--blue)' : 'none';
+    return '<div style="display:flex;flex-direction:column;align-items:center;min-width:'+(barW*2+3)+'px;">'
+      +(d.total>0?'<div style="font-size:9px;color:var(--text3);margin-bottom:1px;">'+d.total+'</div>':'<div style="font-size:9px;margin-bottom:1px;">&nbsp;</div>')
+      +'<div style="display:flex;gap:1px;align-items:flex-end;height:'+barH+'px;">'
+      +'<div style="width:'+barW+'px;background:'+(hC>0?'#1D9E75':'var(--border)')+';border-radius:2px 2px 0 0;height:'+(hC>0?hC:2)+'px;opacity:'+(hC>0?'1':'0.25')+';"></div>'
+      +'<div style="width:'+barW+'px;background:'+(hW>0?'#E24B4A':'var(--border)')+';border-radius:2px 2px 0 0;height:'+(hW>0?hW:2)+'px;opacity:'+(hW>0?'1':'0.25')+';"></div>'
       +'</div>'
-      +'<div style="font-size:10px;color:'+(isT?'var(--blue)':'var(--text3)')+';font-weight:'+(isT?'700':'400')+';text-align:center;margin-top:4px;white-space:nowrap;">'+d.label+'</div>'
+      +'<div style="font-size:9px;color:'+(d.isToday?'var(--blue)':'var(--text3)')+';font-weight:'+(d.isToday?'700':'400')+';text-align:center;margin-top:3px;white-space:nowrap;min-height:14px;">'+d.label+'</div>'
       +'</div>';
   }).join('');
-  var secTimeline = '<div class="tp-section"><div class="tp-sec-hdr">📊 14-day Activity'
-    +' <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">'
-    +'<span style="display:inline-block;width:10px;height:10px;background:#1D9E75;border-radius:2px;margin-right:3px;"></span>correct &nbsp;'
-    +'<span style="display:inline-block;width:10px;height:10px;background:#E24B4A;border-radius:2px;margin-right:3px;"></span>wrong</span></div>'
-    +'<div style="display:flex;gap:4px;align-items:flex-end;overflow-x:auto;padding-bottom:4px;">'+tlBars+'</div></div>';
+  var secTimeline = '<div class="tp-section"><div class="tp-sec-hdr">📊 Your Practice Journey'
+    +' <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:6px;">'+totalDaysLabel+' since you started &nbsp;·&nbsp;'
+    +'<span style="display:inline-block;width:8px;height:8px;background:#1D9E75;border-radius:2px;margin:0 2px 0 4px;vertical-align:middle;"></span>correct &nbsp;'
+    +'<span style="display:inline-block;width:8px;height:8px;background:#E24B4A;border-radius:2px;margin:0 2px 0 2px;vertical-align:middle;"></span>wrong'
+    +'</span></div>'
+    +'<div style="overflow-x:auto;padding-bottom:6px;">'
+    +'<div style="display:flex;gap:2px;align-items:flex-end;min-width:max-content;padding:4px 2px 0;">'+tlBars+'</div>'
+    +'</div></div>';
 
   // ── CSS ──────────────────────────────────────────────────────
   var css = '<style>'
@@ -7302,7 +7326,7 @@ function renderServerProgress(data) {
     +'@media(max-width:560px){.dp-head,.dp-row{grid-template-columns:2fr 1fr 1fr 1fr 28px;}.dp-stat:nth-child(4){display:none;}}'
     +'</style>';
 
-  tl.innerHTML = css + sec1 + sec2 + sec9 + sec3 + sec4 + sec5 + sec6 + sec7 + secTimeline;
+  tl.innerHTML = css + secTimeline + sec1 + sec2 + sec9 + sec3 + sec4 + sec5 + sec6 + sec7;
 
   // Default: highlight "All" card
   setTimeout(function(){ var el=document.getElementById('mf_all'); if(el) el.classList.add('active-mode'); }, 50);
