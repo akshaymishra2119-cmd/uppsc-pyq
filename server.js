@@ -514,8 +514,22 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
       if (r.result === 'correct') m.correct++;
       if (r.result === 'wrong') m.wrong++;
     });
-    // Mock count from mock_history
+    // Mock stats from mock_history (not progress table — new mock tab saves sessions, not individual Qs)
     modes.mock.mockCount = mockRows.rows.length;
+    if (mockRows.rows.length > 0) {
+      let mTotalQ = 0, mCorrect = 0, mWrong = 0;
+      mockRows.rows.forEach(m => {
+        mTotalQ  += m.total || 0;
+        mCorrect += m.score || 0;
+        // wrong = sum of w fields in subject_breakdown
+        const sb = m.subject_breakdown || {};
+        Object.values(sb).forEach(s => { mWrong += (s.w || 0); });
+      });
+      modes.mock.done     = mTotalQ;
+      modes.mock.correct  = mCorrect;
+      modes.mock.wrong    = mWrong;
+      modes.mock.accuracy = (mCorrect + mWrong) > 0 ? Math.round(mCorrect / (mCorrect + mWrong) * 100) : 0;
+    }
     Object.values(modes).forEach(m => {
       m.accuracy = (m.correct + m.wrong) > 0 ? Math.round(m.correct / (m.correct + m.wrong) * 100) : 0;
     });

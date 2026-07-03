@@ -7200,6 +7200,19 @@ function renderServerProgress(data) {
   // ── SECTION 2: Mode Cards (4 cards, clickable) ──────────────
   function mCard(key,label,emoji,col){
     var d = mo[key]||{};
+    if (key === 'mock') {
+      var mc = d.mockCount||0;
+      var ma = d.accuracy||0;
+      var mq = d.done||0;
+      return '<div class="tp-mode-card tp-mode-filter" id="mf_'+key+'" onclick="dpSetMode(\''+key+'\')"'
+        +' style="border-top:3px solid '+col+';cursor:pointer;">'
+        +'<div class="tp-mode-hdr">'+emoji+' '+label+'</div>'
+        +'<div class="tp-mode-val" style="color:'+col+';">'+mc+'</div>'
+        +'<div class="tp-mode-sub">tests taken</div>'
+        +'<div class="tp-mode-row">'+mq+' questions attempted</div>'
+        +'<div class="tp-mode-acc" style="color:'+col+';">'+ma+'% avg accuracy</div>'
+        +'</div>';
+    }
     return '<div class="tp-mode-card tp-mode-filter" id="mf_'+key+'" onclick="dpSetMode(\''+key+'\')"'
       +' style="border-top:3px solid '+col+';cursor:pointer;">'
       +'<div class="tp-mode-hdr">'+emoji+' '+label+'</div>'
@@ -7207,7 +7220,6 @@ function renderServerProgress(data) {
       +'<div class="tp-mode-sub">questions</div>'
       +'<div class="tp-mode-row">✓'+(d.correct||0)+' &nbsp; ✗'+(d.wrong||0)+'</div>'
       +'<div class="tp-mode-acc" style="color:'+col+';">'+(d.accuracy||0)+'% accuracy</div>'
-      +(key==='mock'?'<div class="tp-mode-sub">'+(d.mockCount||0)+' mock tests taken</div>':'')
       +'</div>';
   }
   var sec2 = '<div class="tp-section">'
@@ -7532,24 +7544,73 @@ function dpSetMode(mode) {
 
   // Rebuild daily breakdown with mode filter
   var sec9wrap = document.getElementById('sec9wrap');
-  if (sec9wrap && window._buildDpRows) {
-    var mLabels = { all:'All Modes', practice:'Casual Practice', quiz:'Daily Quiz', mock:'Mock Tests' };
-    sec9wrap.innerHTML = '<div class="tp-sec-hdr">\u{1F4C6} Daily Breakdown'
-      +' <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">\u2014 '+(mLabels[mode]||mode)+'</span></div>'
-      +'<div class="dp-head">'
-      +'<div class="dp-date" style="font-size:11px;font-weight:600;color:var(--text3);">Date</div>'
-      +'<div class="dp-stat" style="font-size:11px;color:var(--text3);">Done</div>'
-      +'<div class="dp-stat dp-correct" style="font-size:11px;">Correct</div>'
-      +'<div class="dp-stat dp-wrong" style="font-size:11px;">Wrong</div>'
-      +'<div class="dp-stat" style="font-size:11px;color:var(--text3);">Accuracy</div>'
-      +'<div class="dp-chevron"></div></div>'
-      + window._buildDpRows(mode);
+  if (sec9wrap) {
+    if (mode === 'mock') {
+      // Mock mode: show session history from mock_history, not question breakdown
+      var mocks = (window._tpData && window._tpData.mockHistory) || [];
+      var mockRows = mocks.length === 0
+        ? '<div class="dp-empty" style="padding:16px 12px;">No mock tests taken yet. Go to the Mock Test tab to take one.</div>'
+        : mocks.map(function(mk) {
+            var d = new Date(mk.takenAt).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+            var col = mk.pct>=70?'#1D9E75':mk.pct>=50?'#EF9F27':'#E24B4A';
+            var sets = mk.settings||{};
+            var tag = (sets.year&&sets.year!=='all'?sets.year:'All Yrs')
+              + (sets.subject&&sets.subject!=='all'?' · '+sets.subject:'');
+            var mins = Math.floor((mk.timeTaken||0)/60);
+            return '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;padding:11px 12px;border-bottom:1px solid var(--border);align-items:center;">'
+              +'<div><div style="font-size:13px;font-weight:500;">'+d+'</div>'
+              +'<div style="font-size:11px;color:var(--text3);margin-top:2px;">'+tag+'</div></div>'
+              +'<div style="text-align:center;font-size:14px;font-weight:600;">'+mk.total+'</div>'
+              +'<div style="text-align:center;font-size:14px;font-weight:600;color:#1D9E75;">'+mk.score+'</div>'
+              +'<div style="text-align:center;font-size:14px;font-weight:600;color:#E24B4A;">'+(mk.total-mk.score)+'</div>'
+              +'<div style="text-align:center;"><span style="background:'+(mk.pct>=70?'#dcfce7':mk.pct>=50?'#FAEEDA':'#FCEBEB')+';color:'+col+';padding:2px 9px;border-radius:12px;font-size:12px;font-weight:700;">'+mk.pct+'%</span></div>'
+              +'</div>';
+          }).join('');
+      sec9wrap.innerHTML = '<div class="tp-sec-hdr">🏆 Mock Test Sessions'
+        +'<span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">'+mocks.length+' session'+(mocks.length!==1?'s':'')+' taken</span></div>'
+        +'<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;padding:6px 12px;border-bottom:1px solid var(--border);">'
+        +'<div style="font-size:11px;font-weight:600;color:var(--text3);">Date</div>'
+        +'<div style="font-size:11px;color:var(--text3);text-align:center;">Total</div>'
+        +'<div style="font-size:11px;color:#1D9E75;text-align:center;">Correct</div>'
+        +'<div style="font-size:11px;color:#E24B4A;text-align:center;">Wrong</div>'
+        +'<div style="font-size:11px;color:var(--text3);text-align:center;">Accuracy</div></div>'
+        + mockRows;
+    } else if (window._buildDpRows) {
+      var mLabels = { all:'All Modes', practice:'Casual Practice', quiz:'Daily Quiz' };
+      sec9wrap.innerHTML = '<div class="tp-sec-hdr">\u{1F4C6} Daily Breakdown'
+        +' <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">\u2014 '+(mLabels[mode]||mode)+'</span></div>'
+        +'<div class="dp-head">'
+        +'<div class="dp-date" style="font-size:11px;font-weight:600;color:var(--text3);">Date</div>'
+        +'<div class="dp-stat" style="font-size:11px;color:var(--text3);">Done</div>'
+        +'<div class="dp-stat dp-correct" style="font-size:11px;">Correct</div>'
+        +'<div class="dp-stat dp-wrong" style="font-size:11px;">Wrong</div>'
+        +'<div class="dp-stat" style="font-size:11px;color:var(--text3);">Accuracy</div>'
+        +'<div class="dp-chevron"></div></div>'
+        + window._buildDpRows(mode);
+    }
   }
 
   // Update year table
   var ybm = window._tpYbm || {};
   var ym  = window._tpYm  || {};
-  var ymData = mode === 'all' ? ym : (ybm[mode] || {});
+  var ymData;
+  if (mode === 'all') {
+    ymData = ym;
+  } else if (mode === 'mock') {
+    // Build year map from mock_history sessions
+    ymData = {};
+    var mhList = (window._tpData && window._tpData.mockHistory) || [];
+    mhList.forEach(function(mk) {
+      var yr = (mk.settings && mk.settings.year && mk.settings.year !== 'all') ? mk.settings.year : null;
+      if (!yr) return;
+      if (!ymData[yr]) ymData[yr] = { done:0, correct:0, wrong:0 };
+      ymData[yr].done    += mk.total || 0;
+      ymData[yr].correct += mk.score || 0;
+      ymData[yr].wrong   += (mk.total||0) - (mk.score||0);
+    });
+  } else {
+    ymData = ybm[mode] || {};
+  }
   var tbody = document.getElementById('yearTableBody');
   var lbl   = document.getElementById('sec3modeLabel');
   var lmap  = { all:'All modes', practice:'Casual Practice', quiz:'Daily Quiz', mock:'Mock Tests' };
@@ -10275,10 +10336,4 @@ document.addEventListener('keydown', e => {
     max-height:88vh;overflow-y:auto;padding:20px 22px;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
     <button onclick="dpCloseModal()" style="position:absolute;top:14px;right:16px;
       background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">
-      <i class="ti ti-x" aria-hidden="true"></i>
-    </button>
-    <div id="dpModalContent"></div>
-  </div>
-</div>
-</body>
-</html>
+      <i class="ti ti-x" aria-hidden="tru
