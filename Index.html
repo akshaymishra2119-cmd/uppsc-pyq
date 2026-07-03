@@ -7296,48 +7296,53 @@ function renderServerProgress(data) {
   /* ── SECTION 9: Daily breakdown accordion ── */
   const dh = data.dailyHistory || {};
   const dhDates = Object.keys(dh).sort((a,b) => new Date(b) - new Date(a));
+  // Pre-populate question map (avoids JSON-in-onclick issues)
+  window._dpQMap = {};
+  dhDates.forEach((d, idx) => {
+    (dh[d].questions || []).forEach((q, qi) => {
+      window._dpQMap['dp_' + idx + '_' + qi] = q;
+    });
+  });
   const dhRows = dhDates.map((d, idx) => {
     const day  = dh[d];
     const acc  = (day.correct + day.wrong) > 0 ? Math.round(day.correct / (day.correct + day.wrong) * 100) : 0;
-    const accCol  = acc >= 80 ? '#166534' : acc >= 60 ? '#92400e' : acc > 0 ? '#A32D2D' : '#888';
-    const accBg   = acc >= 80 ? '#dcfce7' : acc >= 60 ? '#FAEEDA' : acc > 0 ? '#FCEBEB' : 'var(--bg2)';
+    const accCol = acc >= 80 ? '#166534' : acc >= 60 ? '#92400e' : acc > 0 ? '#A32D2D' : '#888';
+    const accBg  = acc >= 80 ? '#dcfce7' : acc >= 60 ? '#FAEEDA' : acc > 0 ? '#FCEBEB' : 'var(--bg2)';
     const todayStr = new Date().toDateString();
     const yestStr  = new Date(Date.now()-86400000).toDateString();
     const label = d === todayStr ? 'Today' : d === yestStr ? 'Yesterday'
       : new Date(d).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-    return `<div class="dp-row" data-idx="${idx}" onclick="dpToggle(this)">
-      <div class="dp-date">
-        <div class="dp-label">${label}</div>
-        <div class="dp-sub">${d === todayStr||d === yestStr ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : ''}</div>
-      </div>
-      <div class="dp-stat">${day.total}</div>
-      <div class="dp-stat dp-correct">${day.correct}</div>
-      <div class="dp-stat dp-wrong">${day.wrong}</div>
-      <div class="dp-stat"><span class="dp-pill" style="background:${accBg};color:${accCol};">${acc > 0 ? acc+'%' : '-'}</span></div>
-      <div class="dp-chevron"><i class="ti ti-chevron-right dp-icon" aria-hidden="true"></i></div>
-    </div>
-    <div class="dp-expand" id="dpExp${idx}" style="display:none;">
-      <div class="dp-filter-row">
-        <button class="dp-filter active" onclick="dpFilter(event,'all',${idx})">All (${day.total})</button>
-        <button class="dp-filter" onclick="dpFilter(event,'correct',${idx})">Correct (${day.correct})</button>
-        <button class="dp-filter" onclick="dpFilter(event,'wrong',${idx})">Wrong (${day.wrong})</button>
-      </div>
-      <div class="dp-qlist" id="dpQlist${idx}">
-        ${(day.questions||[]).length === 0
-          ? '<div class="dp-empty">No question details available for this day.</div>'
-          : (day.questions||[]).map((q,qi) => `
-          <div class="dp-qcard dp-q-all dp-q-${q.result}" data-result="${q.result}"
-            onclick="dpOpenQuestion(${JSON.stringify(q).replace(/`/g,'\`')})" style="cursor:pointer;">
-            <i class="ti ${q.result==='correct'?'ti-circle-check dp-icon-ok':'ti-circle-x dp-icon-err'}" aria-hidden="true"></i>
-            <div class="dp-qtext">
-              <div class="dp-qtitle">${q.question || 'Q#'+q.q_id}</div>
-              <div class="dp-qmeta">${q.year||''}${q.year&&q.subject?' · ':''}${q.subject||''} · #${q.q_id}
-                <span style="margin-left:6px;color:var(--blue);font-size:10px;">tap to view ›</span>
-              </div>
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>`;
+    const qCardsHTML = (day.questions||[]).length === 0
+      ? '<div class="dp-empty">No question details available for this day.</div>'
+      : (day.questions||[]).map((q, qi) => {
+          const key = 'dp_' + idx + '_' + qi;
+          const icon = q.result === 'correct' ? 'ti-circle-check dp-icon-ok' : 'ti-circle-x dp-icon-err';
+          return '<div class="dp-qcard dp-q-all dp-q-' + q.result + '" data-result="' + q.result + '" '
+            + 'onclick="dpOpenQuestion('' + key + '')" style="cursor:pointer;">'
+            + '<i class="ti ' + icon + '" aria-hidden="true"></i>'
+            + '<div class="dp-qtext">'
+            + '<div class="dp-qtitle">' + (q.question || 'Q#' + q.q_id) + '</div>'
+            + '<div class="dp-qmeta">' + (q.year||'') + (q.year&&q.subject?' · ':'') + (q.subject||'') + ' · #' + q.q_id
+            + ' <span style="margin-left:6px;color:var(--blue);font-size:10px;">tap to view ›</span></div>'
+            + '</div></div>';
+        }).join('');
+    return '<div class="dp-row" data-idx="' + idx + '" onclick="dpToggle(this)">'
+      + '<div class="dp-date"><div class="dp-label">' + label + '</div>'
+      + '<div class="dp-sub">' + (d===todayStr||d===yestStr ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '') + '</div></div>'
+      + '<div class="dp-stat">' + day.total + '</div>'
+      + '<div class="dp-stat dp-correct">' + day.correct + '</div>'
+      + '<div class="dp-stat dp-wrong">' + day.wrong + '</div>'
+      + '<div class="dp-stat"><span class="dp-pill" style="background:' + accBg + ';color:' + accCol + ';">' + (acc > 0 ? acc+'%' : '-') + '</span></div>'
+      + '<div class="dp-chevron"><i class="ti ti-chevron-right dp-icon" aria-hidden="true"></i></div>'
+      + '</div>'
+      + '<div class="dp-expand" id="dpExp' + idx + '" style="display:none;">'
+      + '<div class="dp-filter-row">'
+      + '<button class="dp-filter active" onclick="dpFilter(event,'all',' + idx + ')">All (' + day.total + ')</button>'
+      + '<button class="dp-filter" onclick="dpFilter(event,'correct',' + idx + ')">Correct (' + day.correct + ')</button>'
+      + '<button class="dp-filter" onclick="dpFilter(event,'wrong',' + idx + ')">Wrong (' + day.wrong + ')</button>'
+      + '</div>'
+      + '<div class="dp-qlist" id="dpQlist' + idx + '">' + qCardsHTML + '</div>'
+      + '</div>';
   }).join('');
 
   const sec9 = dhDates.length === 0 ? '' : `
@@ -7353,8 +7358,8 @@ function renderServerProgress(data) {
       <div class="dp-stat" style="font-size:11px;font-weight:600;color:var(--text3);">Accuracy</div>
       <div class="dp-chevron"></div>
     </div>
-    ${dhRows}
-  </div>`;
+    \${dhRows}
+  </div>\`;
 
   const cssDp = `<style>
   .dp-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;padding:6px 12px;border-bottom:1px solid var(--border);}
@@ -7391,7 +7396,7 @@ function renderServerProgress(data) {
     .dp-stat:nth-child(3){display:none;} /* hide correct col on mobile, keep wrong */
   }</style>`;
 
-  tl.innerHTML = css + cssDp + sec1 + sec2 + sec3 + sec4 + sec5 + sec6 + sec7 + sec8 + sec9;
+  tl.innerHTML = css + cssDp + sec1 + sec9 + sec2 + sec3 + sec4 + sec5 + sec6 + sec7 + sec8;
   window._tpData = data;
 }
 
@@ -7445,10 +7450,11 @@ function dpFilter(e, filter, idx) {
   });
 }
 
-function dpOpenQuestion(q) {
+function dpOpenQuestion(key) {
+  const q = window._dpQMap && window._dpQMap[key];
   const modal = document.getElementById('dpModal');
   const content = document.getElementById('dpModalContent');
-  if (!modal || !content) return;
+  if (!modal || !content || !q) return;
 
   const isRight = q.result === 'correct';
   const resultBadge = isRight
