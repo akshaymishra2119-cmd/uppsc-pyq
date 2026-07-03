@@ -7327,15 +7327,8 @@ function renderServerProgress(data) {
     +'</tr></thead><tbody id="yearTableBody">'+buildYearTable(ym)+'</tbody></table>'
     +'<div id="tpYearDetail" style="margin-top:10px;"></div></div>';
 
-  // ── SECTION 4: Repeat Questions ─────────────────────────────
-  var sec4 = '<div class="tp-section">'
-    +'<div class="tp-sec-hdr">🔁 Repeat Questions Mastery <span class="tp-badge">'+(rs.total||0)+' high-priority</span></div>'
-    +'<div class="tp-mode-grid" style="grid-template-columns:repeat(3,1fr);">'
-    +'<div class="tp-mode-card" style="border-top:3px solid #7F77DD;"><div class="tp-mode-hdr">Total repeats</div><div class="tp-mode-val" style="color:#7F77DD;">'+(rs.total||0)+'</div><div class="tp-mode-sub">in 2+ years</div></div>'
-    +'<div class="tp-mode-card" style="border-top:3px solid #1D9E75;"><div class="tp-mode-hdr">Mastered</div><div class="tp-mode-val" style="color:#1D9E75;">'+(rs.correct||0)+'</div><div class="tp-mode-sub">last attempt ✓</div></div>'
-    +'<div class="tp-mode-card" style="border-top:3px solid #E24B4A;"><div class="tp-mode-hdr">Need work</div><div class="tp-mode-val" style="color:#E24B4A;">'+(rs.wrong||0)+'</div><div class="tp-mode-sub">last attempt ✗</div></div>'
-    +'</div></div>';
-
+  // ── SECTION 4: Repeat Questions (removed) ─────────────────────────────
+  var sec4 = '';
   // ── SECTION 5: Mock History ──────────────────────────────────
   var mockHTML = mh.length ? mh.slice(0,10).map(function(mk){
     var d2 = new Date(mk.takenAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
@@ -7347,18 +7340,8 @@ function renderServerProgress(data) {
   }).join('') : '<div class="tp-empty">No mock tests taken yet.</div>';
   var sec5 = '<div class="tp-section"><div class="tp-sec-hdr">🏆 Mock Test History</div><div class="tp-mock-list">'+mockHTML+'</div></div>';
 
-  // ── SECTION 6: Wrong Bank ────────────────────────────────────
-  var wbHTML = wb.length ? '<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">'+wb.length+' questions to revise:</div>'
-    +'<div style="display:flex;flex-wrap:wrap;gap:6px;">'
-    +wb.slice(0,30).map(function(w){
-      return '<span style="background:#E24B4A18;border:1px solid #E24B4A44;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text1);"'
-        +' title="'+(w.subject||'')+' '+(w.year||'')+'">'+w.qId+(w.year?' <span style="color:var(--text3);font-weight:400;">('+w.year+')</span>':'')+'</span>';
-    }).join('')+(wb.length>30?'<span style="font-size:11px;color:var(--text3);align-self:center;">+'+(wb.length-30)+' more…</span>':'')
-    +'</div>'
-    : '<div class="tp-empty">No wrong answers yet — great job! 🎉</div>';
-  var sec6 = '<div class="tp-section"><div class="tp-sec-hdr">❌ Wrong Question Bank'
-    +' <span class="tp-badge" style="background:#E24B4A22;color:#E24B4A;">'+wb.length+' to revise</span></div>'+wbHTML+'</div>';
-
+  // ── SECTION 6: Wrong Bank (removed) ────────────────────────────────────
+  var sec6 = '';
   // ── SECTION 7: Subject Trend ─────────────────────────────────
   var subOrder = ["Polity","Modern History","Ancient History","Geography","Economy","Science","Environment","Current Affairs","UP Special"];
   var trendRows = subOrder.filter(function(sub){return st[sub]&&(st[sub].curr.t>0||st[sub].prev.t>0);}).map(function(sub){
@@ -7506,7 +7489,7 @@ function renderServerProgress(data) {
     +'@media(max-width:560px){.dp-head,.dp-row{grid-template-columns:2fr 1fr 1fr 1fr 28px;}.dp-stat:nth-child(4){display:none;}}'
     +'</style>';
 
-  tl.innerHTML = css + secTimeline + sec1 + sec2 + sec9 + sec3 + sec4 + sec5 + sec6 + sec7;
+  tl.innerHTML = css + secTimeline + sec1 + sec2 + sec9 + sec3 + sec5 + sec7;
 
   // Default: highlight "All" card
   setTimeout(function(){ var el=document.getElementById('mf_all'); if(el) el.classList.add('active-mode'); }, 50);
