@@ -477,7 +477,8 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
     const deduped = Object.values(latestByModeKey);
 
     // ── SECTION 1: Summary strip ───────────────────────────────
-    const totalDone = new Set(deduped.map(r => r.q_id)).size;
+    const totalDone     = new Set(deduped.map(r => r.q_id)).size;
+    const totalAttempts = allRows.length;
     const correct   = deduped.filter(r => r.result === 'correct').length;
     const wrong     = deduped.filter(r => r.result === 'wrong').length;
     const accuracy  = (correct + wrong) > 0 ? Math.round(correct / (correct + wrong) * 100) : 0;
@@ -661,7 +662,7 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
     });
 
     res.json({
-      summary: { totalDone, correct, wrong, accuracy, streak, daysToExam, readiness, userName: user.name },
+      summary: { totalDone, totalAttempts, correct, wrong, accuracy, streak, daysToExam, readiness, userName: user.name },
       modes,
       yearMap,
       repeatStats,

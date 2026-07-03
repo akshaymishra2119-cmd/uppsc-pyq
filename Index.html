@@ -7193,10 +7193,11 @@ function renderServerProgress(data) {
     +'<div class="tp-ring-label"><div style="font-size:18px;font-weight:800;color:'+rCol+';">'+rRing+'%</div>'
     +'<div style="font-size:9px;color:var(--text3);font-weight:600;">ACCURACY</div></div></div>'
     +'<div class="tp-sum-pills">'
-    +'<div class="tp-pill"><div class="tp-pill-v" style="color:#1D9E75;">'+(s.totalDone||0)+'</div><div class="tp-pill-l">Questions done</div></div>'
+    +'<div class="tp-pill"><div class="tp-pill-v" style="color:#1D9E75;">'+(s.totalDone||0)+'</div><div class="tp-pill-l">Unique Qs</div></div>'
     +'<div class="tp-pill"><div class="tp-pill-v" style="color:#1D9E75;">'+(s.accuracy||0)+'%</div><div class="tp-pill-l">Accuracy</div></div>'
     +'<div class="tp-pill"><div class="tp-pill-v" style="color:#D85A30;">'+(s.streak||0)+'</div><div class="tp-pill-l">Day streak 🔥</div></div>'
     +'<div class="tp-pill"><div class="tp-pill-v" style="color:#378ADD;">'+(s.correct||0)+'✓ '+(s.wrong||0)+'✗</div><div class="tp-pill-l">Correct / Wrong</div></div>'
+    +'<div class="tp-pill"><div class="tp-pill-v" style="color:var(--text2);">'+(s.totalAttempts||s.totalDone||0)+'</div><div class="tp-pill-l">Total attempts</div></div>'
     +'</div>'+examPill+'</div></div>';
 
   // ── SECTION 2: Mode Cards (4 cards, clickable) ──────────────
@@ -7378,11 +7379,10 @@ function renderServerProgress(data) {
   var calKeys = Object.keys(cal).sort();
   var firstDateStr = calKeys.length > 0 ? calKeys[0] : todayKey;
   var firstDate = new Date(firstDateStr);
-  var today2 = new Date(); today2.setHours(0,0,0,0);
   // Build array of every day from firstDate to today
   var tlDays = [];
   var cur = new Date(firstDate);
-  while(cur <= today2){
+  while(cur.toISOString().slice(0,10) <= todayKey){
     var tk = cur.toISOString().slice(0,10);
     var tv = cal[tk]||{total:0,correct:0,wrong:0};
     var lbl;
