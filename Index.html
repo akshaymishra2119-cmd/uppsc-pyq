@@ -7330,16 +7330,53 @@ function renderServerProgress(data) {
   // ── SECTION 4: Repeat Questions (removed) ─────────────────────────────
   var sec4 = '';
   // ── SECTION 5: Mock History ──────────────────────────────────
-  var mockHTML = mh.length ? mh.slice(0,10).map(function(mk){
-    var d2 = new Date(mk.takenAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
-    var col2= mk.pct>=70?'#1D9E75':mk.pct>=50?'#BA7517':'#E24B4A';
-    return '<div class="tp-mock-row"><div style="font-size:11px;color:var(--text3);">'+d2+'</div>'
-      +'<div style="font-weight:700;font-size:15px;color:'+col2+';">'+mk.score+'/'+mk.total+'</div>'
-      +'<div style="font-size:12px;color:'+col2+';">'+mk.pct+'%</div>'
-      +'<div class="tp-mock-bar-wrap"><div style="height:6px;border-radius:3px;width:'+mk.pct+'%;background:'+col2+';"></div></div></div>';
-  }).join('') : '<div class="tp-empty">No mock tests taken yet.</div>';
-  var sec5 = '<div class="tp-section"><div class="tp-sec-hdr">🏆 Mock Test History</div><div class="tp-mock-list">'+mockHTML+'</div></div>';
-
+  // ── SECTION 5: Mock History Table ──────────────────────────────
+  var sec5Body = '';
+  if (!mh.length) {
+    sec5Body = '<div class="tp-empty">No mock tests taken yet.</div>';
+  } else {
+    var s5rows = '';
+    mh.forEach(function(mk, idx) {
+      var d2 = new Date(mk.takenAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
+      var yr  = (mk.settings&&mk.settings.year&&mk.settings.year!=='all') ? mk.settings.year : 'All';
+      var sub = (mk.settings&&mk.settings.subject&&mk.settings.subject!=='all') ? mk.settings.subject : 'All';
+      var qs  = mk.questions || [];
+      var correct = mk.score || 0;
+      var skipped = qs.filter(function(q){return !q.chosen;}).length;
+      var wrong   = Math.max(0, (mk.total||0) - correct - skipped);
+      var acc = mk.pct || 0;
+      var accCol = acc>=70?'#1D9E75':acc>=50?'#EF9F27':'#E24B4A';
+      var accBg  = acc>=70?'#dcfce7':acc>=50?'#FAEEDA':'#fee2e2';
+      var num = mh.length - idx;
+      var rowBg = idx%2===0?'var(--bg)':'var(--bg2)';
+      s5rows += '<tr style="background:'+rowBg+';border-bottom:1px solid var(--border);">';
+      s5rows += '<td style="padding:9px 6px;text-align:center;color:var(--text3);font-size:11px;font-weight:600;">'+num+'</td>';
+      s5rows += '<td style="padding:9px 10px;font-weight:500;white-space:nowrap;">'+d2+'</td>';
+      s5rows += '<td style="padding:9px 6px;text-align:center;font-size:12px;">'+yr+'</td>';
+      s5rows += '<td style="padding:9px 6px;text-align:center;font-size:11px;color:var(--text3);">'+sub+'</td>';
+      s5rows += '<td style="padding:9px 6px;text-align:center;">'+(mk.total||0)+'</td>';
+      s5rows += '<td style="padding:9px 6px;text-align:center;"><span class="tp5btn" data-mi="'+idx+'" data-type="correct" style="color:#1D9E75;font-weight:700;cursor:pointer;text-decoration:underline dotted;">'+correct+'</span></td>';
+      s5rows += '<td style="padding:9px 6px;text-align:center;"><span class="tp5btn" data-mi="'+idx+'" data-type="wrong" style="color:#E24B4A;font-weight:700;cursor:pointer;text-decoration:underline dotted;">'+wrong+'</span></td>';
+      s5rows += '<td style="padding:9px 6px;text-align:center;"><span class="tp5btn" data-mi="'+idx+'" data-type="skipped" style="color:#6B7280;font-weight:700;cursor:pointer;text-decoration:underline dotted;">'+skipped+'</span></td>';
+      s5rows += '<td style="padding:9px 6px;text-align:center;"><span style="background:'+accBg+';color:'+accCol+';padding:2px 8px;border-radius:10px;font-weight:700;font-size:11px;">'+acc+'%</span></td>';
+      s5rows += '</tr>';
+      s5rows += '<tr id="tp5exp_'+idx+'" style="display:none;"><td colspan="9" style="padding:0;"><div id="tp5expInner_'+idx+'" style="background:var(--bg2);padding:12px 14px;border-bottom:2px solid var(--border);"></div></td></tr>';
+    });
+    sec5Body = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'
+      +'<thead><tr style="background:var(--bg2);font-size:11px;font-weight:700;color:var(--text3);">'
+      +'<th style="padding:8px 6px;text-align:center;">#</th>'
+      +'<th style="padding:8px 10px;text-align:left;">Date</th>'
+      +'<th style="padding:8px 6px;text-align:center;">Year</th>'
+      +'<th style="padding:8px 6px;text-align:center;">Subject</th>'
+      +'<th style="padding:8px 6px;text-align:center;">Total</th>'
+      +'<th style="padding:8px 6px;text-align:center;color:#1D9E75;">✓ Correct</th>'
+      +'<th style="padding:8px 6px;text-align:center;color:#E24B4A;">✗ Wrong</th>'
+      +'<th style="padding:8px 6px;text-align:center;color:#6B7280;">○ Skipped</th>'
+      +'<th style="padding:8px 6px;text-align:center;">Accuracy</th>'
+      +'</tr></thead>'
+      +'<tbody>'+s5rows+'</tbody></table></div>';
+  }
+  var sec5 = '<div class="tp-section"><div class="tp-sec-hdr">🏆 Mock Test History</div>'+sec5Body+'</div>';
   // ── SECTION 6: Wrong Bank (removed) ────────────────────────────────────
   var sec6 = '';
   // ── SECTION 7: Subject Trend ─────────────────────────────────
@@ -7490,6 +7527,57 @@ function renderServerProgress(data) {
     +'</style>';
 
   tl.innerHTML = css + secTimeline + sec1 + sec2 + sec9 + sec3 + sec5 + sec7;
+
+  // ── Mock history q-panels: attach after innerHTML ───────────────
+  tl.querySelectorAll('.tp5btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var mi   = parseInt(btn.getAttribute('data-mi'));
+      var type = btn.getAttribute('data-type');
+      var expRow = document.getElementById('tp5exp_'+mi);
+      var inner  = document.getElementById('tp5expInner_'+mi);
+      if (!expRow || !inner) return;
+      if (expRow.style.display !== 'none' && inner.getAttribute('data-type') === type) {
+        expRow.style.display = 'none'; return;
+      }
+      var mk = ((window._tpData&&window._tpData.mockHistory)||[])[mi];
+      var qs = mk ? (mk.questions||[]) : [];
+      var filtered;
+      if (type==='correct') filtered = qs.filter(function(q){return q.chosen&&q.chosen===q.answer;});
+      else if (type==='wrong') filtered = qs.filter(function(q){return q.chosen&&q.chosen!==q.answer;});
+      else filtered = qs.filter(function(q){return !q.chosen;});
+      if (!filtered.length) {
+        inner.innerHTML = '<div style="padding:8px;color:var(--text3);font-size:12px;">No '+type+' questions'+(qs.length===0?' — test taken before question storage was added.':'.')+ '</div>';
+      } else {
+        var qhtml = filtered.map(function(qq,qi) {
+          var isOk=qq.chosen&&qq.chosen===qq.answer; var isBad=qq.chosen&&qq.chosen!==qq.answer;
+          var icon=isOk?'✓':isBad?'✗':'○';
+          var iconCol=isOk?'#1D9E75':isBad?'#E24B4A':'#6B7280';
+          var cardBg=isOk?'#f0fdf4':isBad?'#fff5f5':'var(--bg)';
+          var cardBd=isOk?'#86efac':isBad?'#fca5a5':'var(--border)';
+          var expid='tp5q_'+mi+'_'+type+'_'+qi;
+          var optHtml=['A','B','C','D'].map(function(l,oi){
+            var txt=[qq.optA,qq.optB,qq.optC,qq.optD][oi]; if(!txt) return '';
+            var isAns=l===qq.answer; var isChosen=l===qq.chosen;
+            var obg=isAns?'#dcfce7':(isChosen&&!isAns?'#fee2e2':'var(--bg2)');
+            var ocol=isAns?'#166534':(isChosen&&!isAns?'#991b1b':'var(--text)');
+            var suf=isAns?' ✓':(isChosen&&!isAns?' ✗':'');
+            return '<div style="padding:4px 8px;border-radius:5px;background:'+obg+';color:'+ocol+';font-weight:'+(isAns||isChosen?'700':'400')+';margin-bottom:3px;font-size:12px;">'+l+'. '+txt+suf+'</div>';
+          }).join('');
+          var explHtml=qq.explanation?'<div style="margin-top:6px;padding:6px 8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;font-size:11px;color:var(--text3);"><b>Exp:</b> '+qq.explanation+'</div>':'' ;
+          return '<div style="background:'+cardBg+';border:1px solid '+cardBd+';border-radius:7px;padding:9px 12px;margin-bottom:6px;cursor:pointer;" onclick="var e=document.getElementById(\''+expid+'\');if(e){e.style.display=e.style.display===\'none\'?\'block\':\'none\';}">'  
+            +'<div style="display:flex;gap:8px;align-items:flex-start;">'  
+            +'<span style="color:'+iconCol+';font-weight:700;min-width:16px;">'+icon+'</span>'
+            +'<div style="flex:1;"><div style="font-size:12px;font-weight:500;line-height:1.4;">'+(qq.question||'Q#'+qq.qId)+'</div>'
+            +'<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+(qq.subject||'')+' · '+(qq.year||'')+'</div></div></div>'
+            +'<div id="'+expid+'" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid '+cardBd+';">'+optHtml+explHtml+'</div></div>';
+        }).join('');
+        inner.innerHTML = '<div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:8px;">'+filtered.length+' '+type+' questions</div>'+qhtml;
+      }
+      inner.setAttribute('data-type', type);
+      expRow.style.display = 'table-row';
+    });
+  });
 
   // Default: highlight "All" card
   setTimeout(function(){ var el=document.getElementById('mf_all'); if(el) el.classList.add('active-mode'); }, 50);

@@ -461,7 +461,7 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
          FROM progress WHERE user_id = $1 ORDER BY attempted_at ASC`, [uid]),
       pool.query(`SELECT exam_date, name FROM users WHERE id = $1`, [uid]),
       pool.query(
-        `SELECT id, score, total, time_taken, subject_breakdown, settings, taken_at
+        `SELECT id, score, total, time_taken, subject_breakdown, settings, questions, taken_at
          FROM mock_history WHERE user_id = $1 ORDER BY taken_at DESC`, [uid])
     ]);
 
@@ -578,6 +578,7 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
       timeTaken: m.time_taken,
       subjectBreakdown: m.subject_breakdown || {},
       settings: m.settings || {},
+      questions: m.questions || [],
       takenAt: m.taken_at,
       pct: m.total > 0 ? Math.round(m.score / m.total * 100) : 0
     }));
