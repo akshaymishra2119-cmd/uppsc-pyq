@@ -10003,7 +10003,7 @@ document.addEventListener('keydown', e => {
       el.innerHTML = '<span style="color:var(--teal);font-weight:700;">' + pool.length + ' questions</span>'
         + ' available (30% free) · '
         + '<span style="color:#dc2626;font-weight:600;">' + lockedCount + ' locked</span>'
-        + ' · <a href="#" onclick="openAuthModal('register');return false;" style="color:var(--blue);font-size:11px;">Register free for full access</a>';
+        + ' · <span style="color:var(--blue);font-size:11px;cursor:pointer;" onclick="openAuthModal(&quot;register&quot;)">Register free for full access</span>';
     }
   }
 
