@@ -7296,105 +7296,101 @@ function renderServerProgress(data) {
   /* ── SECTION 9: Daily breakdown accordion ── */
   const dh = data.dailyHistory || {};
   const dhDates = Object.keys(dh).sort((a,b) => new Date(b) - new Date(a));
-  // Pre-populate question map (avoids JSON-in-onclick issues)
   window._dpQMap = {};
   dhDates.forEach((d, idx) => {
     (dh[d].questions || []).forEach((q, qi) => {
       window._dpQMap['dp_' + idx + '_' + qi] = q;
     });
   });
-  const dhRows = dhDates.map((d, idx) => {
-    const day  = dh[d];
-    const acc  = (day.correct + day.wrong) > 0 ? Math.round(day.correct / (day.correct + day.wrong) * 100) : 0;
-    const accCol = acc >= 80 ? '#166534' : acc >= 60 ? '#92400e' : acc > 0 ? '#A32D2D' : '#888';
-    const accBg  = acc >= 80 ? '#dcfce7' : acc >= 60 ? '#FAEEDA' : acc > 0 ? '#FCEBEB' : 'var(--bg2)';
+
+  function buildDpRows() {
     const todayStr = new Date().toDateString();
     const yestStr  = new Date(Date.now()-86400000).toDateString();
-    const label = d === todayStr ? 'Today' : d === yestStr ? 'Yesterday'
-      : new Date(d).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-    const qCardsHTML = (day.questions||[]).length === 0
-      ? '<div class="dp-empty">No question details available for this day.</div>'
-      : (day.questions||[]).map((q, qi) => {
-          const key = 'dp_' + idx + '_' + qi;
-          const icon = q.result === 'correct' ? 'ti-circle-check dp-icon-ok' : 'ti-circle-x dp-icon-err';
+    return dhDates.map((d, idx) => {
+      const day = dh[d];
+      const acc = (day.correct+day.wrong)>0 ? Math.round(day.correct/(day.correct+day.wrong)*100) : 0;
+      const accCol = acc>=80?'#166534':acc>=60?'#92400e':acc>0?'#A32D2D':'#888';
+      const accBg  = acc>=80?'#dcfce7':acc>=60?'#FAEEDA':acc>0?'#FCEBEB':'var(--bg2)';
+      const label  = d===todayStr?'Today':d===yestStr?'Yesterday'
+        :new Date(d).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+      const sub    = (d===todayStr||d===yestStr)?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'';
+
+      let qCards = '<div class="dp-empty">No question details for this day.</div>';
+      if ((day.questions||[]).length > 0) {
+        qCards = day.questions.map((q, qi) => {
+          const key  = 'dp_' + idx + '_' + qi;
+          const ok   = q.result === 'correct';
+          const icon = ok ? 'ti-circle-check dp-icon-ok' : 'ti-circle-x dp-icon-err';
+          const meta = (q.year||'') + (q.year&&q.subject?' · ':'') + (q.subject||'') + ' · #' + q.q_id;
           return '<div class="dp-qcard dp-q-all dp-q-' + q.result + '" data-result="' + q.result + '" '
-            + 'onclick="dpOpenQuestion('' + key + '')" style="cursor:pointer;">'
+            + 'onclick="dpOpenQuestion(\'' + key + '\')" style="cursor:pointer;">'
             + '<i class="ti ' + icon + '" aria-hidden="true"></i>'
             + '<div class="dp-qtext">'
-            + '<div class="dp-qtitle">' + (q.question || 'Q#' + q.q_id) + '</div>'
-            + '<div class="dp-qmeta">' + (q.year||'') + (q.year&&q.subject?' · ':'') + (q.subject||'') + ' · #' + q.q_id
-            + ' <span style="margin-left:6px;color:var(--blue);font-size:10px;">tap to view ›</span></div>'
+            + '<div class="dp-qtitle">' + (q.question||('Q#'+q.q_id)) + '</div>'
+            + '<div class="dp-qmeta">' + meta + ' <span style="color:var(--blue);font-size:10px;">view ›</span></div>'
             + '</div></div>';
         }).join('');
-    return '<div class="dp-row" data-idx="' + idx + '" onclick="dpToggle(this)">'
-      + '<div class="dp-date"><div class="dp-label">' + label + '</div>'
-      + '<div class="dp-sub">' + (d===todayStr||d===yestStr ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '') + '</div></div>'
-      + '<div class="dp-stat">' + day.total + '</div>'
-      + '<div class="dp-stat dp-correct">' + day.correct + '</div>'
-      + '<div class="dp-stat dp-wrong">' + day.wrong + '</div>'
-      + '<div class="dp-stat"><span class="dp-pill" style="background:' + accBg + ';color:' + accCol + ';">' + (acc > 0 ? acc+'%' : '-') + '</span></div>'
-      + '<div class="dp-chevron"><i class="ti ti-chevron-right dp-icon" aria-hidden="true"></i></div>'
-      + '</div>'
-      + '<div class="dp-expand" id="dpExp' + idx + '" style="display:none;">'
-      + '<div class="dp-filter-row">'
-      + '<button class="dp-filter active" onclick="dpFilter(event,'all',' + idx + ')">All (' + day.total + ')</button>'
-      + '<button class="dp-filter" onclick="dpFilter(event,'correct',' + idx + ')">Correct (' + day.correct + ')</button>'
-      + '<button class="dp-filter" onclick="dpFilter(event,'wrong',' + idx + ')">Wrong (' + day.wrong + ')</button>'
-      + '</div>'
-      + '<div class="dp-qlist" id="dpQlist' + idx + '">' + qCardsHTML + '</div>'
-      + '</div>';
-  }).join('');
+      }
 
-  const sec9 = dhDates.length === 0 ? '' : `
-  <div class="tp-section">
-    <div class="tp-sec-hdr">📆 Daily Breakdown
-      <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">click a day to see questions</span>
-    </div>
-    <div class="dp-head">
-      <div class="dp-date" style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;">Date</div>
-      <div class="dp-stat" style="font-size:11px;font-weight:600;color:var(--text3);">Done</div>
-      <div class="dp-stat dp-correct" style="font-size:11px;font-weight:600;">Correct</div>
-      <div class="dp-stat dp-wrong" style="font-size:11px;font-weight:600;">Wrong</div>
-      <div class="dp-stat" style="font-size:11px;font-weight:600;color:var(--text3);">Accuracy</div>
-      <div class="dp-chevron"></div>
-    </div>
-    \${dhRows}
-  </div>\`;
+      return '<div class="dp-row" data-idx="' + idx + '" onclick="dpToggle(this)">'
+        + '<div class="dp-date"><div class="dp-label">' + label + '</div><div class="dp-sub">' + sub + '</div></div>'
+        + '<div class="dp-stat">' + day.total + '</div>'
+        + '<div class="dp-stat dp-correct">' + day.correct + '</div>'
+        + '<div class="dp-stat dp-wrong">' + day.wrong + '</div>'
+        + '<div class="dp-stat"><span class="dp-pill" style="background:' + accBg + ';color:' + accCol + ';">' + (acc>0?acc+'%':'-') + '</span></div>'
+        + '<div class="dp-chevron"><i class="ti ti-chevron-right dp-icon" aria-hidden="true"></i></div>'
+        + '</div>'
+        + '<div class="dp-expand" id="dpExp' + idx + '" style="display:none;">'
+        + '<div class="dp-filter-row">'
+        + '<button class="dp-filter active" onclick="dpFilter(event,\'all\',' + idx + ')">All (' + day.total + ')</button>'
+        + '<button class="dp-filter" onclick="dpFilter(event,\'correct\',' + idx + ')">Correct (' + day.correct + ')</button>'
+        + '<button class="dp-filter" onclick="dpFilter(event,\'wrong\',' + idx + ')">Wrong (' + day.wrong + ')</button>'
+        + '</div>'
+        + '<div class="dp-qlist" id="dpQlist' + idx + '">' + qCards + '</div>'
+        + '</div>';
+    }).join('');
+  }
 
-  const cssDp = `<style>
-  .dp-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;padding:6px 12px;border-bottom:1px solid var(--border);}
-  .dp-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;padding:11px 12px;
-    border-bottom:1px solid var(--border);cursor:pointer;align-items:center;transition:background 0.12s;}
-  .dp-row:hover{background:var(--bg2);}
-  .dp-row.dp-open{background:var(--bg2);}
-  .dp-date{display:flex;flex-direction:column;}
-  .dp-label{font-size:13px;font-weight:500;color:var(--text);}
-  .dp-sub{font-size:11px;color:var(--text3);margin-top:2px;}
-  .dp-stat{text-align:center;font-size:14px;font-weight:600;color:var(--text);}
-  .dp-correct{color:#1D9E75 !important;}
-  .dp-wrong{color:#E24B4A !important;}
-  .dp-pill{font-size:12px;padding:2px 9px;border-radius:12px;font-weight:700;display:inline-block;}
-  .dp-chevron{text-align:center;color:var(--text3);font-size:14px;transition:transform 0.2s;}
-  .dp-icon{transition:transform 0.2s;}
-  .dp-row.dp-open .dp-icon{transform:rotate(90deg);}
-  .dp-expand{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 12px;}
-  .dp-filter-row{display:flex;gap:6px;margin-bottom:10px;}
-  .dp-filter{font-size:12px;padding:3px 10px;border-radius:10px;border:1px solid var(--border);
-    background:var(--bg);color:var(--text2);cursor:pointer;font-weight:500;}
-  .dp-filter.active{background:#dcfce7;color:#166534;border-color:#22c55e;}
-  .dp-qcard{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;
-    border-radius:8px;border:1px solid var(--border);background:var(--bg);margin-bottom:6px;}
-  .dp-qcard.hidden{display:none;}
-  .ti-circle-check.dp-icon-ok{color:#1D9E75;font-size:16px;flex-shrink:0;margin-top:2px;}
-  .ti-circle-x.dp-icon-err{color:#E24B4A;font-size:16px;flex-shrink:0;margin-top:2px;}
-  .dp-qtext{flex:1;min-width:0;}
-  .dp-qtitle{font-size:13px;color:var(--text);line-height:1.45;}
-  .dp-qmeta{font-size:11px;color:var(--text3);margin-top:3px;}
-  .dp-empty{font-size:12px;color:var(--text3);padding:8px 0;}
-  @media(max-width:560px){
-    .dp-head,.dp-row{grid-template-columns:2fr 1fr 1fr 1fr 28px;}
-    .dp-stat:nth-child(3){display:none;} /* hide correct col on mobile, keep wrong */
-  }</style>`;
+  const dhRows = buildDpRows();
+  const sec9 = dhDates.length === 0 ? '' :
+    '<div class="tp-section">'
+    + '<div class="tp-sec-hdr">📆 Daily Breakdown <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px;">click a row to see questions</span></div>'
+    + '<div class="dp-head">'
+    + '<div class="dp-date" style="font-size:11px;font-weight:600;color:var(--text3);">Date</div>'
+    + '<div class="dp-stat" style="font-size:11px;color:var(--text3);">Done</div>'
+    + '<div class="dp-stat dp-correct" style="font-size:11px;">Correct</div>'
+    + '<div class="dp-stat dp-wrong" style="font-size:11px;">Wrong</div>'
+    + '<div class="dp-stat" style="font-size:11px;color:var(--text3);">Accuracy</div>'
+    + '<div class="dp-chevron"></div>'
+    + '</div>'
+    + dhRows
+    + '</div>';
+
+  const cssDp = '<style>'
+    + '.dp-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;padding:6px 12px;border-bottom:1px solid var(--border);}'
+    + '.dp-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 28px;padding:11px 12px;border-bottom:1px solid var(--border);cursor:pointer;align-items:center;transition:background 0.12s;}'
+    + '.dp-row:hover{background:var(--bg2);}.dp-row.dp-open{background:var(--bg2);}'
+    + '.dp-date{display:flex;flex-direction:column;}'
+    + '.dp-label{font-size:13px;font-weight:500;color:var(--text);}'
+    + '.dp-sub{font-size:11px;color:var(--text3);margin-top:2px;}'
+    + '.dp-stat{text-align:center;font-size:14px;font-weight:600;color:var(--text);}'
+    + '.dp-correct{color:#1D9E75 !important;}.dp-wrong{color:#E24B4A !important;}'
+    + '.dp-pill{font-size:12px;padding:2px 9px;border-radius:12px;font-weight:700;display:inline-block;}'
+    + '.dp-chevron{text-align:center;color:var(--text3);font-size:14px;}'
+    + '.dp-icon{transition:transform 0.2s;}.dp-row.dp-open .dp-icon{transform:rotate(90deg);}'
+    + '.dp-expand{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 12px;}'
+    + '.dp-filter-row{display:flex;gap:6px;margin-bottom:10px;}'
+    + '.dp-filter{font-size:12px;padding:3px 10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text2);cursor:pointer;font-weight:500;}'
+    + '.dp-filter.active{background:#dcfce7;color:#166534;border-color:#22c55e;}'
+    + '.dp-qcard{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);margin-bottom:6px;}'
+    + '.dp-qcard.hidden{display:none;}'
+    + '.ti-circle-check.dp-icon-ok{color:#1D9E75;font-size:16px;flex-shrink:0;margin-top:2px;}'
+    + '.ti-circle-x.dp-icon-err{color:#E24B4A;font-size:16px;flex-shrink:0;margin-top:2px;}'
+    + '.dp-qtext{flex:1;min-width:0;}.dp-qtitle{font-size:13px;color:var(--text);line-height:1.45;}'
+    + '.dp-qmeta{font-size:11px;color:var(--text3);margin-top:3px;}'
+    + '.dp-empty{font-size:12px;color:var(--text3);padding:8px 0;}'
+    + '@media(max-width:560px){.dp-head,.dp-row{grid-template-columns:2fr 1fr 1fr 1fr 28px;}.dp-stat:nth-child(4){display:none;}}'
+    + '</style>';
 
   tl.innerHTML = css + cssDp + sec1 + sec9 + sec2 + sec3 + sec4 + sec5 + sec6 + sec7 + sec8;
   window._tpData = data;
