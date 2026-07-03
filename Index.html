@@ -61,6 +61,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .nav-btn.nav-pyq:hover{color:#78350f;background:#FEF3C7;}
 .nav-btn.nav-pyq.active{color:#92400e;border-bottom-color:#EF9F27;background:#FEF3C7;font-weight:700;}
 .nav-pyq-badge{font-size:10px;background:#EF9F27;color:#fff;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:2px;vertical-align:middle;}
+.nav-btn.nav-mock{color:#7f1d1d;background:#fff1f2;}
+.nav-btn.nav-mock:hover{color:#991b1b;background:#ffe4e6;}
+.nav-btn.nav-mock.active{color:#7f1d1d;border-bottom-color:#ef4444;background:#ffe4e6;font-weight:700;}
+.nav-mock-badge{font-size:10px;background:#ef4444;color:#fff;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:2px;vertical-align:middle;}
 .nav-btn.nav-green{color:#166534;background:#f0fdf4;}
 .nav-btn.nav-green:hover{color:#14532d;background:#dcfce7;}
 .nav-btn.nav-green.active{color:#166534;border-bottom-color:#22c55e;background:#dcfce7;font-weight:700;}
@@ -1418,6 +1422,10 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     <i class="ti ti-calendar-stats" aria-hidden="true"></i> PYQ Analytics
     <span class="nav-pyq-badge">NEW</span>
   </button>
+  <button class="nav-btn nav-mock" onclick="showTab('mock',this)">
+    <i class="ti ti-award" aria-hidden="true"></i> Mock Test
+    <span class="nav-mock-badge">EXAM</span>
+  </button>
   <button class="nav-btn nav-teal" onclick="showTab('ca',this)">
     <i class="ti ti-news" aria-hidden="true"></i> Current Affairs
   </button>
@@ -2098,14 +2106,7 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
     </button>
   </div>
 
-  <!-- ── Start Mock Test ────────────────────────────── -->
-  <div style="padding:4px 0 10px;">
-    <button onclick="openMockModal()" style="padding:7px 18px;background:var(--blue,#2563EB);color:#fff;
-      border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s;"
-      onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-      Start Mock Test
-    </button>
-  </div>
+
 
   <!-- ── Main PYQ Content ─────────────────────────── -->
   <div class="pyq-main">
@@ -2783,6 +2784,159 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 
 </div>
 
+<!-- ══ MOCK TEST TAB ══════════════════════════════════════════ -->
+<div class="tab" id="tab-mock">
+
+<style>
+.mt-banner{background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fff;border-radius:14px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;}
+.mt-banner-icon{font-size:28px;}
+.mt-banner-title{font-weight:700;font-size:14px;}
+.mt-banner-sub{font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;}
+.mt-setup-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;}
+.mt-field-label{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.mt-opts{display:flex;flex-wrap:wrap;gap:8px;}
+.mt-opt{padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg2);font-size:13px;font-weight:500;cursor:pointer;color:var(--text);transition:all .15s;}
+.mt-opt:hover{border-color:#dc2626;color:#dc2626;}
+.mt-opt.sel{background:#fff1f2;border-color:#dc2626;color:#7f1d1d;font-weight:700;}
+.mt-start-btn{width:100%;padding:13px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;letter-spacing:.3px;transition:opacity .15s;}
+.mt-start-btn:hover{opacity:.88;}
+.mt-divider{height:1px;background:var(--border);margin:14px 0;}
+/* Active test */
+.mt-timer-bar{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:2px solid #dc2626;padding:10px 16px;display:flex;align-items:center;gap:14px;margin:-4px -4px 16px;border-radius:0;}
+.mt-timer-val{font-size:22px;font-weight:800;color:#dc2626;font-variant-numeric:tabular-nums;min-width:70px;}
+.mt-timer-val.danger{color:#dc2626;animation:mtblink .7s step-end infinite;}
+@keyframes mtblink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.mt-live-stats{display:flex;gap:12px;flex:1;}
+.mt-stat-pill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;}
+.mt-submit-btn{padding:8px 20px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;}
+.mt-prog-bar{height:4px;background:var(--border);border-radius:2px;margin:6px 0 0;flex:1;}
+.mt-prog-fill{height:100%;background:#dc2626;border-radius:2px;transition:width .3s;}
+/* Palette */
+.mt-palette{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;padding:12px;background:var(--bg2);border-radius:10px;border:1px solid var(--border);}
+.mt-pal-btn{width:32px;height:32px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);font-size:11px;font-weight:700;cursor:pointer;color:var(--text2);}
+.mt-pal-btn.ans{background:#dcfce7;border-color:#22c55e;color:#166534;}
+.mt-pal-btn.cur{border-color:#dc2626;color:#dc2626;}
+/* Question card in mock */
+.mt-qcard{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;scroll-margin-top:80px;}
+.mt-qcard.answered{border-color:#22c55e44;}
+.mt-qnum{font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;}
+.mt-qtext{font-size:14px;color:var(--text);line-height:1.6;margin-bottom:12px;}
+.mt-opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:560px){.mt-opts-grid{grid-template-columns:1fr;}}
+.mt-opt-btn{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg2);font-size:13px;text-align:left;cursor:pointer;width:100%;transition:all .15s;color:var(--text);}
+.mt-opt-btn:hover{border-color:#dc2626;}
+.mt-opt-btn.chosen{background:#dbeafe;border-color:#3b82f6;color:#1e40af;}
+.mt-opt-ltr{font-weight:700;flex-shrink:0;min-width:16px;}
+/* Results */
+.mt-res-ring{position:relative;width:100px;height:100px;}
+.mt-res-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0;}
+.mt-res-pill{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
+.mt-res-pill-v{font-size:20px;font-weight:800;}
+.mt-res-pill-l{font-size:10px;color:var(--text3);font-weight:600;margin-top:2px;}
+.mt-sub-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+.mt-sub-table th{font-size:11px;color:var(--text3);font-weight:600;text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);}
+.mt-sub-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+.mt-hist-row{display:grid;grid-template-columns:80px 60px 60px 60px 1fr;gap:8px;align-items:center;padding:8px 12px;background:var(--bg2);border-radius:8px;margin-bottom:6px;font-size:12px;}
+</style>
+
+<!-- ── SETUP SCREEN ─────────────────────────────────────────── -->
+<div id="mtSetup">
+  <div class="mt-banner">
+    <div class="mt-banner-icon">🏆</div>
+    <div>
+      <div class="mt-banner-title">Mock Test — Exam Mode</div>
+      <div class="mt-banner-sub">All answers hidden until you submit · Countdown timer · Full paper</div>
+    </div>
+  </div>
+
+  <div class="mt-setup-card">
+    <div class="mt-field-label"><i class="ti ti-calendar"></i> Select Year</div>
+    <div class="mt-opts" id="mtYearOpts">
+      <div class="mt-opt sel" data-val="all" onclick="mtSelect('year',this)">All Years</div>
+      <!-- populated by initMockTab() -->
+    </div>
+  </div>
+
+  <div class="mt-setup-card">
+    <div class="mt-field-label"><i class="ti ti-books"></i> Subject</div>
+    <div class="mt-opts" id="mtSubOpts">
+      <div class="mt-opt sel" data-val="all"             onclick="mtSelect('sub',this)">All Subjects</div>
+      <div class="mt-opt"    data-val="Polity"           onclick="mtSelect('sub',this)">Polity</div>
+      <div class="mt-opt"    data-val="Modern History"   onclick="mtSelect('sub',this)">Modern History</div>
+      <div class="mt-opt"    data-val="Ancient History"  onclick="mtSelect('sub',this)">Ancient History</div>
+      <div class="mt-opt"    data-val="Geography"        onclick="mtSelect('sub',this)">Geography</div>
+      <div class="mt-opt"    data-val="Economy"          onclick="mtSelect('sub',this)">Economy</div>
+      <div class="mt-opt"    data-val="Science"          onclick="mtSelect('sub',this)">Science</div>
+      <div class="mt-opt"    data-val="Environment"      onclick="mtSelect('sub',this)">Environment</div>
+      <div class="mt-opt"    data-val="UP Special"       onclick="mtSelect('sub',this)">UP Special</div>
+      <div class="mt-opt"    data-val="Current Affairs"  onclick="mtSelect('sub',this)">Current Affairs</div>
+    </div>
+  </div>
+
+  <div class="mt-setup-card">
+    <div class="mt-field-label"><i class="ti ti-clock"></i> Time Limit</div>
+    <div class="mt-opts" id="mtTimeOpts">
+      <div class="mt-opt"          data-val="30"  onclick="mtSelect('time',this)">30 min</div>
+      <div class="mt-opt"          data-val="60"  onclick="mtSelect('time',this)">60 min</div>
+      <div class="mt-opt sel"      data-val="120" onclick="mtSelect('time',this)">120 min</div>
+      <div class="mt-opt"          data-val="180" onclick="mtSelect('time',this)">3 hours</div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text3);">UPPSC Paper-I is 2 hours (120 min). For full paper practice, set 120 min.</div>
+  </div>
+
+  <div class="mt-setup-card" style="padding:12px 20px;">
+    <div id="mtQCount" style="font-size:13px;color:var(--text2);margin-bottom:12px;">Select year &amp; subject to see question count</div>
+    <button class="mt-start-btn" onclick="mtStart()">
+      <i class="ti ti-player-play-filled"></i> &nbsp;Start Mock Test
+    </button>
+  </div>
+
+  <!-- Recent history -->
+  <div class="mt-setup-card" id="mtHistCard" style="display:none;">
+    <div class="mt-field-label"><i class="ti ti-history"></i> Recent Attempts</div>
+    <div id="mtHistList"></div>
+  </div>
+</div>
+
+<!-- ── ACTIVE TEST SCREEN ──────────────────────────────────────── -->
+<div id="mtActive" style="display:none;">
+  <div class="mt-timer-bar">
+    <div class="mt-timer-val" id="mtTimerVal">120:00</div>
+    <div style="flex:1;">
+      <div class="mt-live-stats">
+        <span class="mt-stat-pill" style="background:#dcfce7;color:#166534;" id="mtLiveCorr">✓ 0</span>
+        <span class="mt-stat-pill" style="background:#fff1f2;color:#991b1b;" id="mtLiveSkip">○ 0 left</span>
+        <span style="font-size:12px;color:var(--text3);" id="mtLiveTotal"></span>
+      </div>
+      <div class="mt-prog-bar"><div class="mt-prog-fill" id="mtProgFill" style="width:0%"></div></div>
+    </div>
+    <button class="mt-submit-btn" onclick="mtConfirmSubmit()">
+      <i class="ti ti-flag-filled"></i> Submit
+    </button>
+  </div>
+
+  <div class="mt-palette" id="mtPalette"></div>
+  <div id="mtQContainer"></div>
+
+  <div style="text-align:center;padding:12px 0 24px;">
+    <button class="mt-submit-btn" style="padding:12px 40px;font-size:14px;" onclick="mtConfirmSubmit()">
+      <i class="ti ti-flag-filled"></i> &nbsp;Submit &amp; See Results
+    </button>
+  </div>
+</div>
+
+<!-- ── RESULTS SCREEN ─────────────────────────────────────────── -->
+<div id="mtResults" style="display:none;">
+  <div id="mtResultsContent"></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+    <button onclick="mtReset()" style="flex:1;padding:11px;border:1.5px solid var(--border);background:var(--bg);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
+      <i class="ti ti-refresh"></i> New Mock
+    </button>
+  </div>
+</div>
+
+</div><!-- /tab-mock -->
+
 <!-- ══ GLOBAL REPEAT QUESTION COMPARE MODAL ══════════════════ -->
 <div id="repeatModal" onclick="if(event.target===this)closeRepeatModal()"
   style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;
@@ -3349,6 +3503,7 @@ function showTab(id, btn) {
   if (id === "admin")         loadAdminStats();
   if (id === "pyq-analytics") initPyqAnalyticsTab();
   if (id === "study")         initStudyTab();
+  if (id === "mock")          initMockTab();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -9771,6 +9926,319 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' && document.getElementById('slideshowOverlay').classList.contains('open')) ssNext();
   if (e.key === 'ArrowLeft'  && document.getElementById('slideshowOverlay').classList.contains('open')) ssPrev();
 });
+
+// ══════════════════════════════════════════════════════════════
+// MOCK TEST TAB
+// ══════════════════════════════════════════════════════════════
+(function(){
+  // State
+  let mt = {
+    year: 'all', sub: 'all', time: 120,
+    questions: [], answers: {}, // answers = { qId: 'A'|'B'|'C'|'D' }
+    timer: null, secsLeft: 0, totalSecs: 0,
+    active: false
+  };
+
+  function q(id){ return document.getElementById(id); }
+
+  window.initMockTab = function() {
+    // Populate year buttons from allQuestions
+    if (typeof allQuestions !== 'undefined' && allQuestions.length) {
+      const years = [...new Set(allQuestions.map(q => String(q.year)).filter(Boolean))].sort((a,b)=>b-a);
+      const wrap = q('mtYearOpts');
+      if (wrap && wrap.children.length <= 1) {
+        years.forEach(yr => {
+          const d = document.createElement('div');
+          d.className = 'mt-opt'; d.dataset.val = yr;
+          d.textContent = yr;
+          d.onclick = function(){ mtSelect('year', d); };
+          wrap.appendChild(d);
+        });
+      }
+    }
+    mtUpdateCount();
+    mtLoadHistory();
+  };
+
+  window.mtSelect = function(type, el) {
+    const wrap = el.closest('.mt-opts');
+    if (wrap) wrap.querySelectorAll('.mt-opt').forEach(o => o.classList.remove('sel'));
+    el.classList.add('sel');
+    if (type === 'year') mt.year = el.dataset.val;
+    else if (type === 'sub') mt.sub = el.dataset.val;
+    else if (type === 'time') mt.time = parseInt(el.dataset.val);
+    mtUpdateCount();
+  };
+
+  function mtGetPool() {
+    if (typeof allQuestions === 'undefined') return [];
+    // Respect 70% lock for guests — same as PYQ Practice
+    let base = (typeof hasFullAccess === 'function' && hasFullAccess())
+      ? [...allQuestions]
+      : [...allQuestions].filter(function(q){ return typeof isLocked === 'function' ? !isLocked(q) : true; });
+    if (mt.year !== 'all') base = base.filter(function(q){ return String(q.year) === mt.year; });
+    if (mt.sub  !== 'all') base = base.filter(function(q){ return q.subject === mt.sub; });
+    return base;
+  }
+
+  function mtUpdateCount() {
+    const pool = mtGetPool();
+    const el = q('mtQCount');
+    if (!el) return;
+    if (pool.length === 0) {
+      el.innerHTML = '<span style="color:var(--red);">No questions match this filter.</span>';
+      return;
+    }
+    const fullAcc = typeof hasFullAccess === 'function' && hasFullAccess();
+    if (fullAcc) {
+      el.innerHTML = '<span style="color:var(--teal);font-weight:700;">' + pool.length + ' questions</span>'
+        + ' will be loaded · <span style="color:var(--text3);">~2 min per question recommended</span>';
+    } else {
+      // Show locked vs unlocked count
+      const total = typeof allQuestions !== 'undefined'
+        ? allQuestions.filter(function(qq){
+            return (mt.year==='all'||String(qq.year)===mt.year) && (mt.sub==='all'||qq.subject===mt.sub);
+          }).length : pool.length;
+      const lockedCount = total - pool.length;
+      el.innerHTML = '<span style="color:var(--teal);font-weight:700;">' + pool.length + ' questions</span>'
+        + ' available (30% free) · '
+        + '<span style="color:#dc2626;font-weight:600;">' + lockedCount + ' locked</span>'
+        + ' · <a href="#" onclick="openAuthModal('register');return false;" style="color:var(--blue);font-size:11px;">Register free for full access</a>';
+    }
+  }
+
+  window.mtStart = function() {
+    const pool = mtGetPool();
+    if (pool.length === 0) { alert('No questions match. Change year or subject.'); return; }
+    // Same rule as PYQ Practice: guests can attempt 30% unlocked questions without login
+    const fullAcc = typeof hasFullAccess === 'function' && hasFullAccess();
+    if (!fullAcc) {
+      showToast('Showing ' + pool.length + ' unlocked questions. Register free for 30-day full access.');
+    }
+
+    mt.questions = pool;
+    mt.answers   = {};
+    mt.active    = true;
+    mt.totalSecs = mt.time * 60;
+    mt.secsLeft  = mt.totalSecs;
+
+    q('mtSetup').style.display   = 'none';
+    q('mtResults').style.display = 'none';
+    q('mtActive').style.display  = 'block';
+
+    mtRenderPalette();
+    mtRenderQuestions();
+    mtUpdateTimer();
+    if (mt.timer) clearInterval(mt.timer);
+    mt.timer = setInterval(mtTick, 1000);
+  };
+
+  function mtTick() {
+    mt.secsLeft--;
+    mtUpdateTimer();
+    if (mt.secsLeft <= 0) mtSubmit();
+  }
+
+  function mtUpdateTimer() {
+    const m = String(Math.floor(mt.secsLeft / 60)).padStart(2, '0');
+    const s = String(mt.secsLeft % 60).padStart(2, '0');
+    const el = q('mtTimerVal');
+    if (el) {
+      el.textContent = m + ':' + s;
+      el.classList.toggle('danger', mt.secsLeft <= 300);
+    }
+    const pct = ((mt.totalSecs - mt.secsLeft) / mt.totalSecs * 100).toFixed(1);
+    const fill = q('mtProgFill');
+    if (fill) fill.style.width = pct + '%';
+    const ans = Object.keys(mt.answers).length;
+    const left = mt.questions.length - ans;
+    const corrEl = q('mtLiveCorr'); if (corrEl) corrEl.textContent = '✓ ' + ans + ' answered';
+    const skipEl = q('mtLiveSkip'); if (skipEl) skipEl.textContent = '○ ' + left + ' left';
+    const totEl  = q('mtLiveTotal'); if (totEl) totEl.textContent = mt.questions.length + ' total';
+  }
+
+  function mtRenderPalette() {
+    const wrap = q('mtPalette');
+    if (!wrap) return;
+    wrap.innerHTML = mt.questions.map(function(qq, i) {
+      return '<button class="mt-pal-btn" id="mtp_'+qq.id+'" onclick="mtScrollTo(\''+qq.id+'\')">'+(i+1)+'</button>';
+    }).join('');
+  }
+
+  function mtUpdatePalette(qId) {
+    const btn = q('mtp_' + qId);
+    if (btn) btn.classList.add('ans');
+  }
+
+  window.mtScrollTo = function(qId) {
+    const el = q('mtq_' + qId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  function mtRenderQuestions() {
+    const wrap = q('mtQContainer');
+    if (!wrap) return;
+    wrap.innerHTML = mt.questions.map(function(qq, idx) {
+      const opts = ['A','B','C','D'].map(function(ltr, i) {
+        const txt = [qq.optA, qq.optB, qq.optC, qq.optD][i];
+        if (!txt) return '';
+        return '<button class="mt-opt-btn" id="mto_'+qq.id+'_'+ltr+'" onclick="mtChoose(\''+qq.id+'\',\''+ltr+'\')">'
+          + '<span class="mt-opt-ltr">'+ltr+'.</span><span>'+txt+'</span></button>';
+      }).join('');
+      const meta = (qq.year||'') + (qq.year && qq.subject ? ' · ' : '') + (qq.subject||'');
+      return '<div class="mt-qcard" id="mtq_'+qq.id+'">'
+        + '<div class="mt-qnum">Q'+(idx+1)+' &nbsp;<span style="color:var(--text3);font-weight:400;">'+meta+'</span></div>'
+        + '<div class="mt-qtext">'+qq.question+'</div>'
+        + '<div class="mt-opts-grid">'+opts+'</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  window.mtChoose = function(qId, letter) {
+    mt.answers[qId] = letter;
+    // Deselect all options for this question
+    ['A','B','C','D'].forEach(function(l) {
+      const btn = q('mto_'+qId+'_'+l);
+      if (btn) btn.classList.remove('chosen');
+    });
+    // Select chosen
+    const chosen = q('mto_'+qId+'_'+letter);
+    if (chosen) chosen.classList.add('chosen');
+    // Mark card as answered
+    const card = q('mtq_'+qId);
+    if (card) card.classList.add('answered');
+    mtUpdatePalette(qId);
+    mtUpdateTimer();
+  };
+
+  window.mtConfirmSubmit = function() {
+    const ans = Object.keys(mt.answers).length;
+    const left = mt.questions.length - ans;
+    if (left > 0 && !confirm(left + ' questions unanswered. Submit anyway?')) return;
+    mtSubmit();
+  };
+
+  function mtSubmit() {
+    if (mt.timer) clearInterval(mt.timer);
+    mt.active = false;
+    const timeTaken = mt.totalSecs - mt.secsLeft;
+
+    let correct = 0, wrong = 0, skipped = 0;
+    const subBreak = {};
+    mt.questions.forEach(function(qq) {
+      const chosen = mt.answers[qq.id];
+      if (!subBreak[qq.subject]) subBreak[qq.subject] = { c:0, w:0, t:0 };
+      subBreak[qq.subject].t++;
+      if (!chosen) { skipped++; return; }
+      if (chosen === qq.answer) { correct++; subBreak[qq.subject].c++; }
+      else                      { wrong++;   subBreak[qq.subject].w++; }
+    });
+
+    const total    = mt.questions.length;
+    const attempted = correct + wrong;
+    const acc      = attempted > 0 ? Math.round(correct/attempted*100) : 0;
+    const score    = Math.max(0, Math.round(correct - wrong*0.33));
+
+    // Save to server
+    const yearLabel = mt.year === 'all' ? 'All Years' : mt.year;
+    const subLabel  = mt.sub  === 'all' ? 'All Subjects' : mt.sub;
+    fetch('/api/saveMockResult', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        score: correct, total: total, timeTaken: timeTaken,
+        subjectBreakdown: subBreak,
+        settings: { year: mt.year, subject: mt.sub, time: mt.time }
+      })
+    }).catch(function(){});
+
+    mtShowResults(correct, wrong, skipped, total, score, acc, timeTaken, subBreak);
+  }
+
+  function mtShowResults(correct, wrong, skipped, total, score, acc, timeTaken, subBreak) {
+    q('mtActive').style.display  = 'none';
+    q('mtResults').style.display = 'block';
+
+    const m = Math.floor(timeTaken/60), s = timeTaken%60;
+    const timeStr = m + 'm ' + s + 's';
+    const accCol  = acc>=70?'#1D9E75':acc>=50?'#EF9F27':'#dc2626';
+    const ring    = Math.round(2*3.14159*40*acc/100);
+
+    const subRows = Object.entries(subBreak).map(function(e) {
+      const sub = e[0], d = e[1];
+      const a = (d.c+d.w)>0 ? Math.round(d.c/(d.c+d.w)*100):0;
+      const col = a>=70?'#1D9E75':a>=50?'#EF9F27':'#dc2626';
+      return '<tr><td>'+sub+'</td><td style="color:#1D9E75;font-weight:600;">'+d.c+'</td>'
+        +'<td style="color:#dc2626;font-weight:600;">'+d.w+'</td>'
+        +'<td style="color:var(--text3);">'+(d.t-d.c-d.w)+'</td>'
+        +'<td style="font-weight:700;color:'+col+';">'+a+'%</td></tr>';
+    }).join('');
+
+    q('mtResultsContent').innerHTML =
+      '<div style="text-align:center;padding:20px 0;">'
+      +'<svg width="100" height="100" viewBox="0 0 100 100">'
+      +'<circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" stroke-width="8"/>'
+      +'<circle cx="50" cy="50" r="40" fill="none" stroke="'+accCol+'" stroke-width="8"'
+      +' stroke-dasharray="'+ring+' 999" stroke-linecap="round" transform="rotate(-90 50 50)"/>'
+      +'</svg>'
+      +'<div style="font-size:28px;font-weight:800;color:'+accCol+';margin-top:-68px;margin-bottom:60px;">'+acc+'%</div>'
+      +'<div style="font-size:13px;color:var(--text3);margin-top:4px;">'
+      +(mt.year!=='all'?mt.year+' · ':'')+(mt.sub!=='all'?mt.sub+' · ':'')+'Score: '+score+'/'+total+' (−0.33 per wrong)</div>'
+      +'</div>'
+      +'<div class="mt-res-stats">'
+      +'<div class="mt-res-pill"><div class="mt-res-pill-v" style="color:#1D9E75;">'+correct+'</div><div class="mt-res-pill-l">Correct</div></div>'
+      +'<div class="mt-res-pill"><div class="mt-res-pill-v" style="color:#dc2626;">'+wrong+'</div><div class="mt-res-pill-l">Wrong</div></div>'
+      +'<div class="mt-res-pill"><div class="mt-res-pill-v" style="color:var(--text3);">'+skipped+'</div><div class="mt-res-pill-l">Skipped</div></div>'
+      +'<div class="mt-res-pill"><div class="mt-res-pill-v">'+timeStr+'</div><div class="mt-res-pill-l">Time taken</div></div>'
+      +'</div>'
+      +'<div class="mt-setup-card">'
+      +'<div class="mt-field-label"><i class="ti ti-chart-bar"></i> Subject Breakdown</div>'
+      +'<table class="mt-sub-table"><thead><tr><th>Subject</th><th style="color:#1D9E75;">Correct</th><th style="color:#dc2626;">Wrong</th><th>Skipped</th><th>Accuracy</th></tr></thead>'
+      +'<tbody>'+subRows+'</tbody></table></div>';
+
+    // Reload mock history
+    mtLoadHistory();
+  }
+
+  function mtLoadHistory() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) return;
+    fetch('/api/mockHistory', { headers: { Authorization: 'Bearer ' + token } })
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        const rows = (data.history || []).slice(0,5);
+        if (!rows.length) return;
+        const card = q('mtHistCard');
+        if (card) card.style.display = 'block';
+        const list = q('mtHistList');
+        if (!list) return;
+        list.innerHTML = rows.map(function(r) {
+          const d = new Date(r.taken_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
+          const acc = r.total>0?Math.round(r.score/r.total*100):0;
+          const col = acc>=70?'#1D9E75':acc>=50?'#EF9F27':'#dc2626';
+          const sets = r.settings||{};
+          return '<div class="mt-hist-row">'
+            +'<div style="color:var(--text3);">'+d+'</div>'
+            +'<div style="font-weight:700;color:'+col+';">'+r.score+'/'+r.total+'</div>'
+            +'<div style="color:'+col+';font-weight:600;">'+acc+'%</div>'
+            +'<div style="color:var(--text3);">'+(sets.year&&sets.year!=='all'?sets.year:'All')+'</div>'
+            +'<div style="color:var(--text3);font-size:11px;">'+(sets.subject&&sets.subject!=='all'?sets.subject:'All Subj.')+'</div>'
+            +'</div>';
+        }).join('');
+      }).catch(function(){});
+  }
+
+  window.mtReset = function() {
+    if (mt.timer) clearInterval(mt.timer);
+    mt.active = false;
+    q('mtActive').style.display  = 'none';
+    q('mtResults').style.display = 'none';
+    q('mtSetup').style.display   = 'block';
+    mtLoadHistory();
+  };
+
+})();
+
 </script>
 
 <!-- ── Subject-Year Drill-down Modal ──────────────────────── -->

@@ -433,6 +433,21 @@ app.post('/api/saveMockResult', authMiddleware, async (req, res) => {
   }
 });
 
+// ── MOCK HISTORY ──────────────────────────────────────────────
+app.get('/api/mockHistory', authMiddleware, async (req, res) => {
+  try {
+    const rows = await pool.query(
+      `SELECT id, score, total, time_taken, subject_breakdown, settings, taken_at
+       FROM mock_history WHERE user_id = $1 ORDER BY taken_at DESC LIMIT 20`,
+      [req.user.id]
+    );
+    res.json({ history: rows.rows });
+  } catch(e) {
+    console.error('mockHistory error:', e.message);
+    res.status(500).json({ error: 'Could not load mock history' });
+  }
+});
+
 // ── TRACK PROGRESS (comprehensive 8-section) ──────────────────
 app.get('/api/trackProgress', authMiddleware, async (req, res) => {
   try {
