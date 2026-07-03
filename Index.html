@@ -10142,9 +10142,10 @@ document.addEventListener('keydown', e => {
     // Save to server
     const yearLabel = mt.year === 'all' ? 'All Years' : mt.year;
     const subLabel  = mt.sub  === 'all' ? 'All Subjects' : mt.sub;
+    var _tok = localStorage.getItem('jwtToken') || '';
     fetch('/api/saveMockResult', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _tok },
       body: JSON.stringify({
         score: correct, total: total, timeTaken: timeTaken,
         subjectBreakdown: subBreak,
