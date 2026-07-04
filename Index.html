@@ -10427,6 +10427,18 @@ function lockOverlayHTML() {
 window._currentUser = null;
 var currentUser = null;  // keep local alias for auth UI
 
+function _refreshAuthTabs() {
+  // Re-load any data tabs that depend on auth state
+  var progressTab = document.getElementById('tab-progress');
+  if (progressTab && progressTab.classList.contains('active')) {
+    if (typeof loadProgress === 'function') loadProgress();
+  }
+  var dashTab = document.getElementById('tab-home');
+  if (dashTab && dashTab.classList.contains('active')) {
+    if (typeof refreshDashboardStats === 'function') refreshDashboardStats();
+  }
+}
+
 function onAuthSuccess(user) {
   window._currentUser = user;
   currentUser = user;
@@ -10437,6 +10449,7 @@ function onAuthSuccess(user) {
   if (navName) navName.textContent = user.name || user.email;
   var loginBtn = document.getElementById('navLoginBtn');
   if (loginBtn) loginBtn.style.display = 'none';
+  _refreshAuthTabs();
 }
 
 // Restore session on page load
@@ -10452,6 +10465,7 @@ function onAuthSuccess(user) {
         if (navName) navName.textContent = data.user.name || data.user.email;
         var loginBtn = document.getElementById('navLoginBtn');
         if (loginBtn) loginBtn.style.display = 'none';
+        _refreshAuthTabs();
       }
     })
     .catch(function(){});
