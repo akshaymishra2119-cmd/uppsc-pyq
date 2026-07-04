@@ -622,6 +622,19 @@ textarea{resize:vertical;min-height:70px;}
 .pyq-yr-btn:hover{border-color:#2563EB;color:#2563EB;}
 .pyq-yr-btn.active{background:#2563EB;color:#fff;border-color:#2563EB;
   box-shadow:0 2px 10px rgba(37,99,235,.3);}
+/* ── Year progress badges ── */
+.pyq-yr-badge{display:inline-flex;flex-direction:column;align-items:center;gap:1px;
+  min-width:52px;padding:5px 10px;background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:10px;margin-right:6px;cursor:pointer;transition:all .15s;flex-shrink:0;}
+.pyq-yr-badge:hover{border-color:#2563EB;}
+.pyq-yr-badge-active{background:#2563EB!important;border-color:#2563EB!important;}
+.pyq-yr-badge-active div{color:#fff!important;}
+/* ── Attempt filter buttons ── */
+.pyq-attempt-btn{padding:5px 12px;border-radius:99px;border:1.5px solid var(--border);
+  background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;
+  color:var(--text2);white-space:nowrap;transition:all .15s;}
+.pyq-attempt-btn:hover{border-color:#2563EB;color:#2563EB;}
+.pyq-attempt-btn.active{background:#2563EB;color:#fff;border-color:#2563EB;}
 /* ── Subject tabs ── */
 .pyq-subj-tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;
   scrollbar-width:none;margin-bottom:8px;}
@@ -2155,16 +2168,9 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   <!-- Year completion progress strip -->
   <div id="ycPracticeStrip" style="display:none;overflow-x:auto;padding:0 0 10px;"></div>
 
-  <!-- Year-wise completion full section (PYQ Practice) -->
-  <div id="pcSectionWrap" style="display:none;margin-bottom:16px;">
-    <div class="tp-sec-hdr" style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:10px;">&#128197; Year-wise Completion</div>
-    <div id="pcCardsContainer"><div style="font-size:12px;color:var(--text3);padding:4px 0;">Loading…</div></div>
-  </div>
 
-  <div class="pyq-year-tabs" id="pyqYearTabs">
-    <button class="pyq-yr-btn active" id="pyq-yr-all" onclick="selectPyqYear('all',this)">All Years</button>
-    <!-- populated by JS after questions load -->
-  </div>
+  <!-- Attempt filter row (All / Not Attempted / Attempted / Correct / Wrong) -->
+  <div id="pyqAttemptFilter" style="display:none;margin-bottom:8px;"></div>
 
   <!-- ── Subject tabs ──────────────────────────────── -->
   <div class="pyq-subj-tabs" id="pyqSubjTabs">
@@ -5476,7 +5482,6 @@ function loadQuestions() {
       const gcTQSub = document.getElementById('gcTotalQSub');
       if (gcTQSub) gcTQSub.textContent = `${YEARS[0]}–${YEARS[YEARS.length-1]} (${YEARS.length} years)`;
       renderQuestions();
-      buildYearTabs();
       updatePyqSidebarCounts();
       renderAnswerDistHome(allQuestions);
       renderQTAnalytics(allQuestions);
@@ -5560,11 +5565,13 @@ function selectPyqSubject(subject, btn) {
   applyFilters();
 }
 
-function selectPyqYear(year, btn) {
-  const sel = document.getElementById("f-year");
+function selectPyqYear(year) {
+  var sel = document.getElementById('f-year');
   if (sel) sel.value = year;
-  document.querySelectorAll('.pyq-yr-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  // update active badge in strip
+  document.querySelectorAll('.pyq-yr-badge').forEach(function(b){
+    b.classList.toggle('pyq-yr-badge-active', b.dataset.yr === String(year));
+  });
   applyFilters();
   updatePyqSidebarCounts();
 }
@@ -5699,7 +5706,6 @@ function patchYearCompletionSection(containerId, ns) {
 function renderYearProgressBadges() {
   var strip = document.getElementById('ycPracticeStrip');
   if (!strip || typeof allQuestions==='undefined') return;
-  // Build total-per-year from allQuestions
   var qByYear = {};
   allQuestions.forEach(function(q){
     var yr = String(q.year||''); if(!yr) return;
@@ -5708,39 +5714,60 @@ function renderYearProgressBadges() {
   });
   var years = Object.keys(qByYear).sort();
   if (!years.length) return;
-  // Use server yearMap (window._tpYm) when available — same source as My Progress
   var serverYm = window._tpYm || null;
-  var html = years.map(function(yr){
+  var curYr = (document.getElementById('f-year')||{}).value || 'all';
+  // All badge
+  var allBadge = '<div class="pyq-yr-badge'+(curYr==='all'?' pyq-yr-badge-active':'')+'" data-yr="all" onclick="selectPyqYear('all',this)" style="min-width:42px;">'
+    +'<div style="font-size:11px;font-weight:700;">All</div>'
+    +'</div>';
+  var html = allBadge + years.map(function(yr){
     var total = qByYear[yr];
     var done = 0;
     if (serverYm && serverYm[yr]) {
       done = serverYm[yr].done || 0;
     } else {
-      // fallback: count from localStorage attemptedQIds per year
       var yearIds = new Set(allQuestions.filter(function(q){ return String(q.year)===yr; }).map(function(q){ return String(q.id); }));
       attemptedQIds.forEach(function(id){ if(yearIds.has(String(id))) done++; });
     }
     var pct = total>0 ? Math.round(done/total*100) : 0;
-    var col = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--border)';
-    return '<div style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;padding:4px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-right:6px;">'
-      +'<div style="font-size:11px;font-weight:600;color:var(--text);">'+yr+'</div>'
-      +'<div style="width:36px;height:4px;border-radius:2px;background:var(--border);overflow:hidden;">'
+    var col = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--text3)';
+    var isActive = curYr===yr;
+    return '<div class="pyq-yr-badge'+(isActive?' pyq-yr-badge-active':'')+'" data-yr="'+yr+'" onclick="selectPyqYear(''+yr+'',this)">'
+      +'<div style="font-size:11px;font-weight:600;">'+yr+'</div>'
+      +'<div style="width:36px;height:4px;border-radius:2px;background:var(--border);overflow:hidden;margin:2px 0;">'
       +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:2px;"></div></div>'
       +'<div style="font-size:10px;color:'+col+';font-weight:500;">'+pct+'%</div>'
       +'</div>';
   }).join('');
   strip.innerHTML = html;
   strip.style.display = '';
-  var pcWrap = document.getElementById('pcSectionWrap');
-  if (pcWrap) pcWrap.style.display = '';
+  renderAttemptFilter();
 }
 
-function buildYearTabs() {
-  const years = [...new Set(allQuestions.map(q => q.year))].filter(Boolean).sort();
-  const wrap = document.getElementById('pyqYearTabs');
+function renderAttemptFilter() {
+  var wrap = document.getElementById('pyqAttemptFilter');
   if (!wrap) return;
-  wrap.innerHTML = `<button class="pyq-yr-btn active" id="pyq-yr-all" onclick="selectPyqYear('all',this)">All Years</button>`
-    + years.map(y => `<button class="pyq-yr-btn" id="pyq-yr-${y}" onclick="selectPyqYear('${y}',this)">${y}</button>`).join('');
+  var cur = window._pyqAttemptFilter || 'all';
+  var btns = [
+    {v:'all',      label:'All'},
+    {v:'notdone',  label:'&#9744; Not Attempted'},
+    {v:'attempted',label:'&#128203; Attempted'},
+    {v:'correct',  label:'&#10003; Correct'},
+    {v:'wrong',    label:'&#10007; Wrong'}
+  ];
+  wrap.innerHTML = btns.map(function(b){
+    var active = cur===b.v;
+    return '<button class="pyq-attempt-btn'+(active?' active':'')+'" onclick="setAttemptFilter(''+b.v+'')">'+b.label+'</button>';
+  }).join('');
+  wrap.style.display = 'flex';
+  wrap.style.flexWrap = 'wrap';
+  wrap.style.gap = '6px';
+}
+
+function setAttemptFilter(val) {
+  window._pyqAttemptFilter = val;
+  renderAttemptFilter();
+  applyFilters();
 }
 
 function updatePyqSidebarCounts() {
@@ -5803,6 +5830,8 @@ function applyFilters() {
   const year    = document.getElementById("f-year").value;
   const diff    = document.getElementById("f-diff").value;
 
+  var atFilter = window._pyqAttemptFilter || 'all';
+  var resultMap = window._ycResultMap || {};
   filteredQ = allQuestions.filter(q => {
     if (subject !== "all" && q.subject !== subject) return false;
     if (year    !== "all" && String(q.year) !== year) return false;
@@ -5811,6 +5840,11 @@ function applyFilters() {
     if (filterHighPri    && (q.repeatsIn||"").split(",").filter(Boolean).length < 2) return false;
     if (filterNotDone    && attemptedQIds.has(String(q.id))) return false;
     if (filterBookmarked && !pyqBookmarks.includes(String(q.id))) return false;
+    // Attempt filter
+    if (atFilter === 'notdone'   && attemptedQIds.has(String(q.id))) return false;
+    if (atFilter === 'attempted' && !attemptedQIds.has(String(q.id))) return false;
+    if (atFilter === 'correct'   && resultMap[String(q.id)] !== 'correct') return false;
+    if (atFilter === 'wrong'     && (resultMap[String(q.id)] === 'correct' || !attemptedQIds.has(String(q.id)))) return false;
     // Topic drill-down from subject breakdown
     if (drillTopic && (q.subTopic !== drillTopic && q.topic !== drillTopic)) return false;
     // Text search
