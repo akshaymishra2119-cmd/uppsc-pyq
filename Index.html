@@ -1412,74 +1412,171 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 .gc-cd-exam span{ color:rgba(255,255,255,0.2); }
 </style>
 
-<div class="gc-banner">
-  <div class="gc-banner-stripe"></div>
-  <div class="gc-banner-dots"></div>
-  <div class="gc-banner-glow"></div>
-  <div class="gc-banner-inner">
+<!-- ══ GHATNAA CHAKKARA GLOBE BANNER ════════════════════════════ -->
+<div style="width:100%;height:460px;background:oklch(0.07 0.015 300);position:relative;overflow:hidden;box-shadow:0 20px 60px oklch(0 0 0/0.28);display:flex;align-items:stretch;box-sizing:border-box;">
 
-    <!-- Countdown Block -->
-    <div class="gc-countdown" id="gcCountdown">
-      <div class="gc-cd-num" id="gcDaysLeft">—</div>
-      <div class="gc-cd-lbl">days left</div>
-      <div class="gc-cd-exam">UPPSC 2026<br><span>6 Dec 2026</span></div>
-    </div>
-
-    <!-- Chakra Logo -->
-    <div class="gc-logo-wrap">
-      <svg viewBox="0 0 60 60" width="54" height="54">
-        <g class="gc-chakra-spin">
-          <circle cx="30" cy="30" r="26" fill="none" stroke="#1e3a8a" stroke-width="1.5" opacity="0.6"/>
-          <circle cx="30" cy="30" r="17" fill="none" stroke="#1e3a8a" stroke-width="1"/>
-          <line x1="30" y1="4"  x2="30" y2="13" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="30" y1="47" x2="30" y2="56" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="4"  y1="30" x2="13" y2="30" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="47" y1="30" x2="56" y2="30" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="10" y1="10" x2="17" y2="17" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
-          <line x1="43" y1="43" x2="50" y2="50" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
-          <line x1="50" y1="10" x2="43" y2="17" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
-          <line x1="10" y1="50" x2="17" y2="43" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="30" cy="30" r="6" fill="#1e3a8a"/>
-          <circle cx="30" cy="30" r="3" fill="#bfdbfe"/>
-        </g>
-      </svg>
-    </div>
-
-    <div class="gc-divider"></div>
-
-    <!-- Title Block -->
-    <div class="gc-title-block">
-      <div class="gc-brand">
-        <h1 class="gc-title">Ghatnaa <span>Chakkara</span></h1>
-        <span class="gc-edition">2005 – 2025</span>
-      </div>
-      <p class="gc-tagline">UPPSC Previous Year Questions Analysis Portal &nbsp;·&nbsp; Uttar Pradesh PSC</p>
-      <div class="gc-powered">powered by <span>UPPSC_FOREVER</span></div>
-      <div class="gc-stats-row">
-        <div class="gc-stat-pill"><strong id="pill-total-q">974</strong> Questions</div>
-        <div class="gc-stat-pill"><strong id="pill-total-yr">8</strong> Years</div>
-        <div class="gc-stat-pill"><strong id="pill-total-subj">9</strong> Subjects</div>
-        <div class="gc-stat-pill"><strong id="pill-repeating">28</strong> Repeating Topics</div>
-        <div class="gc-stat-pill"><strong id="pill-up-pct">~11%</strong> UP Special</div>
-      </div>
-    </div>
-
-    <!-- Right Block -->
-    <div class="gc-right-block">
-      <span class="gc-badge-uppsc">UPPSC PCS</span>
-      <span id="streakBadge" class="gc-streak-badge">
-        <i class="ti ti-flame" style="color:#92400e;"></i>
-        <span id="streakNum">0</span> day streak
-      </span>
-      <button id="syncSheetBtn" onclick="syncFromSheet()" title="Sync from Google Sheet"
-        style="background:none;border:1px solid var(--border);border-radius:20px;padding:4px 10px;
-               font-size:11px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;">
-        <i class="ti ti-refresh" style="font-size:13px;"></i> Sync Sheet
-      </button>
-    </div>
-
+  <!-- Far-left: countdown box -->
+  <div id="gcCountdown" style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 30px;background:oklch(0.1 0.02 300);border-right:1px solid oklch(0.18 0.02 300);min-width:148px;text-align:center;z-index:3;">
+    <div id="gcDaysLeft" style="font:900 58px/1 'Space Grotesk',sans-serif;color:#fff;letter-spacing:-2px;">—</div>
+    <div style="font:700 9px 'Inter',sans-serif;color:oklch(0.55 0.02 300);letter-spacing:.12em;text-transform:uppercase;margin-top:8px;">DAYS LEFT</div>
+    <div style="font:600 10px 'Inter',sans-serif;color:oklch(0.4 0.02 300);margin-top:10px;">UPPSC 2026</div>
+    <div style="font:400 10px 'Inter',sans-serif;color:oklch(0.33 0.02 300);margin-top:2px;">6 Dec 2026</div>
   </div>
+
+  <!-- Center: title + stats + buttons -->
+  <div style="flex:1;display:flex;align-items:center;padding:28px 44px;z-index:3;position:relative;min-width:0;">
+    <div style="max-width:560px;">
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+        <h1 style="font:800 clamp(28px,3.8vw,50px)/1.05 'Space Grotesk',sans-serif;color:#fff;margin:0;letter-spacing:-.02em;">Ghatnaa <span style="color:oklch(0.75 0.22 320);">Chakkara</span></h1>
+        <span style="font:600 11px 'Inter',sans-serif;color:oklch(0.5 0.02 300);background:oklch(0.14 0.02 300);border:1px solid oklch(0.22 0.02 300);border-radius:6px;padding:3px 10px;flex-shrink:0;">2005 – 2025</span>
+      </div>
+      <p style="font:500 13px/1.5 'Inter',sans-serif;color:oklch(0.6 0.02 300);margin:0 0 3px;">UPPSC Previous Year Questions Analysis Portal &nbsp;·&nbsp; Uttar Pradesh PSC</p>
+      <div style="font:700 10px 'Inter',sans-serif;color:oklch(0.4 0.02 300);letter-spacing:.04em;margin-bottom:18px;">powered by <span style="color:oklch(0.7 0.22 320);letter-spacing:.12em;">UPPSC_FOREVER</span></div>
+      <!-- Stat pills — IDs kept for live JS updates -->
+      <div style="display:flex;flex-wrap:wrap;gap:0;margin-bottom:20px;border:1px solid oklch(0.2 0.02 300);border-radius:10px;overflow:hidden;">
+        <div style="padding:8px 16px;font:600 12px 'Inter',sans-serif;color:rgba(255,255,255,0.75);border-right:1px solid oklch(0.2 0.02 300);background:oklch(0.11 0.02 300);"><strong id="pill-total-q" style="color:oklch(0.75 0.22 320);font-size:14px;">1271</strong> Questions</div>
+        <div style="padding:8px 16px;font:600 12px 'Inter',sans-serif;color:rgba(255,255,255,0.75);border-right:1px solid oklch(0.2 0.02 300);background:oklch(0.11 0.02 300);"><strong id="pill-total-yr" style="color:#bfdbfe;font-size:14px;">10</strong> Years</div>
+        <div style="padding:8px 16px;font:600 12px 'Inter',sans-serif;color:rgba(255,255,255,0.75);border-right:1px solid oklch(0.2 0.02 300);background:oklch(0.11 0.02 300);"><strong id="pill-total-subj" style="color:#bfdbfe;font-size:14px;">11</strong> Subjects</div>
+        <div style="padding:8px 16px;font:600 12px 'Inter',sans-serif;color:rgba(255,255,255,0.75);border-right:1px solid oklch(0.2 0.02 300);background:oklch(0.11 0.02 300);"><strong id="pill-repeating" style="color:#bfdbfe;font-size:14px;">1070</strong> Repeating Topics</div>
+        <div style="padding:8px 16px;font:600 12px 'Inter',sans-serif;color:rgba(255,255,255,0.75);background:oklch(0.11 0.02 300);"><strong id="pill-up-pct" style="color:#bfdbfe;font-size:14px;">~1%</strong> UP Special</div>
+      </div>
+      <!-- Buttons -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button onclick="showTab('pyq',document.querySelector('[onclick*=pyq]'))" style="background:oklch(0.75 0.22 320);border:none;border-radius:10px;padding:12px 26px;font:800 14px 'Inter',sans-serif;color:oklch(0.07 0.015 300);cursor:pointer;">Start Practicing →</button>
+        <button id="bannerAuthBtn" onclick="openAuthModal('login')" style="background:transparent;border:1px solid oklch(0.35 0.02 300);border-radius:10px;padding:12px 26px;font:600 14px 'Inter',sans-serif;color:#fff;cursor:pointer;">Login / Register</button>
+        <button id="syncSheetBtn" onclick="syncFromSheet()" style="background:none;border:1px solid oklch(0.25 0.02 300);border-radius:10px;padding:11px 16px;font:600 12px 'Inter',sans-serif;color:oklch(0.5 0.02 300);cursor:pointer;display:flex;align-items:center;gap:5px;"><i class="ti ti-refresh" style="font-size:13px;"></i> Sync</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: UPPSC badge + streak (top) over globe -->
+  <div style="position:absolute;top:22px;right:22px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:5;">
+    <span style="font:700 11px 'Inter',sans-serif;letter-spacing:1px;text-transform:uppercase;color:oklch(0.07 0.015 300);background:oklch(0.75 0.16 210);border-radius:6px;padding:5px 14px;">UPPSC PCS</span>
+    <span id="streakBadge" style="display:none;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:4px 12px;font:600 11px 'Inter',sans-serif;color:#FCD34D;">🔥 <span id="streakNum">0</span> day streak</span>
+  </div>
+
+  <!-- Globe canvas -->
+  <div style="position:absolute;right:-50px;top:50%;transform:translateY(-50%);width:560px;height:560px;z-index:2;">
+    <canvas id="bannerGlobe" style="width:100%;height:100%;display:block;"></canvas>
+  </div>
+
 </div>
+<script>
+(function() {
+  var D2R = Math.PI / 180;
+  function toXYZ(lat, lon) {
+    var phi = lat*D2R, lam = lon*D2R;
+    return [Math.cos(phi)*Math.cos(lam), Math.sin(phi), Math.cos(phi)*Math.sin(lam)];
+  }
+  function slerp(a, b, t) {
+    var dot = Math.max(-1, Math.min(1, a[0]*b[0]+a[1]*b[1]+a[2]*b[2]));
+    var theta = Math.acos(dot)*t;
+    var relX = [b[0]-a[0]*dot, b[1]-a[1]*dot, b[2]-a[2]*dot];
+    var len = Math.hypot(relX[0],relX[1],relX[2]) || 1;
+    var rel = [relX[0]/len, relX[1]/len, relX[2]/len];
+    return [a[0]*Math.cos(theta)+rel[0]*Math.sin(theta),
+            a[1]*Math.cos(theta)+rel[1]*Math.sin(theta),
+            a[2]*Math.cos(theta)+rel[2]*Math.sin(theta)];
+  }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function projectXYZ(v,cx,cy,R,rLon,rLat) {
+    var lo=rLon*D2R, la=rLat*D2R;
+    var u=v[0]*Math.cos(lo)+v[2]*Math.sin(lo);
+    var x=v[2]*Math.cos(lo)-v[0]*Math.sin(lo);
+    var y=v[1]*Math.cos(la)-u*Math.sin(la);
+    var z=v[1]*Math.sin(la)+u*Math.cos(la);
+    return {x:cx+x*R, y:cy-y*R, z:z};
+  }
+  var HUB={lat:26.847,lon:80.946};
+  var CITIES=[
+    ['Delhi',28.613,77.209,1.4],['Varanasi',25.317,82.973,1.3],['Kanpur',26.449,80.332,1.1],
+    ['Agra',27.177,78.008,1.1],['Prayagraj',25.435,81.845,1.1],['Mumbai',19.076,72.877,1.2],
+    ['Kolkata',22.573,88.364,1.1],['Bengaluru',12.972,77.594,1.0],['Jaipur',26.912,75.787,1.0],
+    ['Patna',25.594,85.137,1.0],['Gorakhpur',26.760,83.374,0.9],['London',51.507,-0.128,1.0],
+    ['Dubai',25.204,55.271,1.0],['Singapore',1.352,103.820,0.9],['Tokyo',35.676,139.650,0.9],
+    ['Sydney',-33.868,151.209,0.9],['New York',40.713,-74.006,1.0]
+  ];
+  var COLS=['oklch(0.75 0.22 320)','oklch(0.75 0.16 210)'];
+  var HUB_V=toXYZ(HUB.lat,HUB.lon);
+  var CD=CITIES.map(function(c,i){return{tier:c[3],v:toXYZ(c[1],c[2]),color:COLS[i%COLS.length]};});
+  var cv=document.getElementById('bannerGlobe');
+  if(!cv) return;
+  var ctx=cv.getContext('2d'), cssW, cssH, dpr;
+  function resize(){
+    var r=cv.getBoundingClientRect();
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    cv.width=Math.max(1,Math.floor(r.width*dpr));
+    cv.height=Math.max(1,Math.floor(r.height*dpr));
+    cssW=r.width; cssH=r.height;
+  }
+  window.addEventListener('resize',resize); resize();
+  function draw(t){
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,cssW,cssH);
+    var cx=cssW*.5,cy=cssH*.5,R=Math.min(cssW,cssH)*.46;
+    var rLon=HUB.lon+(t*4.8)%360, rLat=HUB.lat-14;
+    var bg=ctx.createRadialGradient(cx-R*.3,cy-R*.35,R*.1,cx,cy,R);
+    bg.addColorStop(0,'oklch(0.22 0.03 300)'); bg.addColorStop(1,'oklch(0.1 0.02 300)');
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+    ctx.fillStyle=bg; ctx.fill();
+    ctx.strokeStyle='oklch(0.4 0.03 300/0.6)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.lineWidth=1; ctx.strokeStyle='oklch(0.42 0.02 300/0.3)';
+    for(var lat=-60;lat<=60;lat+=30){
+      var s=false; ctx.beginPath();
+      for(var i=0;i<=48;i++){var p=projectXYZ(toXYZ(lat,i*7.5-180),cx,cy,R,rLon,rLat);if(p.z>.02){if(!s){ctx.moveTo(p.x,p.y);s=true;}else ctx.lineTo(p.x,p.y);}else s=false;}
+      ctx.stroke();
+    }
+    for(var lon=-180;lon<180;lon+=30){
+      var s=false; ctx.beginPath();
+      for(var i=0;i<=24;i++){var p=projectXYZ(toXYZ(i*7.5-90,lon),cx,cy,R,rLon,rLat);if(p.z>.02){if(!s){ctx.moveTo(p.x,p.y);s=true;}else ctx.lineTo(p.x,p.y);}else s=false;}
+      ctx.stroke();
+    }
+    var hp=projectXYZ(HUB_V,cx,cy,R,rLon,rLat);
+    if(hp.z>0){
+      var pulse=Math.sin(t*3)*.5+.5;
+      var gr=ctx.createRadialGradient(hp.x,hp.y,0,hp.x,hp.y,R*.5);
+      gr.addColorStop(0,'oklch(0.75 0.22 320/'+(0.28+pulse*.12)+')');
+      gr.addColorStop(1,'oklch(0.75 0.22 320/0)');
+      ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(hp.x,hp.y,R*.5,0,Math.PI*2); ctx.fill();
+    }
+    ctx.lineWidth=1;
+    CD.forEach(function(c){
+      var s=false; ctx.beginPath();
+      for(var i=0;i<=24;i++){var p=projectXYZ(slerp(HUB_V,c.v,i/24),cx,cy,R,rLon,rLat);if(p.z>.02){if(!s){ctx.moveTo(p.x,p.y);s=true;}else ctx.lineTo(p.x,p.y);}else s=false;}
+      ctx.strokeStyle=c.color; ctx.globalAlpha=.15; ctx.stroke();
+    });
+    ctx.globalAlpha=1;
+    var CY=2.4;
+    CD.forEach(function(c,idx){
+      var off=(idx/CD.length)*CY, loc=((t+off)%CY)/CY;
+      for(var k=3;k>=0;k--){
+        var tt=clamp(loc-k*.02,0,1), v=slerp(c.v,HUB_V,tt), p=projectXYZ(v,cx,cy,R,rLon,rLat);
+        if(p.z<.02) continue;
+        ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(1,3.2-k*.5),0,Math.PI*2);
+        ctx.fillStyle=c.color; ctx.globalAlpha=(1-k/4)*.85;
+        ctx.shadowColor=c.color; ctx.shadowBlur=7; ctx.fill();
+      }
+      ctx.globalAlpha=1; ctx.shadowBlur=0;
+      var op=projectXYZ(c.v,cx,cy,R,rLon,rLat);
+      if(op.z>.1){ctx.beginPath();ctx.arc(op.x,op.y,1.8+c.tier*1.2,0,Math.PI*2);ctx.fillStyle='oklch(0.85 0.02 300)';ctx.globalAlpha=clamp((op.z+.05)/.4,.35,1)*.85;ctx.fill();ctx.globalAlpha=1;}
+    });
+    if(hp.z>-.15){
+      var pulse=Math.sin(t*3)*.5+.5, r=8+pulse*3;
+      ctx.beginPath();ctx.arc(hp.x,hp.y,r+8+pulse*4,0,Math.PI*2);
+      ctx.strokeStyle='oklch(0.75 0.22 320/0.55)';ctx.lineWidth=1.5;ctx.stroke();
+      ctx.beginPath();ctx.arc(hp.x,hp.y,r,0,Math.PI*2);
+      ctx.fillStyle='oklch(0.85 0.19 320)';ctx.shadowColor='oklch(0.75 0.22 320)';ctx.shadowBlur=16;ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.font="700 12px 'Space Grotesk',sans-serif";ctx.fillStyle='#fff';ctx.textAlign='center';
+      ctx.fillText('Ghatnaa Chakkara',hp.x,hp.y-r-10);
+    }
+  }
+  var st=null;
+  function tick(now){if(!st)st=now;draw((now-st)/1000);requestAnimationFrame(tick);}
+  requestAnimationFrame(tick);
+})();
+</script>
+<!-- ══ END GLOBE BANNER ══════════════════════════════════════════ -->
 
 <!-- ══ LEFT PANEL ══════════════════════════════════════════════ -->
 <!-- study panel removed — now a full nav tab -->
@@ -1547,221 +1644,115 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 <!-- ══ HOME TAB ══════════════════════════════════════════════ -->
 <div class="tab active" id="tab-home">
 
-  <!-- ══ GHATNAA CHAKKARA GLOBE BANNER ════════════════════════ -->
-  <div id="heroBanner" style="width:100%;height:460px;background:oklch(0.07 0.015 300);border-radius:20px;position:relative;overflow:hidden;box-shadow:0 20px 60px oklch(0 0 0/0.25);display:flex;align-items:center;padding:0 60px;justify-content:space-between;box-sizing:border-box;margin-bottom:16px;">
-    <div style="position:relative;max-width:620px;z-index:2;">
-      <div style="display:inline-block;background:oklch(0.7 0.22 320/0.15);border:1px solid oklch(0.7 0.22 320/0.5);border-radius:999px;padding:6px 16px;font:700 12px 'Inter',sans-serif;color:oklch(0.7 0.22 320);letter-spacing:.06em;margin-bottom:18px;">UPPSC PCS PRELIMS 2026</div>
-      <div style="font:800 54px/1.05 'Space Grotesk',sans-serif;color:#fff;letter-spacing:-.02em;">Ghatnaa Chakkara</div>
-      <div style="font:500 17px/1.5 'Inter',sans-serif;color:oklch(0.7 0.02 300);margin-top:16px;max-width:520px;">Every city in UP, connected by one prep engine. <span id="bannerQCount">1271</span> PYQs · 10 years · 1070 repeating topics.</div>
-      <div style="display:flex;gap:14px;margin-top:28px;flex-wrap:wrap;">
-        <button onclick="showTab('pyq',document.querySelector('[onclick*=pyq]'))" style="background:oklch(0.7 0.22 320);border:none;border-radius:12px;padding:14px 28px;font:800 15px 'Inter',sans-serif;color:oklch(0.07 0.015 300);cursor:pointer;">Start Practicing →</button>
-        <button id="bannerAuthBtn" onclick="openAuthModal('login')" style="background:transparent;border:1px solid oklch(0.4 0.02 300);border-radius:12px;padding:14px 28px;font:700 15px 'Inter',sans-serif;color:#fff;cursor:pointer;">Login / Register</button>
-      </div>
-      <div style="display:flex;gap:28px;margin-top:30px;align-items:flex-end;">
+  <!-- ══ HERO BANNER (home tab) ════════════════════════════════ -->
+  <div class="hero-grid-new" id="heroBanner">
+
+    <!-- Welcome card -->
+    <div class="hero-welcome">
+      <div class="hw-blob1"></div>
+      <div class="hw-blob2"></div>
+      <div class="hw-dots"></div>
+      <div class="hw-top">
         <div>
-          <div style="font:800 28px 'Space Grotesk',sans-serif;color:#fff;line-height:1;" id="bannerDaysLeft">—</div>
-          <div style="font:700 10px 'Inter',sans-serif;color:oklch(0.6 0.02 300);letter-spacing:.08em;margin-top:4px;">DAYS LEFT</div>
-          <div style="font:400 11px 'Inter',sans-serif;color:oklch(0.45 0.02 300);margin-top:2px;">till 6 Dec 2026</div>
+          <div class="hw-greet">Ghatna Chakra · UPPSC PYQ</div>
+          <div class="hw-name" id="heroBannerGreeting">Good morning! 👋</div>
+          <div class="hw-sub" id="heroUserLine">Let's practise smarter today.</div>
         </div>
-        <div style="width:1px;height:36px;background:oklch(0.25 0.02 300);flex-shrink:0;"></div>
-        <div>
-          <div style="font:800 28px 'Space Grotesk',sans-serif;color:oklch(0.7 0.22 320);line-height:1;" id="bannerQCountStat">1271</div>
-          <div style="font:600 11px 'Inter',sans-serif;color:oklch(0.6 0.02 300);margin-top:4px;">questions</div>
-        </div>
-        <div style="width:1px;height:36px;background:oklch(0.25 0.02 300);flex-shrink:0;"></div>
-        <div>
-          <div style="font:800 28px 'Space Grotesk',sans-serif;color:#fff;line-height:1;">75</div>
-          <div style="font:600 11px 'Inter',sans-serif;color:oklch(0.6 0.02 300);margin-top:4px;">UP districts</div>
+        <div class="hw-streak">
+          <div class="hw-streak-val">🔥 <span id="heroStreak">0</span></div>
+          <div class="hw-streak-lbl">Day Streak</div>
         </div>
       </div>
-    </div>
-    <div style="position:absolute;right:-40px;top:50%;transform:translateY(-50%);width:600px;height:600px;">
-      <canvas id="bannerGlobe" style="width:100%;height:100%;display:block;"></canvas>
-    </div>
-  </div>
-  <script>
-  (function() {
-    var D2R = Math.PI / 180;
-    function toXYZ(lat, lon) {
-      var phi = lat*D2R, lam = lon*D2R;
-      return [Math.cos(phi)*Math.cos(lam), Math.sin(phi), Math.cos(phi)*Math.sin(lam)];
-    }
-    function slerp(a, b, t) {
-      var dot = Math.max(-1, Math.min(1, a[0]*b[0]+a[1]*b[1]+a[2]*b[2]));
-      var theta = Math.acos(dot)*t;
-      var relX = [b[0]-a[0]*dot, b[1]-a[1]*dot, b[2]-a[2]*dot];
-      var len = Math.hypot(relX[0],relX[1],relX[2]) || 1;
-      var rel = [relX[0]/len, relX[1]/len, relX[2]/len];
-      return [a[0]*Math.cos(theta)+rel[0]*Math.sin(theta),
-              a[1]*Math.cos(theta)+rel[1]*Math.sin(theta),
-              a[2]*Math.cos(theta)+rel[2]*Math.sin(theta)];
-    }
-    function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
-    function projectXYZ(v,cx,cy,R,rotLonDeg,rotLatDeg) {
-      var lon0=rotLonDeg*D2R, phi0=rotLatDeg*D2R;
-      var u = v[0]*Math.cos(lon0)+v[2]*Math.sin(lon0);
-      var x = v[2]*Math.cos(lon0)-v[0]*Math.sin(lon0);
-      var y = v[1]*Math.cos(phi0)-u*Math.sin(phi0);
-      var z = v[1]*Math.sin(phi0)+u*Math.cos(phi0);
-      return {x:cx+x*R, y:cy-y*R, z:z};
-    }
-    var HUB = {lat:26.847, lon:80.946};
-    var CITIES = [
-      ['Delhi',28.613,77.209,1.4],['Varanasi',25.317,82.973,1.3],['Kanpur',26.449,80.332,1.1],
-      ['Agra',27.177,78.008,1.1],['Prayagraj',25.435,81.845,1.1],['Mumbai',19.076,72.877,1.2],
-      ['Kolkata',22.573,88.364,1.1],['Bengaluru',12.972,77.594,1.0],['Jaipur',26.912,75.787,1.0],
-      ['Patna',25.594,85.137,1.0],['Gorakhpur',26.760,83.374,0.9],['London',51.507,-0.128,1.0],
-      ['Dubai',25.204,55.271,1.0],['Singapore',1.352,103.820,0.9],['Tokyo',35.676,139.650,0.9],
-      ['Sydney',-33.868,151.209,0.9],['New York',40.713,-74.006,1.0]
-    ];
-    var COLORS = ['oklch(0.7 0.22 320)','oklch(0.75 0.16 210)'];
-    var HUB_V = toXYZ(HUB.lat, HUB.lon);
-    var CITY_DATA = CITIES.map(function(c,i){ return {tier:c[3], v:toXYZ(c[1],c[2]), color:COLORS[i%COLORS.length]}; });
-    var canvas = document.getElementById('bannerGlobe');
-    if (!canvas) return;
-    var ctx = canvas.getContext('2d');
-    var cssW, cssH, dpr;
-    function resize() {
-      var rect = canvas.getBoundingClientRect();
-      dpr = Math.min(window.devicePixelRatio||1, 2);
-      canvas.width  = Math.max(1, Math.floor(rect.width*dpr));
-      canvas.height = Math.max(1, Math.floor(rect.height*dpr));
-      cssW = rect.width; cssH = rect.height;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-    function drawGlobe(t) {
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      var W=cssW, H=cssH;
-      ctx.clearRect(0,0,W,H);
-      var cx=W*0.5, cy=H*0.5, R=Math.min(W,H)*0.46;
-      var rotLon=HUB.lon+(t*4.8)%360, rotLat=HUB.lat-14;
-      var bg=ctx.createRadialGradient(cx-R*0.3,cy-R*0.35,R*0.1,cx,cy,R);
-      bg.addColorStop(0,'oklch(0.22 0.03 300)');
-      bg.addColorStop(1,'oklch(0.1 0.02 300)');
-      ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
-      ctx.fillStyle=bg; ctx.fill();
-      ctx.strokeStyle='oklch(0.4 0.03 300/0.6)'; ctx.lineWidth=1.5; ctx.stroke();
-      // Grid lines
-      ctx.lineWidth=1; ctx.strokeStyle='oklch(0.42 0.02 300/0.3)';
-      for(var lat=-60;lat<=60;lat+=30){
-        var started=false; ctx.beginPath();
-        for(var i=0;i<=48;i++){
-          var p=projectXYZ(toXYZ(lat,i*7.5-180),cx,cy,R,rotLon,rotLat);
-          if(p.z>0.02){if(!started){ctx.moveTo(p.x,p.y);started=true;}else ctx.lineTo(p.x,p.y);}else started=false;
-        }
-        ctx.stroke();
-      }
-      for(var lon=-180;lon<180;lon+=30){
-        var started=false; ctx.beginPath();
-        for(var i=0;i<=24;i++){
-          var p=projectXYZ(toXYZ(i*7.5-90,lon),cx,cy,R,rotLon,rotLat);
-          if(p.z>0.02){if(!started){ctx.moveTo(p.x,p.y);started=true;}else ctx.lineTo(p.x,p.y);}else started=false;
-        }
-        ctx.stroke();
-      }
-      // Hub glow
-      var hubP=projectXYZ(HUB_V,cx,cy,R,rotLon,rotLat);
-      if(hubP.z>0){
-        var pulse=Math.sin(t*3)*0.5+0.5;
-        var gr=ctx.createRadialGradient(hubP.x,hubP.y,0,hubP.x,hubP.y,R*0.5);
-        gr.addColorStop(0,'oklch(0.7 0.22 320/'+(0.28+pulse*0.12)+')');
-        gr.addColorStop(1,'oklch(0.7 0.22 320/0)');
-        ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(hubP.x,hubP.y,R*0.5,0,Math.PI*2); ctx.fill();
-      }
-      // Arc lines
-      ctx.lineWidth=1;
-      CITY_DATA.forEach(function(c){
-        var started=false; ctx.beginPath();
-        for(var i=0;i<=24;i++){
-          var p=projectXYZ(slerp(HUB_V,c.v,i/24),cx,cy,R,rotLon,rotLat);
-          if(p.z>0.02){if(!started){ctx.moveTo(p.x,p.y);started=true;}else ctx.lineTo(p.x,p.y);}else started=false;
-        }
-        ctx.strokeStyle=c.color; ctx.globalAlpha=0.15; ctx.stroke();
-      });
-      ctx.globalAlpha=1;
-      // Particles
-      var CYCLE=2.4;
-      CITY_DATA.forEach(function(c,idx){
-        var offset=(idx/CITY_DATA.length)*CYCLE;
-        var local=((t+offset)%CYCLE)/CYCLE;
-        for(var k=3;k>=0;k--){
-          var tt=clamp(local-k*0.02,0,1);
-          var v=slerp(c.v,HUB_V,tt);
-          var p=projectXYZ(v,cx,cy,R,rotLon,rotLat);
-          if(p.z<0.02) continue;
-          ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(1,3.2-k*0.5),0,Math.PI*2);
-          ctx.fillStyle=c.color; ctx.globalAlpha=(1-k/4)*0.85;
-          ctx.shadowColor=c.color; ctx.shadowBlur=7; ctx.fill();
-        }
-        ctx.globalAlpha=1; ctx.shadowBlur=0;
-        var op=projectXYZ(c.v,cx,cy,R,rotLon,rotLat);
-        if(op.z>0.1){
-          ctx.beginPath(); ctx.arc(op.x,op.y,1.8+c.tier*1.2,0,Math.PI*2);
-          ctx.fillStyle='oklch(0.85 0.02 300)'; ctx.globalAlpha=clamp((op.z+0.05)/0.4,0.35,1)*0.85; ctx.fill();
-          ctx.globalAlpha=1;
-        }
-      });
-      // Hub dot + label
-      if(hubP.z>-0.15){
-        var pulse=Math.sin(t*3)*0.5+0.5, r=8+pulse*3;
-        ctx.beginPath(); ctx.arc(hubP.x,hubP.y,r+8+pulse*4,0,Math.PI*2);
-        ctx.strokeStyle='oklch(0.7 0.22 320/0.55)'; ctx.lineWidth=1.5; ctx.stroke();
-        ctx.beginPath(); ctx.arc(hubP.x,hubP.y,r,0,Math.PI*2);
-        ctx.fillStyle='oklch(0.85 0.19 320)'; ctx.shadowColor='oklch(0.7 0.22 320)'; ctx.shadowBlur=16; ctx.fill();
-        ctx.shadowBlur=0;
-        ctx.font="700 12px 'Space Grotesk',sans-serif"; ctx.fillStyle='#fff'; ctx.textAlign='center';
-        ctx.fillText('Ghatnaa Chakkara', hubP.x, hubP.y-r-10);
-      }
-    }
-    var startTime=null;
-    function tick(now){ if(!startTime) startTime=now; drawGlobe((now-startTime)/1000); requestAnimationFrame(tick); }
-    requestAnimationFrame(tick);
-  })();
-  </script>
-  <!-- ══ END GLOBE BANNER ════════════════════════════════════════ -->
-
-  <!-- ── COUNTDOWN + SEARCH ROW (restored) ───────────────────── -->
-  <div style="display:grid;grid-template-columns:260px 1fr;gap:14px;margin-bottom:16px;">
-
-    <div class="hero-countdown">
-      <div class="hcd-stripe"></div>
-      <div class="hcd-lbl">Days to Exam</div>
-      <div class="hcd-num" id="heroDaysLeft">—</div>
-      <div class="hcd-unit">Days Remaining</div>
-      <div class="hcd-bar"></div>
-      <div class="hcd-exam">UPPSC PCS Prelims 2026</div>
-      <div class="hcd-date">📅 6 December 2026</div>
-      <div class="hcd-urgent">⚠️ Less than 6 months!</div>
-      <div class="hcd-tip">~27 days per subject if you start now.</div>
-    </div>
-
-    <div class="srch-widget">
-      <div class="srch-widget-ico">🔍</div>
-      <div class="srch-widget-title">Find Any Question</div>
-      <div class="srch-widget-sub">Search PYQ questions instantly — type a topic, keyword, or concept.</div>
-      <div class="srch-wrap">
-        <input class="srch-inp" id="homeSearchInp" type="text"
-          placeholder="president, parliament, river…"
-          oninput="homeSearchPreview()"
-          onkeydown="if(event.key==='Enter')doSearchFromWidget()">
-        <button class="srch-btn" onclick="doSearchFromWidget()" title="Search">
-          <i class="ti ti-arrow-right"></i>
+      <div class="hw-mini-stats">
+        <div class="hw-ms">
+          <div class="hw-ms-val" id="hbAttempted">—</div>
+          <div class="hw-ms-lbl">Qs Practised</div>
+          <div class="hw-ms-delta">today's progress</div>
+        </div>
+        <div class="hw-ms">
+          <div class="hw-ms-val" id="hbAccuracy">—</div>
+          <div class="hw-ms-lbl">Accuracy</div>
+          <div class="hw-ms-delta">target: 88%</div>
+        </div>
+        <div class="hw-ms">
+          <div class="hw-ms-val" id="hbScore">—</div>
+          <div class="hw-ms-lbl">Proj. Score</div>
+          <div class="hw-ms-delta" style="color:#FCD34D;">need 110/150</div>
+        </div>
+      </div>
+      <div class="hw-prog">
+        <div class="hw-prog-row">
+          <span class="hw-prog-lbl">📚 Syllabus coverage</span>
+          <span class="hw-prog-pct" id="heroPrepPct">—%</span>
+        </div>
+        <div class="hw-prog-track">
+          <div class="hw-prog-fill" id="heroPrepBar" style="width:0%;"></div>
+        </div>
+      </div>
+      <div class="hw-btns">
+        <button class="hw-btn hw-btn-white" onclick="showTab('pyq',document.querySelector('[onclick*=pyq]'))">
+          <i class="ti ti-books" aria-hidden="true"></i> Practice PYQ
+        </button>
+        <button class="hw-btn hw-btn-yellow" onclick="showTab('daily-quiz',document.querySelector('[onclick*=daily-quiz]'))">
+          <i class="ti ti-bolt" aria-hidden="true"></i> Daily Quiz
+        </button>
+        <button class="hw-btn hw-btn-ghost" onclick="showTab('ca',document.querySelector('[onclick*=\'ca\']'))">
+          <i class="ti ti-news" aria-hidden="true"></i> Today's CA
         </button>
       </div>
-      <div class="srch-chips-wrap">
-        <span class="srch-chip" onclick="quickSearch('parliament')">🏛 Parliament</span>
-        <span class="srch-chip" onclick="quickSearch('president')">👤 President</span>
-        <span class="srch-chip" onclick="quickSearch('river')">🌊 River</span>
-        <span class="srch-chip" onclick="quickSearch('amendment')">📜 Amendment</span>
-        <span class="srch-chip" onclick="quickSearch('high court')">⚖️ High Court</span>
-        <span class="srch-chip" onclick="quickSearch('article')">📑 Article</span>
-      </div>
-      <div class="srch-result-label" id="homeSearchLabel"></div>
+      <span id="hbCA" style="display:none;">0</span>
     </div>
 
+    <!-- Right column: Countdown + Search -->
+    <div class="hero-right-col">
+      <div class="hero-countdown">
+        <div class="hcd-stripe"></div>
+        <div class="hcd-lbl">Days to Exam</div>
+        <div class="hcd-num" id="heroDaysLeft">—</div>
+        <div class="hcd-unit">Days Remaining</div>
+        <div class="hcd-bar"></div>
+        <div class="hcd-exam">UPPSC PCS Prelims 2026</div>
+        <div class="hcd-date">📅 6 December 2026</div>
+        <div class="hcd-urgent">⚠️ Less than 6 months!</div>
+        <div class="hcd-tip">~27 days per subject if you start now.</div>
+      </div>
+      <div class="srch-widget">
+        <div class="srch-widget-ico">🔍</div>
+        <div class="srch-widget-title">Find Any Question</div>
+        <div class="srch-widget-sub">Search 974 PYQ questions instantly — type a topic, keyword, or concept.</div>
+        <div class="srch-wrap">
+          <input class="srch-inp" id="homeSearchInp" type="text"
+            placeholder="president, parliament, river…"
+            oninput="homeSearchPreview()"
+            onkeydown="if(event.key==='Enter')doSearchFromWidget()">
+          <button class="srch-btn" onclick="doSearchFromWidget()" title="Search">
+            <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+        <div class="srch-chips-wrap">
+          <span class="srch-chip" onclick="quickSearch('parliament')">🏛 Parliament</span>
+          <span class="srch-chip" onclick="quickSearch('president')">👤 President</span>
+          <span class="srch-chip" onclick="quickSearch('river')">🌊 River</span>
+          <span class="srch-chip" onclick="quickSearch('amendment')">📜 Amendment</span>
+          <span class="srch-chip" onclick="quickSearch('high court')">⚖️ High Court</span>
+          <span class="srch-chip" onclick="quickSearch('article')">📑 Article</span>
+        </div>
+        <div class="srch-result-label" id="homeSearchLabel"></div>
+      </div>
+    </div><!-- /.hero-right-col -->
+
   </div>
-  <!-- ── END COUNTDOWN + SEARCH ROW ──────────────────────────── -->
+
+  <!-- quote band -->
+  <div class="hw-quote-band">
+    <div class="hw-q-mark">"</div>
+    <div>
+      <div class="hw-q-text" id="heroQuote">Success is the sum of small efforts repeated day in and day out.</div>
+      <div class="hw-q-auth" id="heroQuoteAuth">— Daily Motivation</div>
+    </div>
+  </div>
+  <!-- ══ END HERO BANNER ════════════════════════════════════════ -->
+
 
   <!-- ── DAILY DIGEST STRIP ───────────────────────────────── -->
   <div class="digest-section" id="digestSection" style="display:none;">
