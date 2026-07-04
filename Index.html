@@ -3569,7 +3569,6 @@ function initPortal() {
 // ══════════════════════════════════════════════════════════════
 // ── Repeat Question Compare Modal ────────────────────────────
 function openRepeatModal(qId) {
-  var currentUser = window._currentUser;   // bridge from auth block
   const qs = (typeof allQuestions !== 'undefined') ? allQuestions : [];
   const clicked = qs.find(q => q.id === qId);
   if (!clicked) return;
@@ -6107,7 +6106,6 @@ async function saveAttemptToServer(data) {
   try {
     await fetch('/api/saveAttempt', {
       method: 'POST',
-      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
@@ -6116,10 +6114,9 @@ async function saveAttemptToServer(data) {
 }
 
 async function refreshDashboardStats() {
-  var currentUser = window._currentUser;
   if (!currentUser) return;
   try {
-    const res  = await fetch('/api/myStats', { credentials: 'include' });
+    const res  = await fetch('/api/myStats');
     const data = await res.json();
     if (data.error) return;
 
@@ -7299,7 +7296,6 @@ function toggleBookmark(headline) {
 function loadProgress() {
   const prompt = document.getElementById("progressLoginPrompt");
   const content = document.getElementById("progressContent");
-  var currentUser = window._currentUser;   // bridge: auth set in second script block
   if (!currentUser) {
     if (prompt) prompt.style.display = "";
     if (content) content.style.display = "none";
@@ -7310,7 +7306,7 @@ function loadProgress() {
   const tl = document.getElementById("timelineContent");
   if (tl) tl.innerHTML = `<div class="loading"><i class="ti ti-loader"></i>Loading your progress…</div>`;
 
-  fetch('/api/trackProgress', { credentials: 'include' })
+  fetch('/api/trackProgress')
     .then(r => r.json())
     .then(data => {
       if (data.error) {
@@ -8025,7 +8021,7 @@ function openExamDateModal() {
   const d = prompt('Enter your exam date (YYYY-MM-DD):');
   if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
   fetch('/api/setExamDate', {
-    method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+    method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ examDate: d })
   }).then(r=>r.json()).then(()=>{ showToast('Exam date saved!'); loadProgress(); });
 }
@@ -10432,6 +10428,7 @@ window._currentUser = null;
 var currentUser = null;  // keep local alias for auth UI
 
 function _refreshAuthTabs() {
+  // Re-load any data tabs that depend on auth state
   var progressTab = document.getElementById('tab-progress');
   if (progressTab && progressTab.classList.contains('active')) {
     if (typeof loadProgress === 'function') loadProgress();
@@ -10442,13 +10439,29 @@ function _refreshAuthTabs() {
   }
 }
 
-async function doLogout() {
-  await fetch("/api/logout", { method:"POST", credentials:'include' });
-  window._currentUser = null;
-  currentUser = null;
-  updateAuthNavBtn();
-  updateTrialBanner();
-  if (typeof renderQuestions === 'function') renderQuestions();
+function _updateNavBtn(user) {
+  var btn = document.getElementById('authNavBtn');
+  if (!btn) return;
+  if (user) {
+    btn.textContent = '👤 ' + (user.name || user.email).split(' ')[0];
+    btn.classList.add('signed-in');
+    btn.title = 'Click to logout';
+    btn.onclick = function() {
+      fetch('/api/logout', { method:'POST', credentials:'include' }).finally(function() {
+        window._currentUser = null; currentUser = null;
+        btn.textContent = 'Login / Register';
+        btn.classList.remove('signed-in');
+        btn.title = '';
+        btn.onclick = function(){ openAuthModal('login'); };
+        if (typeof renderQuestions === 'function') renderQuestions();
+      });
+    };
+  } else {
+    btn.textContent = 'Login / Register';
+    btn.classList.remove('signed-in');
+    btn.title = '';
+    btn.onclick = function(){ openAuthModal('login'); };
+  }
 }
 
 function onAuthSuccess(user) {
@@ -10456,50 +10469,9 @@ function onAuthSuccess(user) {
   currentUser = user;
   closeAuthModal();
   resetLockedCache();
-  updateAuthNavBtn();
-  updateTrialBanner();
+  _updateNavBtn(user);
   if (typeof renderQuestions === 'function') renderQuestions();
   _refreshAuthTabs();
-}
-
-function updateAuthNavBtn() {
-  var btn = document.getElementById("authNavBtn");
-  if (!btn) return;
-  if (currentUser) {
-    btn.textContent = "👤 " + (currentUser.name || currentUser.email).split(" ")[0];
-    btn.classList.add("signed-in");
-    btn.onclick = doLogout;
-    btn.title = "Click to logout";
-  } else {
-    btn.textContent = "Login / Register";
-    btn.classList.remove("signed-in");
-    btn.onclick = function(){ openAuthModal("login"); };
-    btn.title = "";
-  }
-}
-
-function updateTrialBanner() {
-  var banner = document.getElementById("trialBanner");
-  if (!banner) {
-    banner = document.createElement("div");
-    banner.id = "trialBanner";
-    banner.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:8000;text-align:center;padding:9px 16px;font-size:12px;font-weight:600;display:none;";
-    document.body.appendChild(banner);
-  }
-  if (!currentUser) { banner.style.display = "none"; return; }
-  var status = currentUser.status;
-  if (status === "trial" && currentUser.trialExpiresOn) {
-    var days = Math.ceil((new Date(currentUser.trialExpiresOn) - new Date()) / 86400000);
-    if (days > 0) {
-      banner.style.cssText += "background:#f59e0b;color:#000;display:block;";
-      banner.innerHTML = "⏳ Free trial: <strong>" + days + " day" + (days!==1?'s':'') + " left</strong> — Subscribe for ₹100/month to keep full access";
-    } else { banner.style.display = "none"; }
-  } else if (status === "expired") {
-    banner.style.cssText += "background:#ef4444;color:#fff;display:block;";
-    banner.innerHTML = "🔒 Your trial has ended. <strong>Subscribe for ₹100/month</strong> to unlock full access";
-  } else {
-    banner.style.display = "none";
-  }
 }
 
 // Restore session on page load
@@ -10511,8 +10483,7 @@ function updateTrialBanner() {
         window._currentUser = data.user;
         currentUser = data.user;
         resetLockedCache();
-        updateAuthNavBtn();
-        updateTrialBanner();
+        _updateNavBtn(data.user);
         _refreshAuthTabs();
       }
     })
