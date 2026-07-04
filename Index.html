@@ -5596,6 +5596,7 @@ function ycLoadList(yr, type) {
 function renderYearProgressBadges() {
   var strip = document.getElementById('ycPracticeStrip');
   if (!strip || typeof allQuestions==='undefined') return;
+  // Build total-per-year from allQuestions
   var qByYear = {};
   allQuestions.forEach(function(q){
     var yr = String(q.year||''); if(!yr) return;
@@ -5604,13 +5605,18 @@ function renderYearProgressBadges() {
   });
   var years = Object.keys(qByYear).sort();
   if (!years.length) return;
+  // Use server yearMap (window._tpYm) when available — same source as My Progress
+  var serverYm = window._tpYm || null;
   var html = years.map(function(yr){
     var total = qByYear[yr];
     var done = 0;
-    attemptedQIds.forEach(function(id){
-      var q = (allQuestions||[]).find(function(x){ return String(x.id)===String(id) && String(x.year)===yr; });
-      if(q) done++;
-    });
+    if (serverYm && serverYm[yr]) {
+      done = serverYm[yr].done || 0;
+    } else {
+      // fallback: count from localStorage attemptedQIds per year
+      var yearIds = new Set(allQuestions.filter(function(q){ return String(q.year)===yr; }).map(function(q){ return String(q.id); }));
+      attemptedQIds.forEach(function(id){ if(yearIds.has(String(id))) done++; });
+    }
     var pct = total>0 ? Math.round(done/total*100) : 0;
     var col = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--border)';
     return '<div style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;padding:4px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-right:6px;">'
