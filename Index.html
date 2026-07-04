@@ -2155,6 +2155,12 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   <!-- Year completion progress strip -->
   <div id="ycPracticeStrip" style="display:none;overflow-x:auto;padding:0 0 10px;"></div>
 
+  <!-- Year-wise completion full section (PYQ Practice) -->
+  <div id="pcSectionWrap" style="display:none;margin-bottom:16px;">
+    <div class="tp-sec-hdr" style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:10px;">&#128197; Year-wise Completion</div>
+    <div id="pcCardsContainer"><div style="font-size:12px;color:var(--text3);padding:4px 0;">Loading…</div></div>
+  </div>
+
   <div class="pyq-year-tabs" id="pyqYearTabs">
     <button class="pyq-yr-btn active" id="pyq-yr-all" onclick="selectPyqYear('all',this)">All Years</button>
     <!-- populated by JS after questions load -->
@@ -5479,12 +5485,20 @@ function loadQuestions() {
       renderWeightTrend(allQuestions);
       renderSubjectBreakdown(allQuestions);
       renderYearProgressBadges();
+      // If My Progress already rendered without allQuestions, patch in year completion now
+      patchYearCompletionSection('ycCardsContainer', 'yc');
+      patchYearCompletionSection('pcCardsContainer', 'pc');
       // Fetch server yearMap for PYQ Practice strip (if not already loaded)
       if (!window._tpYm && window._currentUser) {
         fetch('/api/trackProgress', { credentials: 'include' })
           .then(function(r){ return r.json(); })
           .then(function(data){
-            if (data.yearMap) { window._tpYm = data.yearMap; renderYearProgressBadges(); }
+            if (data.yearMap) {
+              window._tpYm = data.yearMap;
+              renderYearProgressBadges();
+              patchYearCompletionSection('ycCardsContainer', 'yc');
+              patchYearCompletionSection('pcCardsContainer', 'pc');
+            }
           })
           .catch(function(){});
       }
@@ -5555,49 +5569,52 @@ function selectPyqYear(year, btn) {
   updatePyqSidebarCounts();
 }
 
-// ── Year-wise Completion helpers ─────────────────────────────
-function ycToggle(yr) {
-  var body = document.getElementById('yc_body_'+yr);
-  var chev = document.getElementById('yc_chev_'+yr);
+// ── Year-wise Completion helpers (ns = 'yc' for My Progress, 'pc' for PYQ Practice) ──
+function ycToggle(yr, ns) {
+  ns = ns || 'yc';
+  var body = document.getElementById(ns+'_body_'+yr);
+  var chev = document.getElementById(ns+'_chev_'+yr);
   if (!body) return;
   var isOpen = body.style.display !== 'none';
   body.style.display = isOpen ? 'none' : '';
   if (chev) chev.style.transform = isOpen ? '' : 'rotate(90deg)';
-  if (!isOpen) ycShowType(yr, 'notdone');
+  if (!isOpen) ycShowType(yr, 'notdone', ns);
 }
-function ycShowType(yr, type) {
+function ycShowType(yr, type, ns) {
+  ns = ns || 'yc';
   ['notdone','attempted'].forEach(function(t) {
-    var el = document.getElementById('yct_'+t+'_'+yr);
+    var el = document.getElementById(ns+'t_'+t+'_'+yr);
     if (el) el.classList.remove('active-rem','active-done');
   });
-  var active = document.getElementById('yct_'+type+'_'+yr);
+  var active = document.getElementById(ns+'t_'+type+'_'+yr);
   if (active) active.classList.add(type==='notdone'?'active-rem':'active-done');
-  var subtabs = document.getElementById('yc_subtabs_'+yr);
+  var subtabs = document.getElementById(ns+'_subtabs_'+yr);
   if (subtabs) subtabs.style.display = type==='attempted' ? 'flex' : 'none';
   if (type==='notdone') {
-    ycLoadList(yr, 'notdone', null);
+    ycLoadList(yr, 'notdone', null, ns);
   } else {
-    // activate Correct sub-tab by default
     ['correct','wrong'].forEach(function(t) {
-      var el = document.getElementById('yct_'+t+'_'+yr);
+      var el = document.getElementById(ns+'t_'+t+'_'+yr);
       if (el) el.classList.remove('active-done','active-wrong');
     });
-    var cEl = document.getElementById('yct_correct_'+yr);
+    var cEl = document.getElementById(ns+'t_correct_'+yr);
     if (cEl) cEl.classList.add('active-done');
-    ycLoadList(yr, 'attempted', 'correct');
+    ycLoadList(yr, 'attempted', 'correct', ns);
   }
 }
-function ycShowSubType(yr, sub) {
+function ycShowSubType(yr, sub, ns) {
+  ns = ns || 'yc';
   ['correct','wrong'].forEach(function(t) {
-    var el = document.getElementById('yct_'+t+'_'+yr);
+    var el = document.getElementById(ns+'t_'+t+'_'+yr);
     if (el) el.classList.remove('active-done','active-wrong');
   });
-  var active = document.getElementById('yct_'+sub+'_'+yr);
+  var active = document.getElementById(ns+'t_'+sub+'_'+yr);
   if (active) active.classList.add(sub==='correct'?'active-done':'active-wrong');
-  ycLoadList(yr, 'attempted', sub);
+  ycLoadList(yr, 'attempted', sub, ns);
 }
-function ycLoadList(yr, type, sub) {
-  var listEl = document.getElementById('yc_list_'+yr);
+function ycLoadList(yr, type, sub, ns) {
+  ns = ns || 'yc';
+  var listEl = document.getElementById(ns+'_list_'+yr);
   if (!listEl) return;
   var qs = (typeof allQuestions!=='undefined'?allQuestions:[]).filter(function(q){ return String(q.year)===String(yr); });
   var resultMap = window._ycResultMap || {};
@@ -5627,6 +5644,56 @@ function ycLoadList(yr, type, sub) {
   }).join('');
   if (filtered.length>60) html += '<div style="font-size:11px;color:var(--text3);text-align:center;padding:6px 0;">+'+(filtered.length-60)+' more</div>';
   listEl.innerHTML = html;
+}
+
+function patchYearCompletionSection(containerId, ns) {
+  containerId = containerId || 'ycCardsContainer';
+  ns = ns || 'yc';
+  // Called after allQuestions loads — fills in year completion if already rendered
+  if ((!window._tpData && !window._tpYm) || !allQuestions || !allQuestions.length) return;
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  if (container.querySelector('.yc-card')) return; // already done
+  var ym = window._tpYmForPatch || (window._tpData && window._tpData.yearMap) || window._tpYm || {};
+  var qByYear = {};
+  allQuestions.forEach(function(q) {
+    var yr = String(q.year||''); if (!yr) return;
+    if (!qByYear[yr]) qByYear[yr] = [];
+    qByYear[yr].push(q);
+  });
+  var ycCards = Object.keys(qByYear).sort().map(function(yr) {
+    var total = qByYear[yr].length;
+    var ymData = ym[yr] || {};
+    var done = ymData.done || 0;
+    var pct = total > 0 ? Math.round(done/total*100) : 0;
+    var rem = total - done;
+    var barCol = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--border)';
+    var pctCol = pct>=80?'#1D9E75':pct>=40?'#BA7517':pct>0?'#E24B4A':'var(--text3)';
+    var statTxt = pct===0 ? 'Not started' : '<span style="color:'+pctCol+';font-weight:600;">'+pct+'% done</span>';
+    return '<div class="yc-card" id="'+ns+'_'+yr+'">'
+      +'<div class="yc-row" data-yr="'+yr+'" data-ns="'+ns+'" onclick="ycToggle(this.dataset.yr,this.dataset.ns)">'
+      +'<div><div class="yc-yr">'+yr+'</div><div class="yc-total">'+total+' Qs</div></div>'
+      +'<div class="yc-bar-wrap">'
+      +'<div style="height:6px;border-radius:3px;background:var(--border);overflow:hidden;">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+barCol+';border-radius:3px;"></div></div>'
+      +'<div class="yc-stats">'+statTxt+(rem>0?' &nbsp;<span style="color:var(--text3);">'+rem+' left</span>':'')+'</div>'
+      +'</div>'
+      +'<i class="ti ti-chevron-right" id="'+ns+'_chev_'+yr+'" style="font-size:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;"></i>'
+      +'</div>'
+      +'<div class="yc-body" id="'+ns+'_body_'+yr+'" style="display:none;border-top:1px solid var(--border);padding:12px 16px;">'
+      +'<div style="display:flex;gap:6px;margin-bottom:10px;">'
+      +'<button class="yc-tab active-rem" id="'+ns+'t_notdone_'+yr+'" data-yr="'+yr+'" data-tp="notdone" data-ns="'+ns+'" onclick="ycShowType(this.dataset.yr,this.dataset.tp,this.dataset.ns)">&#9744; Not Attempted ('+rem+')</button>'
+      +'<button class="yc-tab" id="'+ns+'t_attempted_'+yr+'" data-yr="'+yr+'" data-tp="attempted" data-ns="'+ns+'" onclick="ycShowType(this.dataset.yr,this.dataset.tp,this.dataset.ns)">&#128203; Attempted ('+done+')</button>'
+      +'</div>'
+      +'<div id="'+ns+'_subtabs_'+yr+'" style="display:none;flex-direction:row;gap:6px;margin-bottom:10px;">'
+      +'<button class="yc-tab active-done" id="'+ns+'t_correct_'+yr+'" data-yr="'+yr+'" data-stp="correct" data-ns="'+ns+'" onclick="ycShowSubType(this.dataset.yr,this.dataset.stp,this.dataset.ns)">&#10003; Correct ('+(ymData.correct||0)+')</button>'
+      +'<button class="yc-tab" id="'+ns+'t_wrong_'+yr+'" data-yr="'+yr+'" data-stp="wrong" data-ns="'+ns+'" onclick="ycShowSubType(this.dataset.yr,this.dataset.stp,this.dataset.ns)">&#10007; Wrong ('+(ymData.wrong||0)+')</button>'
+      +'</div>'
+      +'<div class="yc-list" id="'+ns+'_list_'+yr+'"></div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+  container.innerHTML = ycCards;
 }
 
 function renderYearProgressBadges() {
@@ -5664,6 +5731,8 @@ function renderYearProgressBadges() {
   }).join('');
   strip.innerHTML = html;
   strip.style.display = '';
+  var pcWrap = document.getElementById('pcSectionWrap');
+  if (pcWrap) pcWrap.style.display = '';
 }
 
 function buildYearTabs() {
@@ -7780,51 +7849,12 @@ function renderServerProgress(data) {
   });
   window._ycResultMap = qResultMap;
 
-  var secYearCompletion = '';
-  if (typeof allQuestions !== 'undefined' && allQuestions.length > 0) {
-    var qByYear = {};
-    allQuestions.forEach(function(q) {
-      var yr = String(q.year||''); if (!yr) return;
-      if (!qByYear[yr]) qByYear[yr] = [];
-      qByYear[yr].push(q);
-    });
-    var ycCards = Object.keys(qByYear).sort().map(function(yr) {
-      var total = qByYear[yr].length;
-      var ymData = ym[yr] || {};
-      var done = ymData.done || 0;
-      var pct = total > 0 ? Math.round(done/total*100) : 0;
-      var rem = total - done;
-      var barCol = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--border)';
-      var pctCol = pct>=80?'#1D9E75':pct>=40?'#BA7517':pct>0?'#E24B4A':'var(--text3)';
-      var statTxt = pct===0 ? 'Not started' : '<span style="color:'+pctCol+';font-weight:600;">'+pct+'% done</span>';
-      return '<div class="yc-card" id="yc_'+yr+'">'
-        +'<div class="yc-row" data-yr="'+yr+'" onclick="ycToggle(this.dataset.yr)">'
-        +'<div><div class="yc-yr">'+yr+'</div><div class="yc-total">'+total+' Qs</div></div>'
-        +'<div class="yc-bar-wrap">'
-        +'<div style="height:6px;border-radius:3px;background:var(--border);overflow:hidden;">'
-        +'<div style="height:100%;width:'+pct+'%;background:'+barCol+';border-radius:3px;"></div></div>'
-        +'<div class="yc-stats">'+statTxt
-        +(rem>0?' &nbsp;<span style="color:var(--text3);">'+rem+' left</span>':'')+'</div>'
-        +'</div>'
-        +'<i class="ti ti-chevron-right" id="yc_chev_'+yr+'" style="font-size:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;"></i>'
-        +'</div>'
-        +'<div class="yc-body" id="yc_body_'+yr+'" style="display:none;border-top:1px solid var(--border);padding:12px 16px;">'
-        +'<div style="display:flex;gap:6px;margin-bottom:10px;">'
-        +'<button class="yc-tab active-rem" id="yct_notdone_'+yr+'" data-yr="'+yr+'" data-tp="notdone" onclick="ycShowType(this.dataset.yr,this.dataset.tp)">⬜ Not Attempted ('+rem+')</button>'
-        +'<button class="yc-tab" id="yct_attempted_'+yr+'" data-yr="'+yr+'" data-tp="attempted" onclick="ycShowType(this.dataset.yr,this.dataset.tp)">📋 Attempted ('+done+')</button>'
-        +'</div>'
-        +'<div id="yc_subtabs_'+yr+'" style="display:none;flex-direction:row;gap:6px;margin-bottom:10px;">'
-        +'<button class="yc-tab active-done" id="yct_correct_'+yr+'" data-yr="'+yr+'" data-stp="correct" onclick="ycShowSubType(this.dataset.yr,this.dataset.stp)">✓ Correct ('+(ymData.correct||0)+')</button>'
-        +'<button class="yc-tab" id="yct_wrong_'+yr+'" data-yr="'+yr+'" data-stp="wrong" onclick="ycShowSubType(this.dataset.yr,this.dataset.stp)">✗ Wrong ('+(ymData.wrong||0)+')</button>'
-        +'</div>'
-        +'<div class="yc-list" id="yc_list_'+yr+'"></div>'
-        +'</div>'
-        +'</div>';
-    }).join('');
-    secYearCompletion = '<div class="tp-section">'
-      +'<div class="tp-sec-hdr">📅 Year-wise Completion</div>'
-      +ycCards+'</div>';
-  }
+  // Always emit the wrapper; cards filled by patchYearCompletionSection after innerHTML
+  window._tpYmForPatch = ym;
+  var secYearCompletion = '<div class="tp-section" id="ycSectionWrap">'
+    +'<div class="tp-sec-hdr">📅 Year-wise Completion</div>'
+    +'<div id="ycCardsContainer"><div style="font-size:12px;color:var(--text3);padding:4px 0;">Loading…</div></div>'
+    +'</div>';
 
   // ── CSS ──────────────────────────────────────────────────────
   var css = '<style>'
@@ -7895,6 +7925,8 @@ function renderServerProgress(data) {
     +'</style>';
 
   tl.innerHTML = css + secTimeline + secYearCompletion + sec2 + sec9 + sec3 + sec5 + sec7;
+  patchYearCompletionSection('ycCardsContainer', 'yc');
+  patchYearCompletionSection('pcCardsContainer', 'pc');
 
   // ── Mock history q-panels: attach after innerHTML ───────────────
   tl.querySelectorAll('.tp5btn').forEach(function(btn) {
