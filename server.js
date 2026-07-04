@@ -2,7 +2,7 @@
 // UPPSC STUDY PORTAL — Local Dev Server
 // Run: node server.js  →  http://localhost:3000
 // ============================================================
-require('dotenv').config();   // loads .env when running locally
+try { require('dotenv').config(); } catch(_) {}  // loads .env locally; no-op on Railway
 
 const express      = require('express');
 const fs           = require('fs');
