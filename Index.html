@@ -10574,4 +10574,30 @@ async function doSendOTP() {
     const data = await res.json();
     if (!res.ok) { document.getElementById('fpErr1').textContent = data.error || 'Failed'; }
     else { showForgotStep(2); }
-  } catch(e) { document.getElementById('fpErr1').textContent = 'Server error, try ag
+  } catch(e) { document.getElementById('fpErr1').textContent = 'Server error, try again'; }
+  finally { btn.disabled = false; btn.textContent = 'Send OTP'; }
+}
+
+async function doResetPassword() {
+  const otp     = document.getElementById('fpOTP').value.trim();
+  const newPwd  = document.getElementById('fpNewPass').value;
+  const confirm = document.getElementById('fpConfPass').value;
+  if (!otp)               return document.getElementById('fpErr2').textContent = 'Enter OTP';
+  if (!newPwd)            return document.getElementById('fpErr2').textContent = 'Enter new password';
+  if (newPwd !== confirm) return document.getElementById('fpErr2').textContent = 'Passwords do not match';
+  const btn = document.querySelector('#forgotStep2 .auth-btn');
+  btn.disabled = true; btn.textContent = 'Resetting…';
+  try {
+    const res  = await fetch('/api/reset-password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:_fpEmail, otp, newPassword:newPwd})
+    });
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('fpErr2').textContent = data.error || 'Failed'; }
+    else { showForgotStep(3); }
+  } catch(e) { document.getElementById('fpErr2').textContent = 'Server error, try again'; }
+  finally { btn.disabled = false; btn.textContent = 'Reset Password'; }
+}
+</script>
+</body>
+</html>
