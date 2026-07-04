@@ -5563,36 +5563,63 @@ function ycToggle(yr) {
   var isOpen = body.style.display !== 'none';
   body.style.display = isOpen ? 'none' : '';
   if (chev) chev.style.transform = isOpen ? '' : 'rotate(90deg)';
-  if (!isOpen) ycLoadList(yr, 'rem');
+  if (!isOpen) ycShowType(yr, 'notdone');
 }
-function ycSwitchTab(yr, type) {
-  ['rem','done'].forEach(function(t) {
+function ycShowType(yr, type) {
+  ['notdone','attempted'].forEach(function(t) {
     var el = document.getElementById('yct_'+t+'_'+yr);
-    if (el) { el.classList.remove('active-rem','active-done'); }
+    if (el) el.classList.remove('active-rem','active-done');
   });
   var active = document.getElementById('yct_'+type+'_'+yr);
-  if (active) active.classList.add('active-'+type);
-  ycLoadList(yr, type);
+  if (active) active.classList.add(type==='notdone'?'active-rem':'active-done');
+  var subtabs = document.getElementById('yc_subtabs_'+yr);
+  if (subtabs) subtabs.style.display = type==='attempted' ? 'flex' : 'none';
+  if (type==='notdone') {
+    ycLoadList(yr, 'notdone', null);
+  } else {
+    // activate Correct sub-tab by default
+    ['correct','wrong'].forEach(function(t) {
+      var el = document.getElementById('yct_'+t+'_'+yr);
+      if (el) el.classList.remove('active-done','active-wrong');
+    });
+    var cEl = document.getElementById('yct_correct_'+yr);
+    if (cEl) cEl.classList.add('active-done');
+    ycLoadList(yr, 'attempted', 'correct');
+  }
 }
-function ycLoadList(yr, type) {
+function ycShowSubType(yr, sub) {
+  ['correct','wrong'].forEach(function(t) {
+    var el = document.getElementById('yct_'+t+'_'+yr);
+    if (el) el.classList.remove('active-done','active-wrong');
+  });
+  var active = document.getElementById('yct_'+sub+'_'+yr);
+  if (active) active.classList.add(sub==='correct'?'active-done':'active-wrong');
+  ycLoadList(yr, 'attempted', sub);
+}
+function ycLoadList(yr, type, sub) {
   var listEl = document.getElementById('yc_list_'+yr);
   if (!listEl) return;
   var qs = (typeof allQuestions!=='undefined'?allQuestions:[]).filter(function(q){ return String(q.year)===String(yr); });
   var resultMap = window._ycResultMap || {};
-  var filtered = type==='rem'
-    ? qs.filter(function(q){ return !attemptedQIds.has(String(q.id)); })
-    : qs.filter(function(q){ return attemptedQIds.has(String(q.id)); });
+  var filtered;
+  if (type==='notdone') {
+    filtered = qs.filter(function(q){ return !attemptedQIds.has(String(q.id)); });
+  } else if (sub==='correct') {
+    filtered = qs.filter(function(q){ return attemptedQIds.has(String(q.id)) && resultMap[String(q.id)]==='correct'; });
+  } else {
+    filtered = qs.filter(function(q){ return attemptedQIds.has(String(q.id)) && resultMap[String(q.id)]!=='correct'; });
+  }
   if (!filtered.length) {
-    listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0;">'+(type==='rem'?'All questions completed! 🎉':'No questions attempted yet.')+'</div>';
+    var msgs = { notdone:'All done for this year! 🎉', correct:'No correct answers yet.', wrong:'No wrong answers — great!' };
+    listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0;">'+(msgs[sub||type]||'No questions found.')+'</div>';
     return;
   }
+  var icon = type==='notdone'
+    ? '<i class="ti ti-circle-dashed" style="color:var(--text3);font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>'
+    : sub==='correct'
+      ? '<i class="ti ti-circle-check" style="color:#1D9E75;font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>'
+      : '<i class="ti ti-circle-x" style="color:#E24B4A;font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>';
   var html = filtered.slice(0,60).map(function(q) {
-    var res = resultMap[String(q.id)];
-    var icon = type==='rem'
-      ? '<i class="ti ti-circle-dashed" style="color:var(--text3);font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>'
-      : (res==='correct'
-        ? '<i class="ti ti-circle-check" style="color:#1D9E75;font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>'
-        : '<i class="ti ti-circle-x" style="color:#E24B4A;font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>');
     return '<div class="yc-q-item">'+icon
       +'<div><div style="color:var(--text);">'+(q.question||'Q#'+q.id)+'</div>'
       +'<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+(q.subject||'')+' · Q#'+q.id+'</div></div>'
@@ -7783,8 +7810,12 @@ function renderServerProgress(data) {
         +'</div>'
         +'<div class="yc-body" id="yc_body_'+yr+'" style="display:none;border-top:1px solid var(--border);padding:12px 16px;">'
         +'<div style="display:flex;gap:6px;margin-bottom:10px;">'
-        +'<button class="yc-tab yc-tab-rem active-rem" id="yct_rem_'+yr+'" data-yr="'+yr+'" data-tp="rem" onclick="ycSwitchTab(this.dataset.yr,this.dataset.tp)">⏳ Remaining ('+rem+')</button>'
-        +'<button class="yc-tab yc-tab-done" id="yct_done_'+yr+'" data-yr="'+yr+'" data-tp="done" onclick="ycSwitchTab(this.dataset.yr,this.dataset.tp)">✅ Completed ('+done+')</button>'
+        +'<button class="yc-tab active-rem" id="yct_notdone_'+yr+'" data-yr="'+yr+'" data-tp="notdone" onclick="ycShowType(this.dataset.yr,this.dataset.tp)">⬜ Not Attempted ('+rem+')</button>'
+        +'<button class="yc-tab" id="yct_attempted_'+yr+'" data-yr="'+yr+'" data-tp="attempted" onclick="ycShowType(this.dataset.yr,this.dataset.tp)">📋 Attempted ('+done+')</button>'
+        +'</div>'
+        +'<div id="yc_subtabs_'+yr+'" style="display:none;flex-direction:row;gap:6px;margin-bottom:10px;">'
+        +'<button class="yc-tab active-done" id="yct_correct_'+yr+'" data-yr="'+yr+'" data-stp="correct" onclick="ycShowSubType(this.dataset.yr,this.dataset.stp)">✓ Correct ('+(ymData.correct||0)+')</button>'
+        +'<button class="yc-tab" id="yct_wrong_'+yr+'" data-yr="'+yr+'" data-stp="wrong" onclick="ycShowSubType(this.dataset.yr,this.dataset.stp)">✗ Wrong ('+(ymData.wrong||0)+')</button>'
         +'</div>'
         +'<div class="yc-list" id="yc_list_'+yr+'"></div>'
         +'</div>'
@@ -7858,6 +7889,7 @@ function renderServerProgress(data) {
     +'.yc-tab{font-size:11px;padding:3px 10px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--text2);cursor:pointer;font-weight:500;}'
     +'.yc-tab.active-rem{background:#fff5f5;color:#993C1D;border-color:#F5C4B3;}'
     +'.yc-tab.active-done{background:#f0fdf4;color:#0F6E56;border-color:#9FE1CB;}'
+    +'.yc-tab.active-wrong{background:#fff5f5;color:#993C1D;border-color:#F5C4B3;}'
     +'.yc-q-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:7px;border:1px solid var(--border);background:var(--bg);margin-bottom:5px;font-size:12px;line-height:1.5;}'
     +'.yc-list{max-height:240px;overflow-y:auto;}'
     +'</style>';
