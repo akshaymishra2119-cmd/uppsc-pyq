@@ -1721,6 +1721,48 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   </script>
   <!-- ══ END GLOBE BANNER ════════════════════════════════════════ -->
 
+  <!-- ── COUNTDOWN + SEARCH ROW (restored) ───────────────────── -->
+  <div style="display:grid;grid-template-columns:260px 1fr;gap:14px;margin-bottom:16px;">
+
+    <div class="hero-countdown">
+      <div class="hcd-stripe"></div>
+      <div class="hcd-lbl">Days to Exam</div>
+      <div class="hcd-num" id="heroDaysLeft">—</div>
+      <div class="hcd-unit">Days Remaining</div>
+      <div class="hcd-bar"></div>
+      <div class="hcd-exam">UPPSC PCS Prelims 2026</div>
+      <div class="hcd-date">📅 6 December 2026</div>
+      <div class="hcd-urgent">⚠️ Less than 6 months!</div>
+      <div class="hcd-tip">~27 days per subject if you start now.</div>
+    </div>
+
+    <div class="srch-widget">
+      <div class="srch-widget-ico">🔍</div>
+      <div class="srch-widget-title">Find Any Question</div>
+      <div class="srch-widget-sub">Search PYQ questions instantly — type a topic, keyword, or concept.</div>
+      <div class="srch-wrap">
+        <input class="srch-inp" id="homeSearchInp" type="text"
+          placeholder="president, parliament, river…"
+          oninput="homeSearchPreview()"
+          onkeydown="if(event.key==='Enter')doSearchFromWidget()">
+        <button class="srch-btn" onclick="doSearchFromWidget()" title="Search">
+          <i class="ti ti-arrow-right"></i>
+        </button>
+      </div>
+      <div class="srch-chips-wrap">
+        <span class="srch-chip" onclick="quickSearch('parliament')">🏛 Parliament</span>
+        <span class="srch-chip" onclick="quickSearch('president')">👤 President</span>
+        <span class="srch-chip" onclick="quickSearch('river')">🌊 River</span>
+        <span class="srch-chip" onclick="quickSearch('amendment')">📜 Amendment</span>
+        <span class="srch-chip" onclick="quickSearch('high court')">⚖️ High Court</span>
+        <span class="srch-chip" onclick="quickSearch('article')">📑 Article</span>
+      </div>
+      <div class="srch-result-label" id="homeSearchLabel"></div>
+    </div>
+
+  </div>
+  <!-- ── END COUNTDOWN + SEARCH ROW ──────────────────────────── -->
+
   <!-- ── DAILY DIGEST STRIP ───────────────────────────────── -->
   <div class="digest-section" id="digestSection" style="display:none;">
     <div class="digest-hdr">
