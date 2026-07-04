@@ -10432,7 +10432,6 @@ window._currentUser = null;
 var currentUser = null;  // keep local alias for auth UI
 
 function _refreshAuthTabs() {
-  // Re-load any data tabs that depend on auth state
   var progressTab = document.getElementById('tab-progress');
   if (progressTab && progressTab.classList.contains('active')) {
     if (typeof loadProgress === 'function') loadProgress();
@@ -10443,19 +10442,64 @@ function _refreshAuthTabs() {
   }
 }
 
+async function doLogout() {
+  await fetch("/api/logout", { method:"POST", credentials:'include' });
+  window._currentUser = null;
+  currentUser = null;
+  updateAuthNavBtn();
+  updateTrialBanner();
+  if (typeof renderQuestions === 'function') renderQuestions();
+}
+
 function onAuthSuccess(user) {
   window._currentUser = user;
   currentUser = user;
   closeAuthModal();
   resetLockedCache();
+  updateAuthNavBtn();
+  updateTrialBanner();
   if (typeof renderQuestions === 'function') renderQuestions();
-  var authBtn = document.getElementById('authNavBtn');
-  if (authBtn) {
-    authBtn.textContent = user.name || user.email;
-    authBtn.classList.add('signed-in');
-    authBtn.onclick = function(){ showTab('progress', document.querySelector('[onclick*=progress]')); };
-  }
   _refreshAuthTabs();
+}
+
+function updateAuthNavBtn() {
+  var btn = document.getElementById("authNavBtn");
+  if (!btn) return;
+  if (currentUser) {
+    btn.textContent = "👤 " + (currentUser.name || currentUser.email).split(" ")[0];
+    btn.classList.add("signed-in");
+    btn.onclick = doLogout;
+    btn.title = "Click to logout";
+  } else {
+    btn.textContent = "Login / Register";
+    btn.classList.remove("signed-in");
+    btn.onclick = function(){ openAuthModal("login"); };
+    btn.title = "";
+  }
+}
+
+function updateTrialBanner() {
+  var banner = document.getElementById("trialBanner");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "trialBanner";
+    banner.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:8000;text-align:center;padding:9px 16px;font-size:12px;font-weight:600;display:none;";
+    document.body.appendChild(banner);
+  }
+  if (!currentUser) { banner.style.display = "none"; return; }
+  var status = currentUser.status;
+  if (status === "trial" && currentUser.trialExpiresOn) {
+    var days = Math.ceil((new Date(currentUser.trialExpiresOn) - new Date()) / 86400000);
+    if (days > 0) {
+      banner.style.cssText += "background:#f59e0b;color:#000;display:block;";
+      banner.innerHTML = "⏳ Free trial: <strong>" + days + " day" + (days!==1?'s':'') + " left</strong> — Subscribe for ₹100/month to keep full access";
+    } else { banner.style.display = "none"; }
+  } else if (status === "expired") {
+    banner.style.cssText += "background:#ef4444;color:#fff;display:block;";
+    banner.innerHTML = "🔒 Your trial has ended. <strong>Subscribe for ₹100/month</strong> to unlock full access";
+  } else {
+    banner.style.display = "none";
+  }
 }
 
 // Restore session on page load
@@ -10467,12 +10511,8 @@ function onAuthSuccess(user) {
         window._currentUser = data.user;
         currentUser = data.user;
         resetLockedCache();
-        var authBtn = document.getElementById('authNavBtn');
-        if (authBtn) {
-          authBtn.textContent = data.user.name || data.user.email;
-          authBtn.classList.add('signed-in');
-          authBtn.onclick = function(){ showTab('progress', document.querySelector('[onclick*=progress]')); };
-        }
+        updateAuthNavBtn();
+        updateTrialBanner();
         _refreshAuthTabs();
       }
     })
