@@ -10557,6 +10557,39 @@ function lockOverlayHTML() {
     + '</div>';
 }
 
+// Shared helper for all drill/analytics modals (syd-qblock)
+const SYD_FREE_LIMIT = 4;
+function buildSydQBlock(q, i) {
+  if (!hasFullAccess() && i >= SYD_FREE_LIMIT) {
+    return `<div class="syd-qblock q-locked" style="min-height:80px;">
+      ${lockOverlayHTML()}
+      <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">
+        <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''}</div>
+        <div class="syd-qtext">${q.question}</div>
+      </div>
+    </div>`;
+  }
+  const LABELS   = ['A','B','C','D'];
+  const OPT_KEYS = ['optA','optB','optC','optD'];
+  const opts = OPT_KEYS.map((k,j) => q[k]
+    ? `<div class="syd-opt${q.answer===LABELS[j]?' correct':''}">${LABELS[j]}. ${q[k]}${q.answer===LABELS[j]?' ✓':''}</div>`
+    : '').join('');
+  const repTag = q.repeatsIn && q.repeatsIn.includes(',')
+    ? `<span style="color:var(--amber);font-size:10px;">↻ repeats ${q.repeatsIn}</span>` : '';
+  const inner = `
+    <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''} ${repTag}</div>
+    <div class="syd-qtext">${q.question}</div>
+    ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
+    ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}`;
+  if (isLocked(q)) {
+    return `<div class="syd-qblock q-locked" style="min-height:80px;">
+      ${lockOverlayHTML()}
+      <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">${inner}</div>
+    </div>`;
+  }
+  return `<div class="syd-qblock">${inner}</div>`;
+}
+
 </script>
 
 <!-- ══ AUTH MODAL (non-blocking) ══════════════════════════════ -->
