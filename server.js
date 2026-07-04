@@ -776,6 +776,9 @@ app.get('/api/newsImages', async (req, res) => {
   }
 });
 
+// ── HEALTH CHECK (Railway uses this) ──────────────────────────
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 // ── SERVE HTML WITH INJECTED MOCK ─────────────────────────────
 app.get('/', (req, res) => {
   let html = fs.readFileSync(path.join(__dirname, 'Index.html'), 'utf8');
