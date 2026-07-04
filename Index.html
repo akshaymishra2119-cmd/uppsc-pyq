@@ -356,37 +356,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   border-radius:20px;background:var(--bg);color:var(--text2);cursor:pointer;transition:all .15s;}
 .sm-subj-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue);}
 .sm-subj-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25);}
-/* Polity Article cards */
+/* Polity Article cards — redesigned */
 .sm-stats-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
-.sm-stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
-  padding:10px 16px;flex:1;min-width:120px;text-align:center;}
+.sm-stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;text-align:center;}
 .sm-stat-v{font-size:22px;font-weight:800;color:var(--blue);}
 .sm-stat-l{font-size:11px;color:var(--text3);margin-top:2px;}
-.sm-search{width:100%;padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;
-  background:var(--bg);color:var(--text);font-size:13px;margin-bottom:14px;outline:none;}
+.sm-search-wrap{position:relative;margin-bottom:16px;}
+.sm-search-wrap::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;}
+.sm-search{width:100%;padding:9px 14px 9px 34px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;outline:none;}
 .sm-search:focus{border-color:var(--blue);}
-.sm-article-card{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;transition:box-shadow .15s;}
-.sm-article-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.08);}
-.sm-article-hd{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:var(--bg);user-select:none;}
+/* Part group headers */
+.sm-part-hd{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin:18px 0 8px;padding:0 2px;display:flex;align-items:center;gap:8px;}
+.sm-part-hd::after{content:'';flex:1;height:1px;background:var(--border);}
+/* Article cards */
+.sm-article-card{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--bg);transition:box-shadow .15s;}
+.sm-article-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.07);}
+.sm-article-card.open{border-color:var(--blue);}
+.sm-article-hd{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;user-select:none;}
 .sm-article-hd:hover{background:var(--bg2);}
-.sm-article-num{background:var(--blue);color:#fff;border-radius:8px;padding:4px 10px;
-  font-size:12px;font-weight:800;white-space:nowrap;}
-.sm-article-title{font-size:14px;font-weight:600;color:var(--text);flex:1;}
-.sm-article-count{font-size:11px;background:var(--amber-light,#FEF3C7);color:var(--amber-dark,#92400E);
-  border-radius:12px;padding:3px 9px;font-weight:700;white-space:nowrap;}
-.sm-article-arrow{font-size:13px;color:var(--text3);transition:transform .2s;}
+.sm-art-badge{background:var(--blue);color:#fff;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:700;white-space:nowrap;min-width:66px;text-align:center;flex-shrink:0;}
+.sm-art-info{flex:1;min-width:0;}
+.sm-article-title{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-freq-row{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.sm-freq-bar{height:3px;border-radius:2px;background:var(--blue);opacity:.5;}
+.sm-freq-label{font-size:11px;color:var(--text3);}
+.sm-art-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.sm-part-tag{font-size:11px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:2px 7px;white-space:nowrap;}
+.sm-article-count{font-size:11px;background:#FEF3C7;color:#92400E;border-radius:12px;padding:3px 9px;font-weight:700;white-space:nowrap;}
+.sm-article-count.high{background:#FEE2E2;color:#991B1B;}
+.sm-article-arrow{font-size:12px;color:var(--text3);transition:transform .2s;}
 .sm-article-card.open .sm-article-arrow{transform:rotate(180deg);}
-.sm-article-body{display:none;padding:14px;border-top:1px solid var(--border);background:var(--bg);}
+/* Article body */
+.sm-article-body{display:none;border-top:1px solid var(--border);}
 .sm-article-card.open .sm-article-body{display:block;}
-.sm-article-exp{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:12px;
-  background:var(--bg2);border-left:3px solid var(--blue);padding:10px 12px;border-radius:0 6px 6px 0;}
-.sm-article-qs{display:flex;flex-direction:column;gap:8px;}
+.sm-article-exp{font-size:13px;color:var(--text2);line-height:1.65;background:var(--bg2);border-left:3px solid var(--blue);padding:10px 14px;margin:12px 14px 8px;border-radius:0 6px 6px 0;}
+.sm-article-qs{display:flex;flex-direction:column;gap:7px;padding:0 14px 14px;}
+/* Question cards */
 .sm-aq{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;}
-.sm-aq-meta{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
-.sm-aq-year{background:var(--bg3);color:var(--text2);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
+.sm-aq-meta{display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap;align-items:center;}
+.sm-aq-year{background:var(--bg3,#f3f4f6);color:var(--text2);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
 .sm-aq-subj{background:var(--blue-light,#DBEAFE);color:var(--blue-dark,#1E40AF);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
-.sm-aq-ans{background:var(--teal-light,#CCFBF1);color:var(--teal-dark,#134E4A);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
-.sm-aq-text{color:var(--text);line-height:1.5;}
+.sm-aq-ans{background:#CCFBF1;color:#134E4A;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
+.sm-aq-type{background:var(--bg,#fff);color:var(--text3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;}
+.sm-aq-text{color:var(--text);line-height:1.5;margin-bottom:5px;}
+.sm-aq-exp{font-size:11px;color:var(--text3);line-height:1.5;border-top:1px solid var(--border);padding-top:5px;margin-top:5px;}
+.sm-see-more{font-size:12px;color:var(--blue);cursor:pointer;display:inline-block;margin-top:4px;}
+.sm-see-more:hover{text-decoration:underline;}
 .sm-no-results{text-align:center;padding:40px;color:var(--text3);font-size:13px;}
 /* Editorial styles */
 .lp-ed-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
@@ -9559,7 +9574,6 @@ function buildPolityStudyView(body) {
     var st = (q.subTopic||'').trim();
     var stArts = SUBTOPIC_ARTICLES[st];
     if (stArts) stArts.forEach(function(a){ addToArt(a, q); });
-    // also try without trailing 's' and lowercase variants
     if (!stArts) {
       var stKey = Object.keys(SUBTOPIC_ARTICLES).find(function(k){
         return k.toLowerCase() === st.toLowerCase() ||
@@ -9575,7 +9589,7 @@ function buildPolityStudyView(body) {
     });
   });
 
-  // 3. Also include questions where subTopic contains "Article XX"
+  // Also include questions where subTopic contains "Article XX"
   polityQs.forEach(function(q) {
     var st = (q.subTopic||'');
     var m2 = /Article\s+(\d+[A-Za-z]?)/i.exec(st);
@@ -9591,52 +9605,135 @@ function buildPolityStudyView(body) {
   var totalQs = polityQs.length;
   var coveredQs = new Set();
   artNums.forEach(function(n) { artMap[n].forEach(function(q){ coveredQs.add(q.id); }); });
+  var maxFreq = artNums.reduce(function(mx,n){ return Math.max(mx, artMap[n].length); }, 1);
 
-  // 4. Render
-  var html = `
-    <div class="sm-stats-bar">
-      <div class="sm-stat"><div class="sm-stat-v">${totalQs}</div><div class="sm-stat-l">Polity Questions</div></div>
-      <div class="sm-stat"><div class="sm-stat-v" style="color:var(--amber-dark,#92400E);">${totalArticles}</div><div class="sm-stat-l">Articles Found</div></div>
-      <div class="sm-stat"><div class="sm-stat-v" style="color:var(--teal);">${coveredQs.size}</div><div class="sm-stat-l">Qs Mapped to Articles</div></div>
-    </div>
-    <input class="sm-search" id="smSearch" placeholder="🔍  Search article number or keyword…" oninput="smFilterArticles(this.value)">
-    <div id="smArticleList">`;
-
-  html += artNums.map(function(num) {
-    var qs = artMap[num];
-    var info = ARTICLE_DB[num] || ARTICLE_DB[num.replace(/[A-Z]$/,'')] || null;
-    var title = info ? info.title : 'Constitutional Provision';
-    var exp   = info ? info.exp   : 'Refer to Constitution of India for details.';
-    var qCards = qs.map(function(q) {
-      return `<div class="sm-aq">
-        <div class="sm-aq-meta">
-          <span class="sm-aq-year">${q.year||'—'}</span>
-          <span class="sm-aq-subj">${q.subTopic||q.subject||''}</span>
-          <span class="sm-aq-ans">Ans: ${q.answer}</span>
-        </div>
-        <div class="sm-aq-text">${q.question}</div>
-        ${q.explanation ? `<div style="font-size:11px;color:var(--text3);margin-top:5px;">💡 ${q.explanation}</div>` : ''}
-      </div>`;
-    }).join('');
-    return `<div class="sm-article-card" id="sma-${num}" data-title="${title.toLowerCase()} article ${num.toLowerCase()}">
-      <div class="sm-article-hd" onclick="smToggleArticle('${num}')">
-        <span class="sm-article-num">Art. ${num}</span>
-        <span class="sm-article-title">${title}</span>
-        <span class="sm-article-count">${qs.length} Q${qs.length>1?'s':''}</span>
-        <span class="sm-article-arrow">▼</span>
-      </div>
-      <div class="sm-article-body">
-        <div class="sm-article-exp">${exp}</div>
-        <div class="sm-article-qs">${qCards}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  if (artNums.length === 0) {
-    html += `<div class="sm-no-results">No articles detected in current question bank.<br>Add polity questions mentioning "Article XX" to see them here.</div>`;
+  // Helper: get constitutional Part for an article number string
+  function getArticlePart(num) {
+    if (num === '51A') return { part: 'IVA', name: 'Fundamental Duties' };
+    if (num.startsWith('243')) return { part: 'IX', name: 'Panchayats & Municipalities' };
+    var n = parseInt(num);
+    if (n >= 1   && n <= 4)   return { part: 'I',     name: 'Union and Territory' };
+    if (n >= 5   && n <= 11)  return { part: 'II',    name: 'Citizenship' };
+    if (n >= 12  && n <= 35)  return { part: 'III',   name: 'Fundamental Rights' };
+    if (n >= 36  && n <= 51)  return { part: 'IV',    name: 'Directive Principles' };
+    if (n >= 52  && n <= 78)  return { part: 'V',     name: 'Union Executive' };
+    if (n >= 79  && n <= 122) return { part: 'V',     name: 'Parliament' };
+    if (n >= 123 && n <= 151) return { part: 'V',     name: 'Finance & Legislative Powers' };
+    if (n >= 152 && n <= 166) return { part: 'VI',    name: 'State Executive' };
+    if (n >= 168 && n <= 212) return { part: 'VI',    name: 'State Legislature' };
+    if (n >= 213 && n <= 237) return { part: 'VI',    name: 'High Courts' };
+    if (n >= 239 && n <= 242) return { part: 'VIII',  name: 'Union Territories' };
+    if (n >= 244 && n <= 244) return { part: 'X',     name: 'Scheduled Areas' };
+    if (n >= 245 && n <= 263) return { part: 'XI',    name: 'Union–State Relations' };
+    if (n >= 264 && n <= 300) return { part: 'XII',   name: 'Finance & Property' };
+    if (num === '300A')       return { part: 'XII',   name: 'Finance & Property' };
+    if (n >= 308 && n <= 323) return { part: 'XIV',   name: 'Services under Union & State' };
+    if (n >= 324 && n <= 329) return { part: 'XV',    name: 'Elections' };
+    if (n >= 330 && n <= 342) return { part: 'XVI',   name: 'Special Provisions' };
+    if (n >= 343 && n <= 351) return { part: 'XVII',  name: 'Official Language' };
+    if (n >= 352 && n <= 360) return { part: 'XVIII', name: 'Emergency Provisions' };
+    if (n === 368)             return { part: 'XX',    name: 'Amendment of Constitution' };
+    if (n >= 369 && n <= 392) return { part: 'XXI',   name: 'Temporary Provisions' };
+    return { part: '?', name: 'Other' };
   }
 
-  html += '</div>'; // close smArticleList
+  // Helper: detect question format
+  function getQType(q) {
+    if ((q.qType||'') === 'Match') return 'Match';
+    var txt = (q.question||'').toLowerCase();
+    if (/consider the following|which of the following statements|निम्नलिखित कथन/.test(txt)) return 'Statement';
+    if (/arrange|chronological|correct order/.test(txt)) return 'Order';
+    return 'Direct';
+  }
+
+  // Group articles by Part
+  var partGroups = {};
+  artNums.forEach(function(num) {
+    var p = getArticlePart(num);
+    var key = p.part + '|||' + p.name;
+    if (!partGroups[key]) partGroups[key] = [];
+    partGroups[key].push(num);
+  });
+
+  var partKeys = Object.keys(partGroups).sort(function(a, b) {
+    var na = parseInt(partGroups[a][0]);
+    var nb = parseInt(partGroups[b][0]);
+    return na - nb;
+  });
+
+  // 4. Render
+  var html = '<div class="sm-stats-bar">'
+    + '<div class="sm-stat"><div class="sm-stat-v">' + totalQs + '</div><div class="sm-stat-l">Polity Questions</div></div>'
+    + '<div class="sm-stat"><div class="sm-stat-v" style="color:#B45309;">' + totalArticles + '</div><div class="sm-stat-l">Articles Found</div></div>'
+    + '<div class="sm-stat"><div class="sm-stat-v" style="color:#0D9488;">' + coveredQs.size + '</div><div class="sm-stat-l">Qs Mapped</div></div>'
+    + '</div>'
+    + '<div class="sm-search-wrap"><input class="sm-search" id="smSearch" placeholder="Search article number, topic or keyword…" oninput="smFilterArticles(this.value)"></div>'
+    + '<div id="smArticleList">';
+
+  partKeys.forEach(function(key) {
+    var parts = key.split('|||');
+    var partNum = parts[0], partName = parts[1];
+    html += '<div class="sm-part-hd sm-part-section">Part ' + partNum + ' — ' + partName + '</div>';
+
+    partGroups[key].forEach(function(num) {
+      var qs = artMap[num];
+      var info = ARTICLE_DB[num] || ARTICLE_DB[num.replace(/[A-Z]$/,'')] || null;
+      var title = info ? info.title : 'Art. ' + num + ' — Constitutional Provision';
+      var exp   = info ? info.exp   : '';
+      var pInfo = getArticlePart(num);
+      var freq = qs.length;
+      var barW = Math.round((freq / maxFreq) * 90) + 8;
+      var isHigh = freq >= Math.ceil(maxFreq * 0.6);
+      var countCls = 'sm-article-count' + (isHigh ? ' high' : '');
+      var timesLabel = freq === 1 ? 'Asked once' : 'Asked ' + freq + ' times';
+      var dataTitle = (title + ' article ' + num + ' part ' + partNum + ' ' + partName).toLowerCase();
+
+      // Question cards — first 2 visible, rest hidden
+      var qCardHtml = qs.map(function(q, qi) {
+        var qtype = getQType(q);
+        var extraAttr = qi >= 2 ? ' class="sm-aq sm-aq-extra" style="display:none"' : ' class="sm-aq"';
+        return '<div' + extraAttr + '>'
+          + '<div class="sm-aq-meta">'
+          + '<span class="sm-aq-year">' + (q.year||'—') + '</span>'
+          + '<span class="sm-aq-subj">' + (q.subTopic||q.subject||'Polity') + '</span>'
+          + '<span class="sm-aq-ans">Ans: ' + q.answer + '</span>'
+          + '<span class="sm-aq-type">' + qtype + '</span>'
+          + '</div>'
+          + '<div class="sm-aq-text">' + q.question + '</div>'
+          + (q.explanation ? '<div class="sm-aq-exp">💡 ' + q.explanation + '</div>' : '')
+          + '</div>';
+      }).join('');
+
+      var seeMoreBtn = qs.length > 2
+        ? '<span class="sm-see-more" id="smmore-' + num + '" onclick="smExpandQs(\'' + num + '\')">+ ' + (qs.length - 2) + ' more question' + (qs.length - 2 > 1 ? 's' : '') + ' ›</span>'
+        : '';
+
+      html += '<div class="sm-article-card" id="sma-' + num + '" data-title="' + dataTitle + '">'
+        + '<div class="sm-article-hd" onclick="smToggleArticle(\'' + num + '\')">'
+        + '<span class="sm-art-badge">Art. ' + num + '</span>'
+        + '<div class="sm-art-info">'
+        + '<div class="sm-article-title">' + title + '</div>'
+        + '<div class="sm-freq-row"><div class="sm-freq-bar" style="width:' + barW + 'px"></div><span class="sm-freq-label">' + timesLabel + '</span></div>'
+        + '</div>'
+        + '<div class="sm-art-right">'
+        + '<span class="sm-part-tag">Part ' + pInfo.part + '</span>'
+        + '<span class="' + countCls + '">' + freq + ' Q' + (freq > 1 ? 's' : '') + '</span>'
+        + '<span class="sm-article-arrow">▼</span>'
+        + '</div>'
+        + '</div>'
+        + '<div class="sm-article-body">'
+        + (exp ? '<div class="sm-article-exp">' + exp + '</div>' : '')
+        + '<div class="sm-article-qs">' + qCardHtml + seeMoreBtn + '</div>'
+        + '</div>'
+        + '</div>';
+    });
+  });
+
+  if (artNums.length === 0) {
+    html += '<div class="sm-no-results">No articles detected in current question bank.<br>Add polity questions mentioning "Article XX" to see them here.</div>';
+  }
+
+  html += '</div>';
   body.innerHTML = html;
 }
 
@@ -9645,8 +9742,20 @@ function smToggleArticle(num) {
   if (card) card.classList.toggle('open');
 }
 
+function smExpandQs(num) {
+  var card = document.getElementById('sma-' + num);
+  if (!card) return;
+  card.querySelectorAll('.sm-aq-extra').forEach(function(el){ el.style.display = ''; });
+  var btn = document.getElementById('smmore-' + num);
+  if (btn) btn.style.display = 'none';
+}
+
 function smFilterArticles(val) {
   var v = val.trim().toLowerCase();
+  // When searching, hide part headers and filter cards
+  document.querySelectorAll('.sm-part-section').forEach(function(hd) {
+    hd.style.display = v ? 'none' : '';
+  });
   document.querySelectorAll('.sm-article-card').forEach(function(card) {
     if (!v) { card.style.display = ''; return; }
     var searchStr = card.getAttribute('data-title') || '';
