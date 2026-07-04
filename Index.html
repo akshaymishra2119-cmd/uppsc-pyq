@@ -10588,19 +10588,34 @@ function closeImgLightbox(e) {
 }
 
 // ── Auth & question-lock stubs (defined here so available on first load) ─────
-let _lockedSet = new Set();
-function hasFullAccess() { return window._currentUser != null; }
-function resetLockedCache() {
-  _lockedSet = new Set();
-  if (hasFullAccess()) return;
-  const ids = (allQuestions || []).map(function(q){ return String(q.id); });
-  ids.sort();
-  const half = Math.floor(ids.length / 2);
-  for (var i = half; i < ids.length; i++) _lockedSet.add(ids[i]);
+// Returns true if user has full access
+function hasFullAccess() {
+  if (!window._currentUser) return false;
+  var st = window._currentUser.status;
+  return !st || st === 'trial' || st === 'active';
 }
+
+// Build set of locked question IDs: last 70% of each year (30% open, 70% locked per year)
+let _lockedQIds = null;
+function getLockedQIds() {
+  if (_lockedQIds) return _lockedQIds;
+  _lockedQIds = new Set();
+  var byYear = {};
+  (allQuestions || []).forEach(function(q) {
+    if (!q.year) return;
+    if (!byYear[q.year]) byYear[q.year] = [];
+    byYear[q.year].push(q.id);
+  });
+  Object.values(byYear).forEach(function(ids) {
+    var cutoff = Math.ceil(ids.length * 0.3); // 30% open, 70% locked
+    ids.slice(cutoff).forEach(function(id) { _lockedQIds.add(String(id)); });
+  });
+  return _lockedQIds;
+}
+function resetLockedCache() { _lockedQIds = null; }
 function isLocked(q) {
   if (hasFullAccess()) return false;
-  return _lockedSet.has(String(q.id));
+  return getLockedQIds().has(String(q.id));
 }
 function lockOverlayHTML() {
   return '<div class="q-lock-overlay">'
@@ -10613,6 +10628,14 @@ function lockOverlayHTML() {
 // Shared helper for all drill/analytics modals (syd-qblock)
 const SYD_FREE_LIMIT = 4;
 function buildSydQBlock(q, i) {
+  const isRepeat = q.repeatsIn && q.repeatsIn.includes(',');
+  const compareBtn = isRepeat
+    ? `<button onclick="event.stopPropagation();openRepeatModal('${q.id}')"
+         style="margin:8px 0 2px;padding:6px 16px;background:var(--amber,#EF9F27);color:#fff;
+                border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;
+                display:inline-flex;align-items:center;gap:5px;">
+         🔁 Compare across years</button>`
+    : '';
   if (!hasFullAccess() && i >= SYD_FREE_LIMIT) {
     return `<div class="syd-qblock q-locked" style="min-height:80px;">
       ${lockOverlayHTML()}
@@ -10627,7 +10650,7 @@ function buildSydQBlock(q, i) {
   const opts = OPT_KEYS.map((k,j) => q[k]
     ? `<div class="syd-opt${q.answer===LABELS[j]?' correct':''}">${LABELS[j]}. ${q[k]}${q.answer===LABELS[j]?' ✓':''}</div>`
     : '').join('');
-  const repTag = q.repeatsIn && q.repeatsIn.includes(',')
+  const repTag = isRepeat
     ? `<span style="color:var(--amber);font-size:10px;">↻ repeats ${q.repeatsIn}</span>` : '';
   const inner = `
     <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''} ${repTag}</div>
@@ -10640,7 +10663,7 @@ function buildSydQBlock(q, i) {
       <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">${inner}</div>
     </div>`;
   }
-  return `<div class="syd-qblock">${inner}</div>`;
+  return `<div class="syd-qblock">${inner}${compareBtn}</div>`;
 }
 
 </script>
