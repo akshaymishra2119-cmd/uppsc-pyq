@@ -10978,5 +10978,16 @@ async function doResetPassword() {
   finally { btn.disabled = false; btn.textContent = 'Reset Password'; }
 }
 </script>
+
+<!-- Subject-Year / Answer Drill Modal -->
+<div class="syd-overlay" id="sydOverlay" onclick="if(event.target===this)closeSYD()">
+  <div class="syd-modal">
+    <div class="syd-header">
+      <span id="sydTitle">Questions</span>
+      <button class="syd-close" onclick="closeSYD()">&#x2715;</button>
+    </div>
+    <div class="syd-body" id="sydBody"></div>
+  </div>
+</div>
 </body>
 </html>
