@@ -5717,7 +5717,7 @@ function renderYearProgressBadges() {
   var serverYm = window._tpYm || null;
   var curYr = (document.getElementById('f-year')||{}).value || 'all';
   // All badge
-  var allBadge = '<div class="pyq-yr-badge'+(curYr==='all'?' pyq-yr-badge-active':'')+'" data-yr="all" onclick="selectPyqYear('all',this)" style="min-width:42px;">'
+  var allBadge = '<div class="pyq-yr-badge'+(curYr==='all'?' pyq-yr-badge-active':'')+'" data-yr="all" onclick="selectPyqYear(this.dataset.yr)" style="min-width:42px;">'
     +'<div style="font-size:11px;font-weight:700;">All</div>'
     +'</div>';
   var html = allBadge + years.map(function(yr){
@@ -5732,7 +5732,7 @@ function renderYearProgressBadges() {
     var pct = total>0 ? Math.round(done/total*100) : 0;
     var col = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--text3)';
     var isActive = curYr===yr;
-    return '<div class="pyq-yr-badge'+(isActive?' pyq-yr-badge-active':'')+'" data-yr="'+yr+'" onclick="selectPyqYear(''+yr+'',this)">'
+    return '<div class="pyq-yr-badge'+(isActive?' pyq-yr-badge-active':'')+'" data-yr="'+yr+'" onclick="selectPyqYear(this.dataset.yr)">'
       +'<div style="font-size:11px;font-weight:600;">'+yr+'</div>'
       +'<div style="width:36px;height:4px;border-radius:2px;background:var(--border);overflow:hidden;margin:2px 0;">'
       +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:2px;"></div></div>'
@@ -5757,7 +5757,7 @@ function renderAttemptFilter() {
   ];
   wrap.innerHTML = btns.map(function(b){
     var active = cur===b.v;
-    return '<button class="pyq-attempt-btn'+(active?' active':'')+'" onclick="setAttemptFilter(''+b.v+'')">'+b.label+'</button>';
+    return '<button class="pyq-attempt-btn'+(active?' active':'')+'" data-v="'+b.v+'" onclick="setAttemptFilter(this.dataset.v)">'+b.label+'</button>';
   }).join('');
   wrap.style.display = 'flex';
   wrap.style.flexWrap = 'wrap';
