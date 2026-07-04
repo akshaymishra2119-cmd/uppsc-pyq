@@ -13,6 +13,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ghatna Chakra — UPPSC PYQ Portal</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1545,127 +1547,179 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 <!-- ══ HOME TAB ══════════════════════════════════════════════ -->
 <div class="tab active" id="tab-home">
 
-  <!-- ══ HERO BANNER (light theme) ════════════════════════════ -->
-  <div class="hero-grid-new" id="heroBanner">
-
-    <!-- Welcome card (blue gradient) -->
-    <div class="hero-welcome">
-      <div class="hw-blob1"></div>
-      <div class="hw-blob2"></div>
-      <div class="hw-dots"></div>
-
-      <!-- top: greeting + streak -->
-      <div class="hw-top">
+  <!-- ══ GHATNAA CHAKKARA GLOBE BANNER ════════════════════════ -->
+  <div id="heroBanner" style="width:100%;height:460px;background:oklch(0.07 0.015 300);border-radius:20px;position:relative;overflow:hidden;box-shadow:0 20px 60px oklch(0 0 0/0.25);display:flex;align-items:center;padding:0 60px;justify-content:space-between;box-sizing:border-box;margin-bottom:16px;">
+    <div style="position:relative;max-width:620px;z-index:2;">
+      <div style="display:inline-block;background:oklch(0.7 0.22 320/0.15);border:1px solid oklch(0.7 0.22 320/0.5);border-radius:999px;padding:6px 16px;font:700 12px 'Inter',sans-serif;color:oklch(0.7 0.22 320);letter-spacing:.06em;margin-bottom:18px;">UPPSC PCS PRELIMS 2026</div>
+      <div style="font:800 54px/1.05 'Space Grotesk',sans-serif;color:#fff;letter-spacing:-.02em;">Ghatnaa Chakkara</div>
+      <div style="font:500 17px/1.5 'Inter',sans-serif;color:oklch(0.7 0.02 300);margin-top:16px;max-width:520px;">Every city in UP, connected by one prep engine. <span id="bannerQCount">1271</span> PYQs · 10 years · 1070 repeating topics.</div>
+      <div style="display:flex;gap:14px;margin-top:28px;flex-wrap:wrap;">
+        <button onclick="showTab('pyq',document.querySelector('[onclick*=pyq]'))" style="background:oklch(0.7 0.22 320);border:none;border-radius:12px;padding:14px 28px;font:800 15px 'Inter',sans-serif;color:oklch(0.07 0.015 300);cursor:pointer;">Start Practicing →</button>
+        <button id="bannerAuthBtn" onclick="openAuthModal('login')" style="background:transparent;border:1px solid oklch(0.4 0.02 300);border-radius:12px;padding:14px 28px;font:700 15px 'Inter',sans-serif;color:#fff;cursor:pointer;">Login / Register</button>
+      </div>
+      <div style="display:flex;gap:28px;margin-top:30px;align-items:flex-end;">
         <div>
-          <div class="hw-greet">Ghatna Chakra · UPPSC PYQ</div>
-          <div class="hw-name" id="heroBannerGreeting">Good morning! 👋</div>
-          <div class="hw-sub" id="heroUserLine">Let's practise smarter today.</div>
+          <div style="font:800 28px 'Space Grotesk',sans-serif;color:#fff;line-height:1;" id="bannerDaysLeft">—</div>
+          <div style="font:700 10px 'Inter',sans-serif;color:oklch(0.6 0.02 300);letter-spacing:.08em;margin-top:4px;">DAYS LEFT</div>
+          <div style="font:400 11px 'Inter',sans-serif;color:oklch(0.45 0.02 300);margin-top:2px;">till 6 Dec 2026</div>
         </div>
-        <div class="hw-streak">
-          <div class="hw-streak-val">🔥 <span id="heroStreak">0</span></div>
-          <div class="hw-streak-lbl">Day Streak</div>
+        <div style="width:1px;height:36px;background:oklch(0.25 0.02 300);flex-shrink:0;"></div>
+        <div>
+          <div style="font:800 28px 'Space Grotesk',sans-serif;color:oklch(0.7 0.22 320);line-height:1;" id="bannerQCountStat">1271</div>
+          <div style="font:600 11px 'Inter',sans-serif;color:oklch(0.6 0.02 300);margin-top:4px;">questions</div>
         </div>
-      </div>
-
-      <!-- 3 mini stats -->
-      <div class="hw-mini-stats">
-        <div class="hw-ms">
-          <div class="hw-ms-val" id="hbAttempted">—</div>
-          <div class="hw-ms-lbl">Qs Practised</div>
-          <div class="hw-ms-delta">today's progress</div>
-        </div>
-        <div class="hw-ms">
-          <div class="hw-ms-val" id="hbAccuracy">—</div>
-          <div class="hw-ms-lbl">Accuracy</div>
-          <div class="hw-ms-delta">target: 88%</div>
-        </div>
-        <div class="hw-ms">
-          <div class="hw-ms-val" id="hbScore">—</div>
-          <div class="hw-ms-lbl">Proj. Score</div>
-          <div class="hw-ms-delta" style="color:#FCD34D;">need 110/150</div>
+        <div style="width:1px;height:36px;background:oklch(0.25 0.02 300);flex-shrink:0;"></div>
+        <div>
+          <div style="font:800 28px 'Space Grotesk',sans-serif;color:#fff;line-height:1;">75</div>
+          <div style="font:600 11px 'Inter',sans-serif;color:oklch(0.6 0.02 300);margin-top:4px;">UP districts</div>
         </div>
       </div>
-
-      <!-- progress bar -->
-      <div class="hw-prog">
-        <div class="hw-prog-row">
-          <span class="hw-prog-lbl">📚 Syllabus coverage</span>
-          <span class="hw-prog-pct" id="heroPrepPct">—%</span>
-        </div>
-        <div class="hw-prog-track">
-          <div class="hw-prog-fill" id="heroPrepBar" style="width:0%;"></div>
-        </div>
-      </div>
-
-      <!-- action buttons -->
-      <div class="hw-btns">
-        <button class="hw-btn hw-btn-white" onclick="showTab('pyq',document.querySelector('[onclick*=pyq]'))">
-          <i class="ti ti-books" aria-hidden="true"></i> Practice PYQ
-        </button>
-        <button class="hw-btn hw-btn-yellow" onclick="showTab('daily-quiz',document.querySelector('[onclick*=daily-quiz]'))">
-          <i class="ti ti-bolt" aria-hidden="true"></i> Daily Quiz
-        </button>
-        <button class="hw-btn hw-btn-ghost" onclick="showTab('ca',document.querySelector('[onclick*=\'ca\']'))">
-          <i class="ti ti-news" aria-hidden="true"></i> Today's CA
-        </button>
-      </div>
-
-      <!-- hidden CA count anchor (used by updateHeroBanner) -->
-      <span id="hbCA" style="display:none;">0</span>
     </div>
-
-    <!-- Right column: Countdown + Search widget -->
-    <div class="hero-right-col">
-      <div class="hero-countdown">
-        <div class="hcd-stripe"></div>
-        <div class="hcd-lbl">Days to Exam</div>
-        <div class="hcd-num" id="heroDaysLeft">—</div>
-        <div class="hcd-unit">Days Remaining</div>
-        <div class="hcd-bar"></div>
-        <div class="hcd-exam">UPPSC PCS Prelims 2026</div>
-        <div class="hcd-date">📅 6 December 2026</div>
-        <div class="hcd-urgent">⚠️ Less than 6 months!</div>
-        <div class="hcd-tip">~27 days per subject if you start now.</div>
-      </div>
-
-      <!-- ── Search Widget ───────────────────────────── -->
-      <div class="srch-widget">
-        <div class="srch-widget-ico">🔍</div>
-        <div class="srch-widget-title">Find Any Question</div>
-        <div class="srch-widget-sub">Search 974 PYQ questions instantly — type a topic, keyword, or concept.</div>
-        <div class="srch-wrap">
-          <input class="srch-inp" id="homeSearchInp" type="text"
-            placeholder="president, parliament, river…"
-            oninput="homeSearchPreview()"
-            onkeydown="if(event.key==='Enter')doSearchFromWidget()">
-          <button class="srch-btn" onclick="doSearchFromWidget()" title="Search">
-            <i class="ti ti-arrow-right"></i>
-          </button>
-        </div>
-        <div class="srch-chips-wrap">
-          <span class="srch-chip" onclick="quickSearch('parliament')">🏛 Parliament</span>
-          <span class="srch-chip" onclick="quickSearch('president')">👤 President</span>
-          <span class="srch-chip" onclick="quickSearch('river')">🌊 River</span>
-          <span class="srch-chip" onclick="quickSearch('amendment')">📜 Amendment</span>
-          <span class="srch-chip" onclick="quickSearch('high court')">⚖️ High Court</span>
-          <span class="srch-chip" onclick="quickSearch('article')">📑 Article</span>
-        </div>
-        <div class="srch-result-label" id="homeSearchLabel"></div>
-      </div>
-
-    </div><!-- /.hero-right-col -->
-
-  </div>
-
-  <!-- quote band -->
-  <div class="hw-quote-band">
-    <div class="hw-q-mark">"</div>
-    <div>
-      <div class="hw-q-text" id="heroQuote">Success is the sum of small efforts repeated day in and day out.</div>
-      <div class="hw-q-auth" id="heroQuoteAuth">— Daily Motivation</div>
+    <div style="position:absolute;right:-40px;top:50%;transform:translateY(-50%);width:600px;height:600px;">
+      <canvas id="bannerGlobe" style="width:100%;height:100%;display:block;"></canvas>
     </div>
   </div>
-  <!-- ══ END HERO BANNER ══════════════════════════════════════ -->
+  <script>
+  (function() {
+    var D2R = Math.PI / 180;
+    function toXYZ(lat, lon) {
+      var phi = lat*D2R, lam = lon*D2R;
+      return [Math.cos(phi)*Math.cos(lam), Math.sin(phi), Math.cos(phi)*Math.sin(lam)];
+    }
+    function slerp(a, b, t) {
+      var dot = Math.max(-1, Math.min(1, a[0]*b[0]+a[1]*b[1]+a[2]*b[2]));
+      var theta = Math.acos(dot)*t;
+      var relX = [b[0]-a[0]*dot, b[1]-a[1]*dot, b[2]-a[2]*dot];
+      var len = Math.hypot(relX[0],relX[1],relX[2]) || 1;
+      var rel = [relX[0]/len, relX[1]/len, relX[2]/len];
+      return [a[0]*Math.cos(theta)+rel[0]*Math.sin(theta),
+              a[1]*Math.cos(theta)+rel[1]*Math.sin(theta),
+              a[2]*Math.cos(theta)+rel[2]*Math.sin(theta)];
+    }
+    function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+    function projectXYZ(v,cx,cy,R,rotLonDeg,rotLatDeg) {
+      var lon0=rotLonDeg*D2R, phi0=rotLatDeg*D2R;
+      var u = v[0]*Math.cos(lon0)+v[2]*Math.sin(lon0);
+      var x = v[2]*Math.cos(lon0)-v[0]*Math.sin(lon0);
+      var y = v[1]*Math.cos(phi0)-u*Math.sin(phi0);
+      var z = v[1]*Math.sin(phi0)+u*Math.cos(phi0);
+      return {x:cx+x*R, y:cy-y*R, z:z};
+    }
+    var HUB = {lat:26.847, lon:80.946};
+    var CITIES = [
+      ['Delhi',28.613,77.209,1.4],['Varanasi',25.317,82.973,1.3],['Kanpur',26.449,80.332,1.1],
+      ['Agra',27.177,78.008,1.1],['Prayagraj',25.435,81.845,1.1],['Mumbai',19.076,72.877,1.2],
+      ['Kolkata',22.573,88.364,1.1],['Bengaluru',12.972,77.594,1.0],['Jaipur',26.912,75.787,1.0],
+      ['Patna',25.594,85.137,1.0],['Gorakhpur',26.760,83.374,0.9],['London',51.507,-0.128,1.0],
+      ['Dubai',25.204,55.271,1.0],['Singapore',1.352,103.820,0.9],['Tokyo',35.676,139.650,0.9],
+      ['Sydney',-33.868,151.209,0.9],['New York',40.713,-74.006,1.0]
+    ];
+    var COLORS = ['oklch(0.7 0.22 320)','oklch(0.75 0.16 210)'];
+    var HUB_V = toXYZ(HUB.lat, HUB.lon);
+    var CITY_DATA = CITIES.map(function(c,i){ return {tier:c[3], v:toXYZ(c[1],c[2]), color:COLORS[i%COLORS.length]}; });
+    var canvas = document.getElementById('bannerGlobe');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var cssW, cssH, dpr;
+    function resize() {
+      var rect = canvas.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio||1, 2);
+      canvas.width  = Math.max(1, Math.floor(rect.width*dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height*dpr));
+      cssW = rect.width; cssH = rect.height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    function drawGlobe(t) {
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      var W=cssW, H=cssH;
+      ctx.clearRect(0,0,W,H);
+      var cx=W*0.5, cy=H*0.5, R=Math.min(W,H)*0.46;
+      var rotLon=HUB.lon+(t*4.8)%360, rotLat=HUB.lat-14;
+      var bg=ctx.createRadialGradient(cx-R*0.3,cy-R*0.35,R*0.1,cx,cy,R);
+      bg.addColorStop(0,'oklch(0.22 0.03 300)');
+      bg.addColorStop(1,'oklch(0.1 0.02 300)');
+      ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+      ctx.fillStyle=bg; ctx.fill();
+      ctx.strokeStyle='oklch(0.4 0.03 300/0.6)'; ctx.lineWidth=1.5; ctx.stroke();
+      // Grid lines
+      ctx.lineWidth=1; ctx.strokeStyle='oklch(0.42 0.02 300/0.3)';
+      for(var lat=-60;lat<=60;lat+=30){
+        var started=false; ctx.beginPath();
+        for(var i=0;i<=48;i++){
+          var p=projectXYZ(toXYZ(lat,i*7.5-180),cx,cy,R,rotLon,rotLat);
+          if(p.z>0.02){if(!started){ctx.moveTo(p.x,p.y);started=true;}else ctx.lineTo(p.x,p.y);}else started=false;
+        }
+        ctx.stroke();
+      }
+      for(var lon=-180;lon<180;lon+=30){
+        var started=false; ctx.beginPath();
+        for(var i=0;i<=24;i++){
+          var p=projectXYZ(toXYZ(i*7.5-90,lon),cx,cy,R,rotLon,rotLat);
+          if(p.z>0.02){if(!started){ctx.moveTo(p.x,p.y);started=true;}else ctx.lineTo(p.x,p.y);}else started=false;
+        }
+        ctx.stroke();
+      }
+      // Hub glow
+      var hubP=projectXYZ(HUB_V,cx,cy,R,rotLon,rotLat);
+      if(hubP.z>0){
+        var pulse=Math.sin(t*3)*0.5+0.5;
+        var gr=ctx.createRadialGradient(hubP.x,hubP.y,0,hubP.x,hubP.y,R*0.5);
+        gr.addColorStop(0,'oklch(0.7 0.22 320/'+(0.28+pulse*0.12)+')');
+        gr.addColorStop(1,'oklch(0.7 0.22 320/0)');
+        ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(hubP.x,hubP.y,R*0.5,0,Math.PI*2); ctx.fill();
+      }
+      // Arc lines
+      ctx.lineWidth=1;
+      CITY_DATA.forEach(function(c){
+        var started=false; ctx.beginPath();
+        for(var i=0;i<=24;i++){
+          var p=projectXYZ(slerp(HUB_V,c.v,i/24),cx,cy,R,rotLon,rotLat);
+          if(p.z>0.02){if(!started){ctx.moveTo(p.x,p.y);started=true;}else ctx.lineTo(p.x,p.y);}else started=false;
+        }
+        ctx.strokeStyle=c.color; ctx.globalAlpha=0.15; ctx.stroke();
+      });
+      ctx.globalAlpha=1;
+      // Particles
+      var CYCLE=2.4;
+      CITY_DATA.forEach(function(c,idx){
+        var offset=(idx/CITY_DATA.length)*CYCLE;
+        var local=((t+offset)%CYCLE)/CYCLE;
+        for(var k=3;k>=0;k--){
+          var tt=clamp(local-k*0.02,0,1);
+          var v=slerp(c.v,HUB_V,tt);
+          var p=projectXYZ(v,cx,cy,R,rotLon,rotLat);
+          if(p.z<0.02) continue;
+          ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(1,3.2-k*0.5),0,Math.PI*2);
+          ctx.fillStyle=c.color; ctx.globalAlpha=(1-k/4)*0.85;
+          ctx.shadowColor=c.color; ctx.shadowBlur=7; ctx.fill();
+        }
+        ctx.globalAlpha=1; ctx.shadowBlur=0;
+        var op=projectXYZ(c.v,cx,cy,R,rotLon,rotLat);
+        if(op.z>0.1){
+          ctx.beginPath(); ctx.arc(op.x,op.y,1.8+c.tier*1.2,0,Math.PI*2);
+          ctx.fillStyle='oklch(0.85 0.02 300)'; ctx.globalAlpha=clamp((op.z+0.05)/0.4,0.35,1)*0.85; ctx.fill();
+          ctx.globalAlpha=1;
+        }
+      });
+      // Hub dot + label
+      if(hubP.z>-0.15){
+        var pulse=Math.sin(t*3)*0.5+0.5, r=8+pulse*3;
+        ctx.beginPath(); ctx.arc(hubP.x,hubP.y,r+8+pulse*4,0,Math.PI*2);
+        ctx.strokeStyle='oklch(0.7 0.22 320/0.55)'; ctx.lineWidth=1.5; ctx.stroke();
+        ctx.beginPath(); ctx.arc(hubP.x,hubP.y,r,0,Math.PI*2);
+        ctx.fillStyle='oklch(0.85 0.19 320)'; ctx.shadowColor='oklch(0.7 0.22 320)'; ctx.shadowBlur=16; ctx.fill();
+        ctx.shadowBlur=0;
+        ctx.font="700 12px 'Space Grotesk',sans-serif"; ctx.fillStyle='#fff'; ctx.textAlign='center';
+        ctx.fillText('Ghatnaa Chakkara', hubP.x, hubP.y-r-10);
+      }
+    }
+    var startTime=null;
+    function tick(now){ if(!startTime) startTime=now; drawGlobe((now-startTime)/1000); requestAnimationFrame(tick); }
+    requestAnimationFrame(tick);
+  })();
+  </script>
+  <!-- ══ END GLOBE BANNER ════════════════════════════════════════ -->
 
   <!-- ── DAILY DIGEST STRIP ───────────────────────────────── -->
   <div class="digest-section" id="digestSection" style="display:none;">
@@ -4080,6 +4134,29 @@ function updateHeroBanner(prog) {
   const diff     = Math.ceil((examDate - today) / 86400000);
   const dEl = document.getElementById("heroDaysLeft");
   if (dEl) dEl.textContent = diff > 0 ? diff : "🎯";
+
+  // Globe banner — days left
+  const bdl = document.getElementById("bannerDaysLeft");
+  if (bdl) bdl.textContent = diff > 0 ? diff : "🎯";
+
+  // Globe banner — question count (live from sheet)
+  const qTotal = (typeof allQuestions !== 'undefined' && allQuestions.length) ? allQuestions.length : 1271;
+  const bqc  = document.getElementById("bannerQCount");
+  const bqcs = document.getElementById("bannerQCountStat");
+  if (bqc)  bqc.textContent  = qTotal;
+  if (bqcs) bqcs.textContent = qTotal;
+
+  // Globe banner — auth button: swap to "My Progress →" once logged in
+  const authBtn = document.getElementById("bannerAuthBtn");
+  if (authBtn) {
+    if (window._currentUser) {
+      authBtn.textContent = "My Progress →";
+      authBtn.onclick = function() { showTab('progress', document.querySelector('[onclick*=progress]')); };
+    } else {
+      authBtn.textContent = "Login / Register";
+      authBtn.onclick = function() { openAuthModal('login'); };
+    }
+  }
 
   // Rotating motivational quote
   const quotes = [
@@ -10436,6 +10513,12 @@ function _refreshAuthTabs() {
   var dashTab = document.getElementById('tab-home');
   if (dashTab && dashTab.classList.contains('active')) {
     if (typeof refreshDashboardStats === 'function') refreshDashboardStats();
+  }
+  // Swap banner auth button regardless of which tab is active
+  var authBtn = document.getElementById('bannerAuthBtn');
+  if (authBtn) {
+    authBtn.textContent = 'My Progress →';
+    authBtn.onclick = function() { showTab('progress', document.querySelector('[onclick*=progress]')); };
   }
 }
 
