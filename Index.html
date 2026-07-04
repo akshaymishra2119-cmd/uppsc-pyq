@@ -350,6 +350,69 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   box-shadow:0 1px 6px rgba(109,40,217,.15);}
 .study-date{font-size:11px;color:var(--text3);margin-bottom:14px;font-weight:500;}
 .lp-loading{color:var(--text3);font-size:13px;text-align:center;padding:40px 0;}
+/* Study Material — new subject nav */
+.sm-subject-nav{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.sm-subj-btn{padding:8px 16px;font-size:13px;font-weight:600;border:1.5px solid var(--border);
+  border-radius:20px;background:var(--bg);color:var(--text2);cursor:pointer;transition:all .15s;}
+.sm-subj-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue);}
+.sm-subj-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25);}
+/* Polity Article cards — redesigned */
+.sm-stats-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.sm-stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;text-align:center;}
+.sm-stat-v{font-size:22px;font-weight:800;color:var(--blue);}
+.sm-stat-l{font-size:11px;color:var(--text3);margin-top:2px;}
+.sm-search-wrap{position:relative;margin-bottom:16px;}
+.sm-search-wrap::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;}
+.sm-search{width:100%;padding:9px 14px 9px 34px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;outline:none;}
+.sm-search:focus{border-color:var(--blue);}
+/* Part group headers */
+.sm-part-hd{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin:18px 0 8px;padding:0 2px;display:flex;align-items:center;gap:8px;}
+.sm-part-hd::after{content:'';flex:1;height:1px;background:var(--border);}
+/* Article cards */
+.sm-article-card{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--bg);transition:box-shadow .15s;}
+.sm-article-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.07);}
+.sm-article-card.open{border-color:var(--blue);}
+.sm-article-hd{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;user-select:none;}
+.sm-article-hd:hover{background:var(--bg2);}
+.sm-art-badge{background:var(--blue);color:#fff;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:700;white-space:nowrap;min-width:66px;text-align:center;flex-shrink:0;}
+.sm-art-info{flex:1;min-width:0;}
+.sm-article-title{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sm-freq-row{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.sm-freq-bar{height:3px;border-radius:2px;background:var(--blue);opacity:.5;}
+.sm-freq-label{font-size:11px;color:var(--text3);}
+.sm-art-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.sm-part-tag{font-size:11px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:2px 7px;white-space:nowrap;}
+.sm-article-count{font-size:11px;background:#FEF3C7;color:#92400E;border-radius:12px;padding:3px 9px;font-weight:700;white-space:nowrap;}
+.sm-article-count.high{background:#FEE2E2;color:#991B1B;}
+.sm-article-arrow{font-size:12px;color:var(--text3);transition:transform .2s;}
+.sm-article-card.open .sm-article-arrow{transform:rotate(180deg);}
+/* Article body */
+.sm-article-body{display:none;border-top:1px solid var(--border);}
+.sm-article-card.open .sm-article-body{display:block;}
+.sm-article-exp{font-size:13px;color:var(--text2);line-height:1.65;background:var(--bg2);border-left:3px solid var(--blue);padding:10px 14px;margin:12px 14px 8px;border-radius:0 6px 6px 0;}
+.sm-article-qs{display:flex;flex-direction:column;gap:7px;padding:0 14px 14px;}
+/* Question cards */
+.sm-aq{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;}
+.sm-aq-meta{display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap;align-items:center;}
+.sm-aq-year{background:var(--bg3,#f3f4f6);color:var(--text2);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
+.sm-aq-subj{background:var(--blue-light,#DBEAFE);color:var(--blue-dark,#1E40AF);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
+.sm-aq-ans{background:#CCFBF1;color:#134E4A;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
+.sm-aq-type{background:var(--bg,#fff);color:var(--text3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;}
+.sm-aq-text{color:var(--text);line-height:1.5;margin-bottom:5px;}
+.sm-aq-exp{font-size:11px;color:var(--text3);line-height:1.5;border-top:1px solid var(--border);padding-top:6px;margin-top:6px;}
+.sm-aq-opts{display:flex;flex-direction:column;gap:3px;margin:7px 0 4px;}
+.sm-aq-opt{font-size:12px;padding:5px 9px;border-radius:5px;line-height:1.4;color:var(--text2);background:var(--bg);border:1px solid var(--border);}
+.sm-aq-opt .sm-opt-lbl{font-weight:700;color:var(--text3);margin-right:5px;}
+.sm-aq-opt.correct{background:#DCFCE7;border-color:#86EFAC;color:#166534;}
+.sm-aq-opt.correct .sm-opt-lbl{color:#15803D;}
+/* Article constitutional text block */
+.sm-art-textblock{margin:12px 14px 0;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);}
+.sm-art-textlabel{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.sm-art-textlabel::before{content:'📜';font-size:11px;}
+.sm-art-textcontent{font-size:12.5px;color:var(--text);line-height:1.75;font-style:italic;}
+.sm-see-more{font-size:12px;color:var(--blue);cursor:pointer;display:inline-block;margin-top:4px;}
+.sm-see-more:hover{text-decoration:underline;}
+.sm-no-results{text-align:center;padding:40px;color:var(--text3);font-size:13px;}
 /* Editorial styles */
 .lp-ed-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
   padding:16px 18px;margin-bottom:12px;}
@@ -3111,19 +3174,14 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 
 <!-- ══ STUDY MATERIAL TAB ═══════════════════════════════════ -->
 <div class="tab" id="tab-study">
-  <div class="study-subtabs">
-    <button class="study-subtab active" data-tab="editorial" onclick="lpSwitch('editorial',this)">
-      📰 National Editorial
-    </button>
-    <button class="study-subtab" data-tab="upnews" onclick="lpSwitch('upnews',this)">
-      📍 UP News
-    </button>
-    <button class="study-subtab" data-tab="mcq" onclick="lpSwitch('mcq',this)">
-      💡 MCQ Practice
-    </button>
+  <!-- Subject nav -->
+  <div class="sm-subject-nav">
+    <button class="sm-subj-btn active" onclick="smSubject('polity',this)">⚖️ Polity</button>
+    <button class="sm-subj-btn" onclick="smSubject('history',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">🏛️ History</button>
+    <button class="sm-subj-btn" onclick="smSubject('geography',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">🌏 Geography</button>
+    <button class="sm-subj-btn" onclick="smSubject('economy',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">📈 Economy</button>
   </div>
-  <div class="study-date" id="lpDate"></div>
-  <div id="lpBody"><div class="lp-loading">Loading…</div></div>
+  <div id="smBody"><div class="lp-loading">Loading questions…</div></div>
 </div>
 
 </div><!-- /main -->
@@ -9283,84 +9341,457 @@ let _lpActive = 'editorial';
 let _lpCache  = {};
 let _studyInited = false;
 
+// ── Study Material Tab ─────────────────────────────────────────────────────
+function initLeftPanel() {} // backward compat
+function lpSwitch() {}      // backward compat
+function lpRender() {}      // backward compat
+
 function initStudyTab() {
-  const dateEl = document.getElementById('lpDate');
-  if (dateEl) dateEl.textContent =
-    new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   if (!_studyInited) {
     _studyInited = true;
-    lpSwitch('editorial', document.querySelector('.study-subtab[data-tab="editorial"]'));
+    smSubject('polity', document.querySelector('.sm-subj-btn.active'));
   }
 }
 
-// kept for backward compat (called on window.onload)
-function initLeftPanel() {}
-
-async function lpSwitch(tab, btn) {
-  _lpActive = tab;
-  document.querySelectorAll('.study-subtab').forEach(b => b.classList.remove('active'));
+function smSubject(subj, btn) {
+  document.querySelectorAll('.sm-subj-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  if (_lpCache[tab]) { lpRender(tab, _lpCache[tab]); return; }
-  document.getElementById('lpBody').innerHTML = '<div class="lp-loading">Loading…</div>';
-  try {
-    const data = await fetch(`/api/leftPanel/${tab}`).then(r => r.json());
-    _lpCache[tab] = data;
-    lpRender(tab, data);
-  } catch(e) {
-    document.getElementById('lpBody').innerHTML = '<div class="lp-loading">Could not load — is the server running?</div>';
+  const body = document.getElementById('smBody');
+  if (!body) return;
+  if (subj === 'polity') {
+    if (allQuestions && allQuestions.length) {
+      buildPolityStudyView(body);
+    } else {
+      body.innerHTML = '<div class="lp-loading">Questions still loading — try again in a moment.</div>';
+      setTimeout(() => smSubject('polity', btn), 1500);
+    }
+  } else {
+    body.innerHTML = `<div class="sm-no-results">📚 ${subj.charAt(0).toUpperCase()+subj.slice(1)} study notes coming soon!</div>`;
   }
 }
 
-function lpRender(tab, data) {
-  const body = document.getElementById('lpBody');
-  if (!data.ok || !data.items.length) {
-    body.innerHTML = '<div class="lp-loading">No file found for today yet.</div>'; return;
-  }
-  if (tab === 'editorial') {
-    body.innerHTML = data.items.map(item => `
-      <div class="lp-ed-item">
-        <div class="lp-ed-title">${item.title}</div>
-        ${item.bullets.map(b => `<div class="lp-ed-bullet">${b}</div>`).join('')}
-        ${item.takeaway ? `<div class="lp-ed-takeaway">💡 ${item.takeaway}</div>` : ''}
-      </div>`).join('');
-  } else if (tab === 'upnews') {
-    body.innerHTML = data.items.map(item => `
-      <div class="lp-up-item">
-        <div class="lp-cat-badge">${item.category}</div>
-        <div class="lp-up-headline">${item.headline}</div>
-        ${item.detail ? `<div class="lp-up-detail">${item.detail}</div>` : ''}
-      </div>`).join('');
-  } else if (tab === 'mcq') {
-    body.innerHTML = data.items.map((q,i) => `
-      <div class="lp-mcq-item" id="lpmcq-${i}">
-        <div class="lp-mcq-qno">Q${q.qno}</div>
-        <div class="lp-mcq-q">${q.question}</div>
-        <div class="lp-mcq-opts">
-          ${['a','b','c','d'].map(opt => q.options[opt] ? `
-            <div class="lp-mcq-opt" id="lpmcq-${i}-${opt}" onclick="lpMCQAnswer(${i},'${opt}','${q.answer}')">
-              <strong>${opt.toUpperCase()}.</strong> ${q.options[opt]}
-            </div>` : '').join('')}
-        </div>
-        <span class="lp-mcq-reveal" onclick="lpMCQReveal(${i},'${q.answer}')">Show Answer</span>
-      </div>`).join('');
-  }
-}
+// ── Article Knowledge Base ────────────────────────────────────────────────
+const ARTICLE_DB = {
+  '3':   { title: 'Formation of new States', artText: 'Parliament may by law— (a) form a new State by separation of territory from any State or by uniting two or more States or parts of States; (b) increase the area of any State; (c) diminish the area of any State; (d) alter the boundaries of any State; (e) alter the name of any State.', exp: 'Parliament can form new States or alter areas/boundaries/names by simple majority — not by constitutional amendment.' },
+  '12':  { title: 'Definition of State', artText: '"the State" includes the Government and Parliament of India and the Government and the Legislature of each of the States and all local or other authorities within the territory of India or under the control of the Government of India.', exp: 'Defines "State" for Part III (Fundamental Rights) — includes Parliament, State Legislatures, Central/State Govts, and other authorities under their control.' },
+  '13':  { title: 'Laws inconsistent with FRs void', artText: '(1) All laws in force immediately before the commencement of this Constitution, in so far as they are inconsistent with the provisions of this Part, shall, to the extent of such inconsistency, be void. (2) The State shall not make any law which takes away or abridges the rights conferred by this Part and any law made in contravention of this clause shall, to the extent of the contravention, be void.', exp: 'All laws inconsistent with Fundamental Rights are void. Includes pre-Constitutional laws and any State action.' },
+  '14':  { title: 'Equality before law', artText: 'The State shall not deny to any person equality before the law or the equal protection of the laws within the territory of India.', exp: 'Two concepts: (1) Equality before law — British concept, negative, no special privilege; (2) Equal protection of laws — American concept, positive, equals treated equally.' },
+  '15':  { title: 'Prohibition of discrimination', artText: '(1) The State shall not discriminate against any citizen on grounds only of religion, race, caste, sex, place of birth or any of them. (2) No citizen shall be subject to any disability or restriction on grounds only of religion, race, caste, sex, place of birth.', exp: 'Prohibits discrimination on grounds of religion, race, caste, sex, or place of birth. State may make special provisions for women, children, SCs, STs, OBCs (cls. 3, 4, 5).' },
+  '16':  { title: 'Equality of opportunity in public employment', artText: '(1) There shall be equality of opportunity for all citizens in matters relating to employment or appointment to any office under the State. (2) No citizen shall, on grounds only of religion, race, caste, sex, descent, place of birth, residence or any of them, be ineligible for, or discriminated against in respect of, any employment or office under the State.', exp: 'Equal opportunity in public employment. Reservation for backward classes, SCs, STs is permitted under clauses (4) and (4A).' },
+  '17':  { title: 'Abolition of Untouchability', artText: '"Untouchability" is abolished and its practice in any form is forbidden. The enforcement of any disability arising out of "Untouchability" shall be an offence punishable in accordance with law.', exp: 'Absolute right — no exceptions. Enforcement of untouchability disabilities is a criminal offence under Protection of Civil Rights Act, 1955.' },
+  '18':  { title: 'Abolition of Titles', artText: '(1) No title, not being a military or academic distinction, shall be conferred by the State. (2) No citizen of India shall accept any title from any foreign State.', exp: 'No title (except military or academic) shall be conferred by the State. Citizens cannot accept foreign titles without President\'s consent.' },
+  '19':  { title: 'Protection of six freedoms', artText: 'All citizens shall have the right— (a) to freedom of speech and expression; (b) to assemble peaceably and without arms; (c) to form associations or unions or co-operative societies; (d) to move freely throughout the territory of India; (e) to reside and settle in any part of the territory of India; (g) to practise any profession, or to carry on any occupation, trade or business.', exp: 'Six freedoms (originally 7; right to property removed by 44th Amendment). Subject to reasonable restrictions under clauses (2)–(6).' },
+  '20':  { title: 'Protection in respect of conviction', artText: '(1) No person shall be convicted of any offence except for violation of a law in force at the time of the commission of the act. (2) No person shall be prosecuted and punished for the same offence more than once. (3) No person accused of any offence shall be compelled to be a witness against himself.', exp: 'Three protections: (1) No ex-post-facto law, (2) No double jeopardy, (3) No self-incrimination. Cannot be suspended even during Emergency.' },
+  '21':  { title: 'Protection of life and personal liberty', artText: 'No person shall be deprived of his life or personal liberty except according to procedure established by law.', exp: 'Most litigated FR. Expanded by courts to include right to privacy, livelihood, health, education, legal aid, speedy trial. Cannot be suspended except under Art 359.' },
+  '21A': { title: 'Right to Education', artText: 'The State shall provide free and compulsory education to all children of the age of six to fourteen years in such manner as the State may, by law, determine.', exp: 'Added by 86th Amendment 2002. Implemented through Right to Education Act, 2009. Applies to children aged 6–14 years.' },
+  '22':  { title: 'Protection against arrest and detention', artText: '(1) No person who is arrested shall be detained in custody without being informed, as soon as may be, of the grounds for such arrest nor shall he be denied the right to consult, and to be defended by, a legal practitioner of his choice. (2) Every person who is arrested and detained in custody shall be produced before the nearest magistrate within a period of twenty-four hours of such arrest.', exp: 'Rights on arrest: informed of grounds, consult advocate, produced before Magistrate within 24 hours. Does not apply to enemy aliens or preventive detention.' },
+  '23':  { title: 'Prohibition of traffic in human beings and forced labour', artText: 'Traffic in human beings and begar and other similar forms of forced labour are prohibited and any contravention of this provision shall be an offence punishable in accordance with law.', exp: 'Prohibits traffic in human beings and begar (forced labour). State can impose compulsory service for public purposes (Art 23(2)).' },
+  '24':  { title: 'Prohibition of employment of children in factories', artText: 'No child below the age of fourteen years shall be employed to work in any factory or mine or engaged in any other hazardous employment.', exp: 'No child below 14 shall be employed in factories, mines or hazardous occupations. Child Labour (Prohibition and Regulation) Act enforces this.' },
+  '25':  { title: 'Freedom of conscience and free profession of religion', artText: '(1) Subject to public order, morality and health and to the other provisions of this Part, all persons are equally entitled to freedom of conscience and the right freely to profess, practise and propagate religion.', exp: 'Right to freely profess, practise and propagate religion. Subject to public order, morality and health. State can regulate secular activities associated with religion.' },
+  '30':  { title: 'Right of minorities to establish educational institutions', artText: '(1) All minorities, whether based on religion or language, shall have the right to establish and administer educational institutions of their choice.', exp: 'All religious and linguistic minorities have the right to establish and administer educational institutions. State cannot discriminate in granting aid.' },
+  '32':  { title: 'Right to Constitutional Remedies', artText: '(1) The right to move the Supreme Court by appropriate proceedings for the enforcement of the rights conferred by this Part is guaranteed. (2) The Supreme Court shall have power to issue directions or orders or writs, including writs in the nature of habeas corpus, mandamus, prohibition, quo warranto and certiorari, whichever may be appropriate, for the enforcement of any of the rights conferred by this Part.', exp: 'Dr. Ambedkar called it "heart and soul of Constitution". Five writs. This right itself is a Fundamental Right and cannot be suspended except during Emergency (Art 359).' },
+  '38':  { title: 'State to secure a social order for promotion of welfare of the people', artText: '(1) The State shall strive to promote the welfare of the people by securing and protecting as effectively as it may a social order in which justice, social, economic and political, shall inform all the institutions of the national life.', exp: 'State shall strive to promote welfare by securing social, economic and political justice in all institutions.' },
+  '39':  { title: 'Certain principles of policy to be followed by the State', artText: 'The State shall, in particular, direct its policy towards securing— (a) right to adequate means of livelihood; (b) distribution of ownership of material resources; (c) no concentration of wealth; (d) equal pay for equal work for men and women; (e) health and strength of workers, especially children not abused.', exp: 'Includes equal pay for equal work, right to adequate means of livelihood, prevention of concentration of wealth and means of production.' },
+  '39A': { title: 'Equal justice and free legal aid', artText: 'The State shall secure that the operation of the legal system promotes justice, on a basis of equal opportunity, and shall, in particular, provide free legal aid, by suitable legislation or schemes or in any other way, to ensure that opportunities for securing justice are not denied to any citizen by reason of economic or other disabilities.', exp: 'State shall secure equal justice and free legal aid. Implemented through Legal Services Authorities Act, 1987 and NALSA.' },
+  '40':  { title: 'Organisation of village panchayats', artText: 'The State shall take steps to organise village panchayats and endow them with such powers and authority as may be necessary to enable them to function as units of self-government.', exp: 'Directive to organise Panchayats. Led to 73rd Amendment 1992 which gave constitutional status to Panchayati Raj institutions.' },
+  '44':  { title: 'Uniform Civil Code', artText: 'The State shall endeavour to secure for the citizens a uniform civil code throughout the territory of India.', exp: 'One of the most debated DPSPs. Governs personal matters (marriage, divorce, inheritance) uniformly. Currently governed by religion-specific personal laws.' },
+  '45':  { title: 'Provision for early childhood care and education', artText: 'The State shall endeavour to provide early childhood care and education for all children until they complete the age of six years.', exp: 'Modified after Art 21A was inserted (86th Amendment). Now Art 45 covers 0–6 years; Art 21A covers 6–14 years compulsory education.' },
+  '51A': { title: 'Fundamental Duties', artText: 'It shall be the duty of every citizen of India— (a) to abide by the Constitution; (b) to cherish the ideals of the freedom struggle; (c) to uphold sovereignty and integrity of India; (d) to defend the country; (e) to promote harmony; (f) to preserve composite culture; (g) to protect natural environment; (h) to develop scientific temper; (i) to safeguard public property; (j) to strive for excellence; (k) provide education to children aged 6–14.', exp: '11 Fundamental Duties. Added by 42nd Amendment 1976 (10 duties) based on Swaran Singh Committee. 11th duty added by 86th Amendment 2002. Not justiciable but courts consider them.' },
+  '52':  { title: 'The President of India', artText: 'There shall be a President of India.', exp: 'Constitutional head of the Union Executive. Elected indirectly by elected members of both Houses of Parliament and elected members of State Legislative Assemblies.' },
+  '61':  { title: 'Procedure for impeachment of the President', artText: 'When a President is to be impeached for violation of the Constitution, the charge shall be preferred by either House of Parliament. No such charge shall be preferred unless— (a) the proposal to prefer such charge is contained in a resolution which has been moved after at least fourteen days\' notice; (b) such resolution has been passed by a majority of not less than two-thirds of the total membership of the House.', exp: 'President can be removed by impeachment for violation of Constitution. Requires 2/3 majority of total membership of both Houses. Only elected members participate.' },
+  '72':  { title: 'Power of President to grant pardons, etc.', artText: 'The President shall have the power to grant pardons, reprieves, respites or remissions of punishment or to suspend, remit or commute the sentence of any person convicted of any offence where the punishment or sentence is by a Court Martial; or is for an offence against any law relating to a matter to which the executive power of the Union extends; or is a sentence of death.', exp: 'President\'s pardoning power covers: Court Martial cases, Union law offences, and death sentences. Governor cannot grant pardon in death sentence cases (Art 161).' },
+  '74':  { title: 'Council of Ministers to aid and advise President', artText: '(1) There shall be a Council of Ministers with the Prime Minister at the head to aid and advise the President who shall, in the exercise of his functions, act in accordance with such advice: Provided that the President may require the Council of Ministers to reconsider such advice, either generally or otherwise, and the President shall act in accordance with the advice tendered after such reconsideration.', exp: 'Council of Ministers with PM to aid and advise President. Advice is binding (44th Amendment 1978). President can send it back for reconsideration once.' },
+  '76':  { title: 'Attorney-General for India', artText: '(1) The President shall appoint a person who is qualified to be appointed a Judge of the Supreme Court to be Attorney-General for India. (2) It shall be the duty of the Attorney-General to give advice to the Government of India upon such legal matters and to perform such other duties of a legal character as may from time to time be referred or assigned to him by the President.', exp: 'Highest law officer of India. Appointed by President. Must be qualified as SC judge. Has right of audience in all courts. Not a Cabinet member; no fixed tenure.' },
+  '79':  { title: 'Constitution of Parliament', artText: 'There shall be a Parliament for the Union which shall consist of the President and two Houses to be known respectively as the Council of States and the House of the People.', exp: 'Parliament = President + Rajya Sabha (Council of States) + Lok Sabha (House of the People).' },
+  '108': { title: 'Joint sitting of both Houses', artText: 'If after a Bill has been passed by one House and transmitted to the other House— (a) the Bill is rejected by the other House; or (b) the Houses have finally disagreed as to the amendments to be made in the Bill; or (c) more than six months elapse from the date of the reception of the Bill by the other House without the Bill being passed by it, the President may, unless the Bill has lapsed by reason of a dissolution of the House of the People, notify to the Houses by message if they are sitting or by public notification if they are not sitting, his intention to summon them to meet in a joint sitting.', exp: 'Used to resolve deadlock on ordinary Bills. Not applicable for Money Bills, Constitution Amendment Bills. Speaker of Lok Sabha presides. Used only thrice (1961, 1978, 2002).' },
+  '110': { title: 'Definition of "Money Bills"', artText: 'A Bill shall be deemed to be a Money Bill if it contains only provisions dealing with all or any of the following matters, namely— (a) the imposition, abolition, remission, alteration or regulation of any tax; (b) the regulation of the borrowing of money or the giving of any guarantee by the Government of India; (c) the custody of the Consolidated Fund of India or the Contingency Fund of India; (d) the appropriation of moneys out of the Consolidated Fund of India.', exp: 'Money Bill deals only with financial matters. Speaker of Lok Sabha certifies it. Rajya Sabha can only make recommendations, not reject or amend. President cannot return it.' },
+  '112': { title: 'Annual Financial Statement', artText: 'The President shall in respect of every financial year cause to be laid before both the Houses of Parliament a statement of the estimated receipts and expenditure of the Government of India for that year, in this Part referred to as the "annual financial statement".', exp: 'The "Budget". Contains estimates of receipts and expenditures. Divided into Consolidated Fund, Contingency Fund, and Public Account.' },
+  '123': { title: 'Power of President to promulgate Ordinances', artText: 'If at any time, except when both Houses of Parliament are in session, the President is satisfied that circumstances exist which render it necessary for him to take immediate action, he may promulgate such Ordinances as the circumstances appear to him to require.', exp: 'President can promulgate Ordinances when Parliament is not in session. Must be ratified by Parliament within 6 weeks of reassembly. Ordinance cannot amend the Constitution.' },
+  '124': { title: 'Establishment and constitution of Supreme Court', artText: 'There shall be a Supreme Court of India consisting of a Chief Justice of India and, until Parliament by law prescribes a larger number, of not more than thirty-three other Judges.', exp: 'Highest court of the land. Judges appointed by President. CJI appointed on basis of seniority. Judges hold office till age of 65 years.' },
+  '143': { title: 'Power of President to consult Supreme Court', artText: 'If at any time it appears to the President that a question of law or fact has arisen, or is likely to arise, which is of such a nature and of such public importance that it is expedient to obtain the opinion of the Supreme Court upon it, he may refer the question to that Court for consideration.', exp: 'Advisory jurisdiction. SC may decline to give opinion. Opinion is not binding on the President. Also called "Presidential Reference".' },
+  '148': { title: 'Comptroller and Auditor-General of India', artText: 'There shall be a Comptroller and Auditor-General of India who shall be appointed by the President by warrant under his hand and seal and shall only be removed from office in like manner and on the like grounds as a Judge of the Supreme Court.', exp: 'CAG is guardian of public purse. Appointed by President. Removed like SC judge. Audits accounts of Union and States. Reports placed before Parliament/State Legislature.' },
+  '155': { title: 'Appointment of Governor', artText: 'The Governor of a State shall be appointed by the President by warrant under his hand and seal.', exp: 'Governor appointed by President. Agent of the Centre. Can hold charge of more than one State. Holds office during pleasure of President.' },
+  '161': { title: 'Power of Governor to grant pardons', artText: 'The Governor of a State shall have the power to grant pardons, reprieves, respites or remissions of punishment or to suspend, remit or commute the sentence of any person convicted of any offence against any law relating to a matter to which the executive power of the State extends.', exp: 'Governor\'s pardoning power covers only State law offences. Cannot grant pardon in death sentence cases — that power belongs only to the President.' },
+  '162': { title: 'Extent of executive power of State', artText: 'Subject to the provisions of this Constitution, the executive power of a State shall extend to the matters with respect to which the Legislature of the State has power to make laws.', exp: 'State executive power extends to matters in State List and Concurrent List. Subject to Union executive power.' },
+  '163': { title: 'Council of Ministers to aid and advise Governor', artText: '(1) There shall be a Council of Ministers with the Chief Minister at the head to aid and advise the Governor in the exercise of his functions, except in so far as he is by or under this Constitution required to exercise his functions or any of them in his discretion.', exp: 'Council of Ministers with CM to aid and advise Governor. Governor has more discretionary powers than President in certain situations.' },
+  '171': { title: 'Composition of the Legislative Councils', artText: 'The total number of members in the Legislative Council of a State shall not exceed one-third of the total number of members in the Legislative Assembly of that State: Provided that the total number of members in the Legislative Council of a State shall in no case be less than forty.', exp: 'Legislative Council (Vidhan Parishad): max = 1/3 of Vidhan Sabha, min = 40 members. Currently 6 states have Legislative Councils.' },
+  '213': { title: 'Power of Governor to promulgate Ordinances', artText: 'If at any time, except when the Legislative Assembly of a State is in session, or where there is a Legislative Council in a State, except when both Houses of the Legislature are in session, the Governor is satisfied that circumstances exist which render it necessary for him to take immediate action, he may promulgate such Ordinances as the circumstances appear to him to require.', exp: 'Governor can promulgate Ordinances when State Legislature is not in session. Must be approved by Governor on advice of Council of Ministers. Cannot exceed State legislative competence.' },
+  '226': { title: 'Power of High Courts to issue certain writs', artText: 'Every High Court shall have power, throughout the territories in relation to which it exercises jurisdiction, to issue to any person or authority, including in appropriate cases, any Government, within those territories directions, orders or writs, including writs in the nature of habeas corpus, mandamus, prohibitions, quo warranto and certiorari, or any of them, for the enforcement of any of the rights conferred by Part III and for any other purpose.', exp: 'High Courts have broader writ jurisdiction than SC — "for any other purpose" (not just FR enforcement). HC writ against anyone within its territorial jurisdiction.' },
+  '243':  { title: 'Definitions — Panchayats', artText: 'In this Part, unless the context otherwise requires— "district" means a district in a State; "Gram Sabha" means a body consisting of persons registered in the electoral rolls relating to a village comprised within the area of Panchayat at the village level; "intermediate level" means a level between the village and district levels.', exp: 'Key definitions for Part IX (Panchayats). Added by 73rd Constitutional Amendment Act, 1992. Came into force on 24 April 1993.' },
+  '243K': { title: 'Elections to the Panchayats', artText: 'The superintendence, direction and control of the preparation of electoral rolls for, and the conduct of, all elections to the Panchayats shall be vested in a State Election Commission consisting of a State Election Commissioner to be appointed by the Governor.', exp: 'SEC controls elections to Panchayats. State Election Commissioner can only be removed in same manner as HC judge. Term and conditions of service protected.' },
+  '243ZA':{ title: 'Elections to the Municipalities', artText: 'The superintendence, direction and control of the preparation of electoral rolls for, and the conduct of, all elections to the Municipalities shall be vested in the State Election Commission referred to in article 243K.', exp: 'Same SEC that controls Panchayat elections also controls Municipal elections. Added by 74th Amendment 1992.' },
+  '245': { title: 'Extent of laws made by Parliament and by the Legislatures of States', artText: '(1) Subject to the provisions of this Constitution, Parliament may make laws for the whole or any part of the territory of India, and the Legislature of a State may make laws for the whole or any part of the State. (2) No law made by Parliament shall be deemed to be invalid on the ground that it would have extra-territorial operation.', exp: 'Parliament: laws for whole or any part of India. State Legislature: laws for whole or any part of State. Parliament laws have extra-territorial application.' },
+  '248': { title: 'Residuary powers of legislation', artText: 'Subject to article 246A, Parliament has exclusive power to make any law with respect to any matter not enumerated in the Concurrent List or State List.', exp: 'Parliament has residuary powers — matters not in State or Concurrent List. Examples: Cyber crimes, space, nuclear energy.' },
+  '249': { title: 'Power of Parliament to legislate with respect to a matter in the State List', artText: 'Notwithstanding anything in the foregoing provisions of this Chapter, if the Council of States has declared by resolution supported by not less than two-thirds of the members present and voting that it is necessary or expedient in the national interest that Parliament should make laws with respect to goods and services tax...', exp: 'Rajya Sabha passes resolution by 2/3 majority → Parliament can legislate on State List subject for 1 year (renewable). Applies to whole of India.' },
+  '256': { title: 'Obligation of States and the Union', artText: 'The executive power of every State shall be so exercised as to ensure compliance with the laws made by Parliament and any existing laws which apply in that State, and the executive power of the Union shall extend to the giving of such directions to a State as may appear to the Government of India to be necessary for that purpose.', exp: 'States must comply with Parliament laws. Union can give directions to States. Failure can lead to President\'s Rule under Art 356.' },
+  '263': { title: 'Provisions with respect to an inter-State Council', artText: 'If at any time it appears to the President that the public interests would be served by the establishment of a Council charged with the duty of— (a) inquiring into and advising upon disputes which may have arisen between States; (b) investigating and discussing subjects in which some or all of the States, or the Union and one or more of the States, have a common interest.', exp: 'Inter-State Council: President may establish by order. Not a permanent constitutional body. Sarkaria Commission (1988) recommended making it a permanent body.' },
+  '280': { title: 'Finance Commission', artText: '(1) The President shall, within two years from the commencement of this Constitution and thereafter at the expiration of every fifth year or earlier, as the President considers necessary, by order constitute a Finance Commission which shall consist of a Chairman and four other members to be appointed by the President.', exp: 'Quasi-judicial body constituted every 5 years. Recommends: share of taxes between Centre and States, grants-in-aid to States, measures to augment State finances. 16th FC: Chairman N.K. Singh.' },
+  '300A': { title: 'Persons not to be deprived of property save by authority of law', artText: 'No person shall be deprived of his property save by authority of law.', exp: 'Property is now a constitutional right (not a Fundamental Right) after 44th Amendment 1978 which deleted Art 19(1)(f) and Art 31. Can be restricted by law without compensation.' },
+  '312': { title: 'All-India Services', artText: 'Notwithstanding anything in Chapter VI of Part VI, Parliament may by law provide for the creation of one or more all India services (including an all India judicial service) common to the Union and the States, and, subject to the other provisions of this Chapter, make provisions for the recruitment, and the conditions of service of persons appointed, to any such service: Provided that the Rajya Sabha has passed a resolution supported by not less than two-thirds of the members present and voting declaring that it is necessary or expedient in the national interest so to do.', exp: 'Rajya Sabha must pass resolution by 2/3 majority to create new All India Services. Existing AIS: IAS (1946), IPS (1948), IFoS (1966).' },
+  '315': { title: 'Public Service Commissions for the Union and for the States', artText: '(1) There shall be a Public Service Commission for the Union and a Public Service Commission for each State. (2) Two or more States may agree that there shall be one Public Service Commission for that group of States, and if a resolution to that effect is passed by the House or each House of the Legislature of each of those States, Parliament may by law provide for the appointment of a Joint State Public Service Commission.', exp: 'UPSC for Union, SPSC for each State. Joint PSC for two or more States (created by Parliament on State resolutions). UPSC is constitutional body.' },
+  '324': { title: 'Superintendence, direction and control of elections', artText: 'The superintendence, direction and control of the preparation of the electoral rolls for, and the conduct of, all elections to Parliament and to the Legislature of every State and of elections to the offices of President and Vice-President held under this Constitution shall be vested in a Commission (referred to in this Constitution as the Election Commission).', exp: 'ECI controls all elections: Parliament, State Legislatures, President, Vice-President. CEC can only be removed like SC judge. Other ECs protected from adverse service conditions.' },
+  '338': { title: 'National Commission for Scheduled Castes', artText: 'There shall be a Commission for the Scheduled Castes to be known as the National Commission for the Scheduled Castes. The Chairman, Vice-Chairman and other members of the National Commission for the Scheduled Castes shall be appointed by the President by warrant under his hand and seal.', exp: 'NCSC investigates and monitors safeguards for SCs. Presents annual reports to President. 89th Amendment 2003 bifurcated into NCSC and NCST.' },
+  '338A': { title: 'National Commission for Scheduled Tribes', artText: 'There shall be a Commission for the Scheduled Tribes to be known as the National Commission for the Scheduled Tribes. The Chairman, Vice-Chairman and other members of the National Commission for the Scheduled Tribes shall be appointed by the President by warrant under his hand and seal.', exp: 'NCST investigates and monitors safeguards for STs. Created by 89th Amendment 2003 (separated from NCSC). Functions similar to NCSC.' },
+  '340': { title: 'Appointment of a Commission to investigate the conditions of backward classes', artText: 'The President may by order appoint a Commission consisting of such persons as he thinks fit to investigate the conditions of socially and educationally backward classes within the territory of India and the difficulties under which they labour and to make recommendations as to the steps that should be taken.', exp: 'President may appoint commission for OBCs. Kaka Kalelkar Commission (1953) and Mandal Commission (1979) set up under this article.' },
+  '343': { title: 'Official language of the Union', artText: '(1) The official language of the Union shall be Hindi in Devanagari script. The form of numerals to be used for the official purposes of the Union shall be the international form of Indian numerals. (2) Notwithstanding anything in clause (1), for a period of fifteen years from the commencement of this Constitution, the English language shall continue to be used for all the official purposes of the Union for which it was being used immediately before such commencement.', exp: 'Hindi in Devanagari script is official language. English continued beyond 15 years by Official Languages Act 1963. Both Hindi and English used for official purposes.' },
+  '350B': { title: 'Special Officer for linguistic minorities', artText: 'There shall be a Special Officer for linguistic minorities to be appointed by the President. It shall be the duty of the Special Officer to investigate all matters relating to the safeguards provided for linguistic minorities under this Constitution and report to the President upon those matters at such intervals as the President may direct.', exp: 'Commissioner for Linguistic Minorities appointed by President. Reports submitted to President → laid before Parliament. Office established in 1957.' },
+  '351': { title: 'Directive for development of the Hindi language', artText: 'It shall be the duty of the Union to promote the spread of the Hindi language, to develop it so that it may serve as a medium of expression for all the elements of the composite culture of India and to secure its enrichment by assimilating without interfering with its genius, the forms, style and expressions used in Hindustani and in the other languages of India specified in the Eighth Schedule.', exp: 'Union must promote Hindi and develop it as medium of composite culture. Hindi should assimilate forms from Hindustani and other Schedule 8 languages.' },
+  '352': { title: 'Proclamation of Emergency', artText: '(1) If the President is satisfied that a grave emergency exists whereby the security of India or of any part of the territory thereof is threatened, whether by war or external aggression or armed rebellion, he may, by Proclamation, make a declaration to that effect in respect of the whole of India or of such part of the territory thereof. (3) A Proclamation of Emergency shall not be approved by either House of Parliament except by resolutions passed by a majority of the total membership of that House and by a majority of not less than two-thirds of the members of that House present and voting.', exp: 'National Emergency: War, External Aggression, or Armed Rebellion. Requires Cabinet recommendation in writing. Parliament approval within 1 month by special majority. Every 6 months renewal needed.' },
+  '356': { title: "President's Rule", artText: "(1) If the President, on receipt of a report from the Governor of a State or otherwise, is satisfied that the government of the State cannot be carried on in accordance with the provisions of this Constitution, the President may by Proclamation— (a) assume to himself all or any of the functions of the Government of the State; (b) declare that the powers of the Legislature of the State shall be exercisable by or under the authority of Parliament.", exp: "President's Rule (State Emergency). Needs Parliament approval within 2 months. Maximum 3 years. S.R. Bommai case (1994) SC judgment restricts its misuse." },
+  '360': { title: 'Provisions as to financial emergency', artText: 'If the President is satisfied that a situation has arisen whereby the financial stability or credit of India or of any part thereof is threatened, he may by a Proclamation make a declaration to that effect.', exp: 'Financial Emergency: never imposed so far. Can direct reduction of salaries of all govt employees including judges. Parliament approval within 2 months. No maximum period.' },
+  '368': { title: 'Power of Parliament to amend the Constitution', artText: 'Notwithstanding anything in this Constitution, Parliament may in exercise of its constituent power amend by way of addition, variation or repeal any provision of this Constitution in accordance with the procedure laid down in this Article. An amendment of this Constitution may be initiated only by the introduction of a Bill for the purpose in either House of Parliament. The Bill must be passed in each House by a majority of the total membership of that House and by a majority of not less than two-thirds of the members of that House present and voting.', exp: 'Three types of amendment: Simple majority (ordinary), Special majority (2/3 + 50% total), Special majority + State ratification (federal provisions). Basic Structure doctrine (Kesavananda Bharati, 1973) limits Parliament\'s amending power.' },
+  '370': { title: 'Special provisions with respect to the State of Jammu and Kashmir', artText: 'Notwithstanding anything in this Constitution, (1)(c) the provisions of article 1 and of this article shall apply in relation to that State; (1)(d) such of the other provisions of this Constitution shall apply in relation to that State subject to such exceptions and modifications as the President may by order specify.', exp: 'Article 370 gave special autonomous status to J&K. Abrogated on 5 August 2019 by Presidential Order under Art 370(3). J&K reorganised into two UTs: J&K (with Legislature) and Ladakh (without Legislature).' },
+  '371': { title: 'Special provisions with respect to certain States', artText: 'Notwithstanding anything in this Constitution, the President may by order made with respect to the State of Maharashtra or Gujarat, provide for any special responsibility of the Governor for — (a) the establishment of separate development boards for Vidarbha, Marathwada, and the rest of Maharashtra; (b) equitable allocation of funds for developmental expenditure over the said areas.', exp: 'Special provisions for: Maharashtra/Gujarat (Art 371), Nagaland (371A), Assam (371B), Manipur (371C), Andhra/Telangana (371D/E), Sikkim (371F), Mizoram (371G), Arunachal (371H), Goa (371I).' },
+};
 
-function lpMCQAnswer(idx, chosen, correct) {
-  ['a','b','c','d'].forEach(o => {
-    const el = document.getElementById(`lpmcq-${idx}-${o}`);
-    if (!el) return;
-    el.classList.remove('correct','wrong');
-    if (o === correct) el.classList.add('correct');
-    else if (o === chosen) el.classList.add('wrong');
-    el.onclick = null;
+// ── Subtopic → Articles mapping ───────────────────────────────────────────
+const SUBTOPIC_ARTICLES = {
+  'Fundamental Rights':       ['14','15','16','17','19','20','21','21A','22','23','24','25','32'],
+  'DPSP':                     ['39','39A','44','45','48A','51'],
+  'DPSP and FD':              ['39','39A','44','51A'],
+  'Fundamental Duties':       ['51A'],
+  'President':                ['52','58','61','72','74'],
+  'Vice President':           ['63','65','66'],
+  'Parliament':               ['79','108','110','112'],
+  'Lok Sabha':                ['81','93'],
+  'Rajya Sabha':              ['80'],
+  'Rajya Sabha Seats':        ['80'],
+  'Parliamentary System':     ['79','74'],
+  'Attorney General':         ['76'],
+  'Governor':                 ['155','161','162','213'],
+  'Supreme Court':            ['124','32','136','143'],
+  'High Court':               ['214','226'],
+  'Judiciary':                ['124','32','226'],
+  'Panchayati Raj':           ['40','243','243K'],
+  'Local Governance':         ['243','243K','243ZA'],
+  'Urban Local Bodies':       ['243P','243ZA'],
+  'Finance Commission':       ['280'],
+  'Election Commission':      ['324'],
+  'Elections':                ['324','325'],
+  'Emergency':                ['352','356','360'],
+  'Constitutional Amendment': ['368'],
+  'Constitutional Amendments':['368'],
+  'All India Services':       ['312'],
+  'New All India Service':    ['312'],
+  'UPSC':                     ['315'],
+  'CAG':                      ['148'],
+  'Constitutional Bodies':    ['280','315','324','338','148'],
+  'Language':                 ['343','350B','351'],
+  'Linguistic Minorities':    ['350B'],
+  'Official Language':        ['343','344','351'],
+  'Federalism':               ['245','246','248','249','263'],
+  'Concurrent List':          ['246','254'],
+  'Finance':                  ['265','266','267','268','280'],
+  'Right to Property':        ['300A'],
+  'Constitutional Parts':     ['245','246'],
+  'Constitutional Cases':     ['32','368'],
+  'Minorities':               ['29','30','350B'],
+  'National Commission':      ['338','338A'],
+  'SC ST':                    ['338','338A'],
+};
+
+// Keyword patterns → articles (scans question text)
+const KEYWORD_ARTICLES = [
+  [/finance\s+commission/i,              ['280']],
+  [/attorney\s+general/i,                ['76']],
+  [/solicitor\s+general/i,               ['76']],
+  [/comptroller.*auditor|CAG\b/i,        ['148','149','150','151']],
+  [/election\s+commission/i,             ['324']],
+  [/habeas\s+corpus|mandamus|certiorari|quo\s+warranto|prohibition\s+(writ)/i, ['32','226']],
+  [/panchayat|gram\s+sabha|gram\s+panchayat/i, ['243','243A','243B','243G','243K']],
+  [/municipal|urban\s+local\s+body|nagar\s+nigam|nagar\s+palika/i, ['243P','243Q','243ZA']],
+  [/rajya\s+sabha\s+(exclusive|special|power)/i, ['249','312']],
+  [/joint\s+sitting|joint\s+session/i,   ['108']],
+  [/money\s+bill/i,                      ['110','109']],
+  [/ordinance/i,                         ['123','213']],
+  [/president.*emergency|national\s+emergency/i, ['352']],
+  [/president.*rule|state.*emergency/i,  ['356']],
+  [/financial\s+emergency/i,             ['360']],
+  [/fundamental\s+dut/i,                 ['51A']],
+  [/all\s+india\s+service/i,             ['312']],
+  [/public\s+service\s+commission|UPSC\b|UPPSC\b/i, ['315','316']],
+  [/scheduled\s+(tribe|caste)|SC.*ST|ST.*SC/i, ['338','338A','341','342']],
+  [/official\s+language|raj\s+bhasha/i,  ['343','344','351']],
+  [/linguistic\s+minorit/i,              ['350B','29','30']],
+  [/uniform\s+civil\s+code/i,            ['44']],
+  [/right\s+to\s+education|free.*compulsory.*education/i, ['21A','45']],
+  [/right\s+to\s+property/i,             ['300A']],
+  [/untouchability/i,                    ['17']],
+  [/child\s+labour|employment.*child/i,  ['24']],
+  [/constitutional\s+amendment/i,        ['368']],
+  [/sarkaria\s+commission/i,             ['263']],
+  [/inter.*state.*council/i,             ['263']],
+  [/consolidated\s+fund/i,               ['266']],
+  [/contingency\s+fund/i,                ['267']],
+  [/speaker.*lok\s+sabha|lok\s+sabha.*speaker/i, ['93','94','95']],
+  [/supreme\s+court/i,                   ['124','131','132','133','136']],
+  [/high\s+court/i,                      ['214','226','227']],
+  [/writ\s+jurisdiction/i,               ['32','226']],
+  [/impeach.*president|president.*impeach/i, ['61']],
+  [/pardon|reprieve|remission|commut/i,  ['72','161']],
+  [/council\s+of\s+minister|cabinet/i,   ['74','75','163','164']],
+  [/governor.*appoint|appointment.*governor/i, ['155']],
+  [/rajya\s+sabha\s+seat|seats.*rajya\s+sabha/i, ['80']],
+  [/annual.*budget|annual.*financial\s+statement/i, ['112']],
+  [/no\s+confidence|vote\s+of\s+confidence/i, ['75','164']],
+  [/concurrent\s+list/i,                 ['246','254']],
+  [/residuary\s+power/i,                 ['248']],
+  [/state\s+list|union\s+list/i,         ['246']],
+  [/fundamental\s+right/i,               ['12','13','14','15','16','17','19','20','21','22','32']],
+  [/directive.*principle|DPSP/i,         ['36','37','38','39','40','44','45','51']],
+  [/equality.*law|equal.*protection/i,   ['14']],
+  [/freedom.*speech|speech.*expression/i,['19']],
+  [/right\s+to\s+life|personal\s+liberty/i, ['21']],
+  [/freedom\s+of\s+religion/i,           ['25','26','27','28']],
+  [/protection.*arrest|preventive\s+detention/i, ['22']],
+  [/minorities.*establish.*institution/i,['30']],
+  [/double\s+jeopardy|self.*incriminat/i,['20']],
+  [/begar|forced\s+labour|traffic.*human/i, ['23']],
+  [/ashok\s+mehta|balwant\s+rai\s+mehta|panchayat.*committee/i, ['243']],
+  [/74th\s+amendment|73rd\s+amendment/i, ['243','243P']],
+  [/emergency.*44th|44th.*amendment/i,   ['352','356']],
+  [/42nd\s+amendment/i,                  ['51A','368']],
+  [/86th\s+amendment/i,                  ['21A','45','51A']],
+];
+
+// ── Build Polity Article View ─────────────────────────────────────────────
+function buildPolityStudyView(body) {
+  // 1. Get all polity questions
+  var polityQs = allQuestions.filter(function(q) {
+    return (q.subject||'').toLowerCase().includes('polity');
   });
-  const reveal = document.querySelector(`#lpmcq-${idx} .lp-mcq-reveal`);
-  if (reveal) reveal.style.display = 'none';
+
+  // 2. Article map: { 'ART_NUM': [q, ...] }
+  var artMap = {};
+  function addToArt(num, q) {
+    num = String(num).toUpperCase();
+    if (!artMap[num]) artMap[num] = [];
+    if (!artMap[num].find(function(x){ return x.id === q.id; }))
+      artMap[num].push(q);
+  }
+
+  var artRe = /(?:[Aa]rticle|Art\.?\s+|अनुच्छेद)\s*(\d+[A-Za-z]?)/g;
+
+  polityQs.forEach(function(q) {
+    var text = [q.question, q.explanation, q.optA, q.optB, q.optC, q.optD, q.subTopic].join(' ');
+
+    // Pass 1: explicit "Article XX" in text
+    artRe.lastIndex = 0;
+    var m;
+    while ((m = artRe.exec(text)) !== null) addToArt(m[1], q);
+
+    // Pass 2: subTopic lookup
+    var st = (q.subTopic||'').trim();
+    var stArts = SUBTOPIC_ARTICLES[st];
+    if (stArts) stArts.forEach(function(a){ addToArt(a, q); });
+    if (!stArts) {
+      var stKey = Object.keys(SUBTOPIC_ARTICLES).find(function(k){
+        return k.toLowerCase() === st.toLowerCase() ||
+               k.toLowerCase() === st.toLowerCase().replace(/s$/,'');
+      });
+      if (stKey) SUBTOPIC_ARTICLES[stKey].forEach(function(a){ addToArt(a, q); });
+    }
+
+    // Pass 3: keyword scan on question text
+    var qText = (q.question||'') + ' ' + (q.explanation||'');
+    KEYWORD_ARTICLES.forEach(function(pair) {
+      if (pair[0].test(qText)) pair[1].forEach(function(a){ addToArt(a, q); });
+    });
+  });
+
+  // Also include questions where subTopic contains "Article XX"
+  polityQs.forEach(function(q) {
+    var st = (q.subTopic||'');
+    var m2 = /Article\s+(\d+[A-Za-z]?)/i.exec(st);
+    if (m2) addToArt(m2[1], q);
+  });
+
+  var artNums = Object.keys(artMap).sort(function(a,b) {
+    var na = parseInt(a), nb = parseInt(b);
+    return na !== nb ? na - nb : a.localeCompare(b);
+  });
+
+  var totalArticles = artNums.length;
+  var totalQs = polityQs.length;
+  var coveredQs = new Set();
+  artNums.forEach(function(n) { artMap[n].forEach(function(q){ coveredQs.add(q.id); }); });
+  var maxFreq = artNums.reduce(function(mx,n){ return Math.max(mx, artMap[n].length); }, 1);
+
+  // Helper: get constitutional Part for an article number string
+  function getArticlePart(num) {
+    if (num === '51A') return { part: 'IVA', name: 'Fundamental Duties' };
+    if (num.startsWith('243')) return { part: 'IX', name: 'Panchayats & Municipalities' };
+    var n = parseInt(num);
+    if (n >= 1   && n <= 4)   return { part: 'I',     name: 'Union and Territory' };
+    if (n >= 5   && n <= 11)  return { part: 'II',    name: 'Citizenship' };
+    if (n >= 12  && n <= 35)  return { part: 'III',   name: 'Fundamental Rights' };
+    if (n >= 36  && n <= 51)  return { part: 'IV',    name: 'Directive Principles' };
+    if (n >= 52  && n <= 78)  return { part: 'V',     name: 'Union Executive' };
+    if (n >= 79  && n <= 122) return { part: 'V',     name: 'Parliament' };
+    if (n >= 123 && n <= 151) return { part: 'V',     name: 'Finance & Legislative Powers' };
+    if (n >= 152 && n <= 166) return { part: 'VI',    name: 'State Executive' };
+    if (n >= 168 && n <= 212) return { part: 'VI',    name: 'State Legislature' };
+    if (n >= 213 && n <= 237) return { part: 'VI',    name: 'High Courts' };
+    if (n >= 239 && n <= 242) return { part: 'VIII',  name: 'Union Territories' };
+    if (n >= 244 && n <= 244) return { part: 'X',     name: 'Scheduled Areas' };
+    if (n >= 245 && n <= 263) return { part: 'XI',    name: 'Union–State Relations' };
+    if (n >= 264 && n <= 300) return { part: 'XII',   name: 'Finance & Property' };
+    if (num === '300A')       return { part: 'XII',   name: 'Finance & Property' };
+    if (n >= 308 && n <= 323) return { part: 'XIV',   name: 'Services under Union & State' };
+    if (n >= 324 && n <= 329) return { part: 'XV',    name: 'Elections' };
+    if (n >= 330 && n <= 342) return { part: 'XVI',   name: 'Special Provisions' };
+    if (n >= 343 && n <= 351) return { part: 'XVII',  name: 'Official Language' };
+    if (n >= 352 && n <= 360) return { part: 'XVIII', name: 'Emergency Provisions' };
+    if (n === 368)             return { part: 'XX',    name: 'Amendment of Constitution' };
+    if (n >= 369 && n <= 392) return { part: 'XXI',   name: 'Temporary Provisions' };
+    return { part: '?', name: 'Other' };
+  }
+
+  // Helper: detect question format
+  function getQType(q) {
+    if ((q.qType||'') === 'Match') return 'Match';
+    var txt = (q.question||'').toLowerCase();
+    if (/consider the following|which of the following statements|निम्नलिखित कथन/.test(txt)) return 'Statement';
+    if (/arrange|chronological|correct order/.test(txt)) return 'Order';
+    return 'Direct';
+  }
+
+  // Group articles by Part
+  var partGroups = {};
+  artNums.forEach(function(num) {
+    var p = getArticlePart(num);
+    var key = p.part + '|||' + p.name;
+    if (!partGroups[key]) partGroups[key] = [];
+    partGroups[key].push(num);
+  });
+
+  var partKeys = Object.keys(partGroups).sort(function(a, b) {
+    var na = parseInt(partGroups[a][0]);
+    var nb = parseInt(partGroups[b][0]);
+    return na - nb;
+  });
+
+  // 4. Render
+  var html = '<div class="sm-stats-bar">'
+    + '<div class="sm-stat"><div class="sm-stat-v">' + totalQs + '</div><div class="sm-stat-l">Polity Questions</div></div>'
+    + '<div class="sm-stat"><div class="sm-stat-v" style="color:#B45309;">' + totalArticles + '</div><div class="sm-stat-l">Articles Found</div></div>'
+    + '<div class="sm-stat"><div class="sm-stat-v" style="color:#0D9488;">' + coveredQs.size + '</div><div class="sm-stat-l">Qs Mapped</div></div>'
+    + '</div>'
+    + '<div class="sm-search-wrap"><input class="sm-search" id="smSearch" placeholder="Search article number, topic or keyword…" oninput="smFilterArticles(this.value)"></div>'
+    + '<div id="smArticleList">';
+
+  partKeys.forEach(function(key) {
+    var parts = key.split('|||');
+    var partNum = parts[0], partName = parts[1];
+    html += '<div class="sm-part-hd sm-part-section">Part ' + partNum + ' — ' + partName + '</div>';
+
+    partGroups[key].forEach(function(num) {
+      var qs = artMap[num];
+      var info = ARTICLE_DB[num] || ARTICLE_DB[num.replace(/[A-Z]$/,'')] || null;
+      var title   = info ? info.title   : 'Art. ' + num + ' — Constitutional Provision';
+      var exp     = info ? info.exp     : '';
+      var artText = info ? (info.artText || '') : '';
+      var pInfo = getArticlePart(num);
+      var freq = qs.length;
+      var barW = Math.round((freq / maxFreq) * 90) + 8;
+      var isHigh = freq >= Math.ceil(maxFreq * 0.6);
+      var countCls = 'sm-article-count' + (isHigh ? ' high' : '');
+      var timesLabel = freq === 1 ? 'Asked once' : 'Asked ' + freq + ' times';
+      var dataTitle = (title + ' article ' + num + ' part ' + partNum + ' ' + partName).toLowerCase();
+
+      // Question cards — first 2 visible, rest hidden
+      var qCardHtml = qs.map(function(q, qi) {
+        var qtype = getQType(q);
+        var extraAttr = qi >= 2 ? ' class="sm-aq sm-aq-extra" style="display:none"' : ' class="sm-aq"';
+        // Build options with correct answer highlighted
+        var optsHtml = '';
+        if (q.optA || q.optB || q.optC || q.optD) {
+          optsHtml = '<div class="sm-aq-opts">'
+            + ['A','B','C','D'].map(function(ltr) {
+              var txt = q['opt'+ltr] || '';
+              if (!txt) return '';
+              var isCorrect = (q.answer || '').toUpperCase() === ltr;
+              return '<div class="sm-aq-opt' + (isCorrect ? ' correct' : '') + '">'
+                + '<span class="sm-opt-lbl">' + ltr + '.</span>' + txt + '</div>';
+            }).join('')
+            + '</div>';
+        }
+        return '<div' + extraAttr + '>'
+          + '<div class="sm-aq-meta">'
+          + '<span class="sm-aq-year">' + (q.year||'—') + '</span>'
+          + '<span class="sm-aq-subj">' + (q.subTopic||q.subject||'Polity') + '</span>'
+          + '<span class="sm-aq-ans">Ans: ' + q.answer + '</span>'
+          + '<span class="sm-aq-type">' + qtype + '</span>'
+          + '</div>'
+          + '<div class="sm-aq-text">' + q.question + '</div>'
+          + optsHtml
+          + (q.explanation ? '<div class="sm-aq-exp">💡 ' + q.explanation + '</div>' : '')
+          + '</div>';
+      }).join('');
+
+      var seeMoreBtn = qs.length > 2
+        ? '<span class="sm-see-more" id="smmore-' + num + '" onclick="smExpandQs(\'' + num + '\')">+ ' + (qs.length - 2) + ' more question' + (qs.length - 2 > 1 ? 's' : '') + ' ›</span>'
+        : '';
+
+      // Article constitutional text block
+      var artTextBlock = artText
+        ? '<div class="sm-art-textblock"><div class="sm-art-textlabel">Constitutional Text</div><div class="sm-art-textcontent">' + artText + '</div></div>'
+        : '';
+
+      html += '<div class="sm-article-card" id="sma-' + num + '" data-title="' + dataTitle + '">'
+        + '<div class="sm-article-hd" onclick="smToggleArticle(\'' + num + '\')">'
+        + '<span class="sm-art-badge">Art. ' + num + '</span>'
+        + '<div class="sm-art-info">'
+        + '<div class="sm-article-title">' + title + '</div>'
+        + '<div class="sm-freq-row"><div class="sm-freq-bar" style="width:' + barW + 'px"></div><span class="sm-freq-label">' + timesLabel + '</span></div>'
+        + '</div>'
+        + '<div class="sm-art-right">'
+        + '<span class="sm-part-tag">Part ' + pInfo.part + '</span>'
+        + '<span class="' + countCls + '">' + freq + ' Q' + (freq > 1 ? 's' : '') + '</span>'
+        + '<span class="sm-article-arrow">▼</span>'
+        + '</div>'
+        + '</div>'
+        + '<div class="sm-article-body">'
+        + artTextBlock
+        + (exp ? '<div class="sm-article-exp">' + exp + '</div>' : '')
+        + '<div class="sm-article-qs">' + qCardHtml + seeMoreBtn + '</div>'
+        + '</div>'
+        + '</div>';
+    });
+  });
+
+  if (artNums.length === 0) {
+    html += '<div class="sm-no-results">No articles detected in current question bank.<br>Add polity questions mentioning "Article XX" to see them here.</div>';
+  }
+
+  html += '</div>';
+  body.innerHTML = html;
 }
 
-function lpMCQReveal(idx, correct) {
-  lpMCQAnswer(idx, null, correct);
+function smToggleArticle(num) {
+  var card = document.getElementById('sma-' + num);
+  if (card) card.classList.toggle('open');
+}
+
+function smExpandQs(num) {
+  var card = document.getElementById('sma-' + num);
+  if (!card) return;
+  card.querySelectorAll('.sm-aq-extra').forEach(function(el){ el.style.display = ''; });
+  var btn = document.getElementById('smmore-' + num);
+  if (btn) btn.style.display = 'none';
+}
+
+function smFilterArticles(val) {
+  var v = val.trim().toLowerCase();
+  // When searching, hide part headers and filter cards
+  document.querySelectorAll('.sm-part-section').forEach(function(hd) {
+    hd.style.display = v ? 'none' : '';
+  });
+  document.querySelectorAll('.sm-article-card').forEach(function(card) {
+    if (!v) { card.style.display = ''; return; }
+    var searchStr = card.getAttribute('data-title') || '';
+    card.style.display = searchStr.includes(v) ? '' : 'none';
+  });
 }
 
 // Navigate to news tab
@@ -9833,6 +10264,29 @@ function closeImgLightbox(e) {
   document.body.style.overflow = '';
 }
 
+// ── Auth & question-lock stubs (defined here so available on first load) ─────
+let _lockedSet = new Set();
+function hasFullAccess() { return window._currentUser != null; }
+function resetLockedCache() {
+  _lockedSet = new Set();
+  if (hasFullAccess()) return;
+  const ids = (allQuestions || []).map(function(q){ return String(q.id); });
+  ids.sort();
+  const half = Math.floor(ids.length / 2);
+  for (var i = half; i < ids.length; i++) _lockedSet.add(ids[i]);
+}
+function isLocked(q) {
+  if (hasFullAccess()) return false;
+  return _lockedSet.has(String(q.id));
+}
+function lockOverlayHTML() {
+  return '<div class="q-lock-overlay">'
+    + '<div class="q-lock-icon">🔒</div>'
+    + '<div class="q-lock-msg">Login to see all questions</div>'
+    + '<button class="q-lock-btn" onclick="openAuthModal(\'login\')">Login / Register</button>'
+    + '</div>';
+}
+
 </script>
 
 <!-- ══ AUTH MODAL (non-blocking) ══════════════════════════════ -->
@@ -9969,7 +10423,53 @@ function closeImgLightbox(e) {
 </div>
 
 <script>
-let currentUser = null;
+// currentUser stored on window so the stubs in main block can read it
+window._currentUser = null;
+var currentUser = null;  // keep local alias for auth UI
+
+function _refreshAuthTabs() {
+  // Re-load any data tabs that depend on auth state
+  var progressTab = document.getElementById('tab-progress');
+  if (progressTab && progressTab.classList.contains('active')) {
+    if (typeof loadProgress === 'function') loadProgress();
+  }
+  var dashTab = document.getElementById('tab-home');
+  if (dashTab && dashTab.classList.contains('active')) {
+    if (typeof refreshDashboardStats === 'function') refreshDashboardStats();
+  }
+}
+
+function onAuthSuccess(user) {
+  window._currentUser = user;
+  currentUser = user;
+  closeAuthModal();
+  resetLockedCache();
+  if (typeof renderQuestions === 'function') renderQuestions();
+  var navName = document.getElementById('navUserName');
+  if (navName) navName.textContent = user.name || user.email;
+  var loginBtn = document.getElementById('navLoginBtn');
+  if (loginBtn) loginBtn.style.display = 'none';
+  _refreshAuthTabs();
+}
+
+// Restore session on page load
+(function checkSession() {
+  fetch('/api/me', { credentials: 'include' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(data){
+      if (data && data.user) {
+        window._currentUser = data.user;
+        currentUser = data.user;
+        resetLockedCache();
+        var navName = document.getElementById('navUserName');
+        if (navName) navName.textContent = data.user.name || data.user.email;
+        var loginBtn = document.getElementById('navLoginBtn');
+        if (loginBtn) loginBtn.style.display = 'none';
+        _refreshAuthTabs();
+      }
+    })
+    .catch(function(){});
+})();
 
 function openAuthModal(tab) {
   document.getElementById("authModal").classList.add("open");
@@ -10055,740 +10555,4 @@ async function doSendOTP() {
     const data = await res.json();
     if (!res.ok) { document.getElementById('fpErr1').textContent = data.error || 'Failed'; }
     else { showForgotStep(2); }
-  } catch(e) { document.getElementById('fpErr1').textContent = 'Server error, try again'; }
-  finally { btn.disabled=false; btn.textContent='Send OTP →'; }
-}
-
-async function doResetPassword() {
-  const otp     = document.getElementById('fpOTP').value.trim();
-  const newPass = document.getElementById('fpNewPass').value;
-  const confPass= document.getElementById('fpConfPass').value;
-  if (!otp || otp.length !== 6) return document.getElementById('fpErr2').textContent = 'Enter the 6-digit OTP';
-  if (!newPass || newPass.length < 6) return document.getElementById('fpErr2').textContent = 'Password min 6 characters';
-  if (newPass !== confPass) return document.getElementById('fpErr2').textContent = 'Passwords do not match';
-  const btn = document.querySelector('#forgotStep2 .auth-btn');
-  btn.disabled=true; btn.textContent='Resetting…';
-  try {
-    const res = await fetch('/api/reset-password', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:_fpEmail, otp, newPassword:newPass})
-    });
-    const data = await res.json();
-    if (!res.ok) { document.getElementById('fpErr2').textContent = data.error || 'Failed'; }
-    else { showForgotStep(3); }
-  } catch(e) { document.getElementById('fpErr2').textContent = 'Server error, try again'; }
-  finally { btn.disabled=false; btn.textContent='Reset Password →'; }
-}
-
-async function doLogout() {
-  await fetch("/api/logout", { method:"POST" });
-  currentUser = null;
-  updateAuthNavBtn();
-}
-function onAuthSuccess(user) {
-  currentUser = user;
-  closeAuthModal();
-  updateAuthNavBtn();
-  updateTrialBanner();
-  refreshDashboardStats();
-}
-function updateAuthNavBtn() {
-  const btn = document.getElementById("authNavBtn");
-  if (!btn) return;
-  if (currentUser) {
-    btn.textContent = "👤 " + (currentUser.name || currentUser.email).split(" ")[0];
-    btn.classList.add("signed-in");
-    btn.onclick = doLogout;
-    btn.title = "Click to logout";
-  } else {
-    btn.textContent = "Login / Register";
-    btn.classList.remove("signed-in");
-    btn.onclick = () => openAuthModal("login");
-    btn.title = "";
-  }
-}
-function updateTrialBanner() {
-  let banner = document.getElementById("trialBanner");
-  if (!banner) {
-    banner = document.createElement("div");
-    banner.id = "trialBanner";
-    banner.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:8000;text-align:center;padding:9px 16px;font-size:12px;font-weight:600;display:none;";
-    document.body.appendChild(banner);
-  }
-  if (!currentUser) { banner.style.display = "none"; return; }
-  const status = currentUser.status;
-  if (status === "trial" && currentUser.trialExpiresOn) {
-    const days = Math.ceil((new Date(currentUser.trialExpiresOn) - new Date()) / 86400000);
-    if (days > 0) {
-      banner.style.cssText += "background:#f59e0b;color:#000;display:block;";
-      banner.innerHTML = `⏳ Free trial: <strong>${days} day${days!==1?'s':''} left</strong> — Subscribe for ₹100/month to keep full access`;
-    } else { banner.style.display = "none"; }
-  } else if (status === "expired") {
-    banner.style.cssText += "background:#ef4444;color:#fff;display:block;";
-    banner.innerHTML = `🔒 Your trial has ended. <strong>Subscribe for ₹100/month</strong> to unlock full access`;
-  } else if (status === "active") {
-    banner.style.display = "none";
-  } else {
-    banner.style.display = "none";
-  }
-}
-// Returns true if user has full access (trial or paid), false if guest/expired
-function hasFullAccess() {
-  if (!currentUser) return false;
-  return currentUser.status === "trial" || currentUser.status === "active";
-}
-
-// Build set of locked question IDs: last 50% of each year from allQuestions
-let _lockedQIds = null;
-function getLockedQIds() {
-  if (_lockedQIds) return _lockedQIds;
-  _lockedQIds = new Set();
-  const byYear = {};
-  (allQuestions || []).forEach(q => {
-    if (!q.year) return;
-    if (!byYear[q.year]) byYear[q.year] = [];
-    byYear[q.year].push(q.id);
-  });
-  Object.values(byYear).forEach(ids => {
-    const cutoff = Math.ceil(ids.length * 0.3); // 30% open, 70% locked
-    ids.slice(cutoff).forEach(id => _lockedQIds.add(String(id)));
-  });
-  return _lockedQIds;
-}
-// Reset cache when questions reload
-function resetLockedCache() { _lockedQIds = null; }
-
-function isLocked(q) {
-  if (hasFullAccess()) return false;
-  return getLockedQIds().has(String(q.id));
-}
-
-function lockOverlayHTML() {
-  const msg    = currentUser ? 'Your trial ended. Subscribe for ₹100/month' : 'Register free for 30-day full access';
-  const btnTxt = currentUser ? 'Subscribe ₹100/month' : 'Register Free';
-  const btnAct = currentUser ? "openAuthModal('login')" : "openAuthModal('register')";
-  return `<div class="q-lock-overlay">
-    <div class="q-lock-icon">🔒</div>
-    <div class="q-lock-msg">${msg}</div>
-    <button class="q-lock-btn" onclick="${btnAct}">${btnTxt}</button>
-  </div>`;
-}
-
-// Shared helper for all drill/analytics modals (syd-qblock)
-// Guests see max 4 questions in any drill modal
-const SYD_FREE_LIMIT = 4;
-function buildSydQBlock(q, i) {
-  const isRepeat = q.repeatsIn && q.repeatsIn.includes(',');
-  // Compare button always accessible — sits outside any blur/pointer-events:none zone
-  const compareBtn = isRepeat
-    ? `<button onclick="event.stopPropagation();openRepeatModal('${q.id}')"
-         style="margin:8px 0 2px;padding:6px 16px;background:var(--amber,#EF9F27);color:#fff;
-                border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;
-                display:inline-flex;align-items:center;gap:5px;">
-         🔁 Compare across years</button>`
-    : '';
-
-  if (!hasFullAccess() && i >= SYD_FREE_LIMIT) {
-    return `<div class="syd-qblock q-locked" style="min-height:80px;">
-      ${lockOverlayHTML()}
-      <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">
-        <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''}</div>
-        <div class="syd-qtext">${q.question}</div>
-      </div>
-    </div>`;
-  }
-  const LABELS   = ['A','B','C','D'];
-  const OPT_KEYS = ['optA','optB','optC','optD'];
-  const opts = OPT_KEYS.map((k,j) => q[k]
-    ? `<div class="syd-opt${q.answer===LABELS[j]?' correct':''}">${LABELS[j]}. ${q[k]}${q.answer===LABELS[j]?' ✓':''}</div>`
-    : '').join('');
-  const repTag = isRepeat
-    ? `<span style="color:var(--amber);font-size:10px;">↻ repeats ${q.repeatsIn}</span>` : '';
-  const inner = `
-    <div class="syd-qnum">Q${i+1} · ${q.year||''} · ${q.subject||''} ${repTag}</div>
-    <div class="syd-qtext">${q.question}</div>
-    ${opts ? `<div class="syd-opts">${opts}</div>` : ''}
-    ${q.explanation ? `<div class="syd-exp">💡 ${q.explanation}</div>` : ''}`;
-  if (isLocked(q)) {
-    return `<div class="syd-qblock q-locked" style="min-height:80px;">
-      ${lockOverlayHTML()}
-      <div style="filter:blur(4px);opacity:0.5;pointer-events:none;">${inner}</div>
-    </div>`;
-  }
-  return `<div class="syd-qblock">${inner}${compareBtn}</div>`;
-}
-
-// Close modal on backdrop click
-document.getElementById("authModal").addEventListener("click", function(e) {
-  if (e.target === this) closeAuthModal();
-});
-
-// Enter key in modal
-document.addEventListener("keydown", e => {
-  if (e.key !== "Enter") return;
-  if (!document.getElementById("authModal").classList.contains("open")) return;
-  document.getElementById("authLoginForm").style.display !== "none" ? doLogin() : doRegister();
-});
-
-// Auto-check session silently on load
-(async function checkSession() {
-  try {
-    const res  = await fetch("/api/me");
-    const data = await res.json();
-    if (data.loggedIn) onAuthSuccess(data.user);
-    else updateAuthNavBtn();
-  } catch(e) { updateAuthNavBtn(); }
-})();
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeSlideshow();
-  if (e.key === 'ArrowRight' && document.getElementById('slideshowOverlay').classList.contains('open')) ssNext();
-  if (e.key === 'ArrowLeft'  && document.getElementById('slideshowOverlay').classList.contains('open')) ssPrev();
-});
-
-// ══════════════════════════════════════════════════════════════
-// MOCK TEST TAB
-// ══════════════════════════════════════════════════════════════
-(function(){
-  // State
-  let mt = {
-    year: 'all', sub: 'all', time: 120,
-    questions: [], answers: {}, // answers = { qId: 'A'|'B'|'C'|'D' }
-    timer: null, secsLeft: 0, totalSecs: 0,
-    active: false
-  };
-
-  function q(id){ return document.getElementById(id); }
-
-  window.initMockTab = function() {
-    // If allQuestions not loaded yet, show loading and retry
-    if (typeof allQuestions === 'undefined' || !allQuestions.length) {
-      const wrap = q('mtYearOpts');
-      if (wrap && wrap.children.length <= 1) {
-        const loader = document.createElement('div');
-        loader.id = 'mtYearLoader';
-        loader.style.cssText = 'color:var(--text3);font-size:13px;padding:8px 0;';
-        loader.textContent = 'Loading questions...';
-        wrap.appendChild(loader);
-      }
-      setTimeout(window.initMockTab, 500);
-      return;
-    }
-    // Populate year buttons
-    const years = [...new Set(allQuestions.map(q => String(q.year)).filter(Boolean))].sort(function(a,b){ return b-a; });
-    const wrap = q('mtYearOpts');
-    if (wrap) {
-      // Remove loader if present
-      const loader = document.getElementById('mtYearLoader');
-      if (loader) loader.remove();
-      // Only build buttons once
-      if (wrap.children.length <= 1) {
-        years.forEach(function(yr) {
-          const d = document.createElement('div');
-          d.className = 'mt-opt'; d.dataset.val = yr;
-          d.textContent = yr;
-          d.onclick = function(){ mtSelect('year', d); };
-          wrap.appendChild(d);
-        });
-      }
-    }
-    mtUpdateCount();
-    mtLoadHistory();
-  };
-
-  window.mtSelect = function(type, el) {
-    const wrap = el.closest('.mt-opts');
-    if (wrap) wrap.querySelectorAll('.mt-opt').forEach(o => o.classList.remove('sel'));
-    el.classList.add('sel');
-    if (type === 'year') mt.year = el.dataset.val;
-    else if (type === 'sub') mt.sub = el.dataset.val;
-    else if (type === 'time') mt.time = parseInt(el.dataset.val);
-    mtUpdateCount();
-  };
-
-  function mtGetPool() {
-    if (typeof allQuestions === 'undefined') return [];
-    // ALL questions load — locked ones are blurred in render
-    let base = [...allQuestions];
-    if (mt.year !== 'all') base = base.filter(function(q){ return String(q.year) === mt.year; });
-    if (mt.sub  !== 'all') base = base.filter(function(q){ return q.subject === mt.sub; });
-    return base;
-  }
-
-  function mtUpdateCount() {
-    const pool = mtGetPool();
-    const el = q('mtQCount');
-    if (!el) return;
-    if (pool.length === 0) {
-      el.innerHTML = '<span style="color:var(--red);">No questions match this filter.</span>';
-      return;
-    }
-    const fullAcc = typeof hasFullAccess === 'function' && hasFullAccess();
-    const lockedCount = typeof isLocked === 'function' ? pool.filter(function(q){ return isLocked(q); }).length : 0;
-    const freeCount = pool.length - lockedCount;
-    if (fullAcc) {
-      el.innerHTML = '<span style="color:var(--teal);font-weight:700;">' + pool.length + ' questions</span>'
-        + ' will be loaded · <span style="color:var(--text3);">~2 min per question recommended</span>';
-    } else {
-      el.innerHTML = '<span style="color:var(--teal);font-weight:700;">' + pool.length + ' questions</span>'
-        + ' total · '
-        + '<span style="color:#1D9E75;font-weight:600;">' + freeCount + ' free</span>'
-        + ' · '
-        + '<span style="color:#dc2626;font-weight:600;">' + lockedCount + ' blurred (locked)</span>'
-        + ' · <span style="color:var(--blue);font-size:11px;cursor:pointer;" onclick="openAuthModal(&quot;register&quot;)">Register for full access</span>';
-    }
-  }
-  window.mtStart = function() {
-    const pool = mtGetPool();
-    if (pool.length === 0) { alert('No questions match. Change year or subject.'); return; }
-    // Same rule as PYQ Practice: guests can attempt 30% unlocked questions without login
-    const fullAcc = typeof hasFullAccess === 'function' && hasFullAccess();
-    if (!fullAcc) {
-      showToast('Showing ' + pool.length + ' unlocked questions. Register free for 30-day full access.');
-    }
-
-    mt.questions = pool;
-    mt.answers   = {};
-    mt.active    = true;
-    mt.totalSecs = mt.time * 60;
-    mt.secsLeft  = mt.totalSecs;
-
-    q('mtSetup').style.display   = 'none';
-    q('mtResults').style.display = 'none';
-    q('mtActive').style.display  = 'block';
-
-    mtRenderPalette();
-    mtRenderQuestions();
-    mtUpdateTimer();
-    if (mt.timer) clearInterval(mt.timer);
-    mt.timer = setInterval(mtTick, 1000);
-  };
-
-  function mtTick() {
-    mt.secsLeft--;
-    mtUpdateTimer();
-    if (mt.secsLeft <= 0) mtSubmit();
-  }
-
-  function mtUpdateTimer() {
-    const m = String(Math.floor(mt.secsLeft / 60)).padStart(2, '0');
-    const s = String(mt.secsLeft % 60).padStart(2, '0');
-    const el = q('mtTimerVal');
-    if (el) {
-      el.textContent = m + ':' + s;
-      el.classList.toggle('danger', mt.secsLeft <= 300);
-    }
-    const pct = ((mt.totalSecs - mt.secsLeft) / mt.totalSecs * 100).toFixed(1);
-    const fill = q('mtProgFill');
-    if (fill) fill.style.width = pct + '%';
-    const ans = Object.keys(mt.answers).length;
-    const left = mt.questions.length - ans;
-    const corrEl = q('mtLiveCorr'); if (corrEl) corrEl.textContent = '✓ ' + ans + ' answered';
-    const skipEl = q('mtLiveSkip'); if (skipEl) skipEl.textContent = '○ ' + left + ' left';
-    const totEl  = q('mtLiveTotal'); if (totEl) totEl.textContent = mt.questions.length + ' total';
-  }
-
-  function mtRenderPalette() {
-    const wrap = q('mtPalette');
-    if (!wrap) return;
-    wrap.innerHTML = mt.questions.map(function(qq, i) {
-      return '<button class="mt-pal-btn" id="mtp_'+qq.id+'" onclick="mtScrollTo(\''+qq.id+'\')">'+(i+1)+'</button>';
-    }).join('');
-  }
-
-  function mtUpdatePalette(qId) {
-    const btn = q('mtp_' + qId);
-    if (btn) btn.classList.add('ans');
-  }
-
-  window.mtScrollTo = function(qId) {
-    const el = q('mtq_' + qId);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  function mtRenderQuestions() {
-    const wrap = q('mtQContainer');
-    if (!wrap) return;
-    wrap.innerHTML = mt.questions.map(function(qq, idx) {
-      const locked = typeof isLocked === 'function' && isLocked(qq);
-      const isMatchQ = qq.qType === 'Match';
-      var optsHtml;
-      if (isMatchQ) {
-        optsHtml = buildMatchUI(qq, false, qq.answer, null, function(ltr) {
-          if (locked) return 'disabled style="filter:blur(4px);pointer-events:none;"';
-          return 'id="mto_'+qq.id+'_'+ltr+'" onclick="mtChoose(\''+qq.id+'\',\''+ltr+'\')"';
-        });
-      } else {
-        var opts = ['A','B','C','D'].map(function(ltr, i) {
-          const txt = [qq.optA, qq.optB, qq.optC, qq.optD][i];
-          if (!txt) return '';
-          if (locked) return '<button class="mt-opt-btn" disabled style="filter:blur(4px);pointer-events:none;">'
-            + '<span class="mt-opt-ltr">'+ltr+'.</span><span>'+txt+'</span></button>';
-          return '<button class="mt-opt-btn" id="mto_'+qq.id+'_'+ltr+'" onclick="mtChoose(\''+qq.id+'\',\''+ltr+'\')">'
-            + '<span class="mt-opt-ltr">'+ltr+'.</span><span>'+txt+'</span></button>';
-        }).join('');
-        optsHtml = '<div class="mt-opts-grid">'+opts+'</div>';
-      }
-      const meta = (qq.year||'') + (qq.year && qq.subject ? ' · ' : '') + (qq.subject||'');
-      const lockOverlay = locked
-        ? '<div class="q-lock-overlay">'
-          + '<i class="ti ti-lock" style="font-size:22px;color:#7f1d1d;"></i>'
-          + '<div style="font-size:12px;font-weight:600;color:#7f1d1d;text-align:center;">Locked · '
-          + '<span style="cursor:pointer;text-decoration:underline;" onclick="openAuthModal(&quot;register&quot;)">Register free</span> to unlock</div></div>'
-        : '';
-      const cardStyle = locked ? 'position:relative;' : '';
-      return '<div class="mt-qcard'+(locked?' q-locked':'')+'" id="mtq_'+qq.id+'" style="'+cardStyle+'">'
-        + lockOverlay
-        + '<div class="mt-qnum'+(locked?' blur-text':'')+'">Q'+(idx+1)+' &nbsp;<span style="color:var(--text3);font-weight:400;">'+meta+'</span></div>'
-        + '<div class="mt-qtext'+(locked?' blur-text':'')+'">'+qq.question+'</div>'
-        + ((!isMatchQ && locked) ? '<div style="filter:blur(4px);pointer-events:none;">'+optsHtml+'</div>' : optsHtml)
-        + '</div>';
-    }).join('');
-  }
-
-  window.mtChoose = function(qId, letter) {
-    // Block locked questions
-    var qq = mt.questions.find(function(x){ return String(x.id) === String(qId); });
-    if (qq && typeof isLocked === 'function' && isLocked(qq)) return;
-    mt.answers[qId] = letter;
-    // Deselect all options for this question
-    ['A','B','C','D'].forEach(function(l) {
-      const btn = q('mto_'+qId+'_'+l);
-      if (btn) btn.classList.remove('chosen');
-    });
-    // Select chosen
-    const chosen = q('mto_'+qId+'_'+letter);
-    if (chosen) chosen.classList.add('chosen');
-    // Mark card as answered
-    const card = q('mtq_'+qId);
-    if (card) card.classList.add('answered');
-    mtUpdatePalette(qId);
-    mtUpdateTimer();
-  };
-
-  window.mtConfirmSubmit = function() {
-    const ans = Object.keys(mt.answers).length;
-    const left = mt.questions.length - ans;
-    if (left > 0 && !confirm(left + ' questions unanswered. Submit anyway?')) return;
-    mtSubmit();
-  };
-
-  function mtSubmit() {
-    if (mt.timer) clearInterval(mt.timer);
-    mt.active = false;
-    const timeTaken = mt.totalSecs - mt.secsLeft;
-
-    let correct = 0, wrong = 0, skipped = 0;
-    const subBreak = {};
-    mt.questions.forEach(function(qq) {
-      const chosen = mt.answers[qq.id];
-      if (!subBreak[qq.subject]) subBreak[qq.subject] = { c:0, w:0, t:0 };
-      subBreak[qq.subject].t++;
-      if (!chosen) { skipped++; return; }
-      if (chosen === qq.answer) { correct++; subBreak[qq.subject].c++; }
-      else                      { wrong++;   subBreak[qq.subject].w++; }
-    });
-
-    const total    = mt.questions.length;
-    const attempted = correct + wrong;
-    const acc      = attempted > 0 ? Math.round(correct/attempted*100) : 0;
-    const score    = Math.max(0, Math.round(correct - wrong*0.33));
-
-    // Save to server
-    const yearLabel = mt.year === 'all' ? 'All Years' : mt.year;
-    const subLabel  = mt.sub  === 'all' ? 'All Subjects' : mt.sub;
-    var _tok = localStorage.getItem('jwtToken') || '';
-    fetch('/api/saveMockResult', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _tok },
-      body: JSON.stringify({
-        score: correct, total: total, timeTaken: timeTaken,
-        subjectBreakdown: subBreak,
-        settings: { year: mt.year, subject: mt.sub, time: mt.time },
-        questions: mt.questions.map(function(qq) {
-          return {
-            qId:     qq.id,
-            question: qq.question,
-            subject:  qq.subject,
-            year:     qq.year,
-            optA: qq.optA, optB: qq.optB, optC: qq.optC, optD: qq.optD,
-            answer:   qq.answer,
-            explanation: qq.explanation || '',
-            chosen:   mt.answers[String(qq.id)] || null
-          };
-        })
-      })
-    }).catch(function(){});
-
-    mtShowResults(correct, wrong, skipped, total, score, acc, timeTaken, subBreak);
-  }
-
-  function mtShowResults(correct, wrong, skipped, total, score, acc, timeTaken, subBreak) {
-    q('mtActive').style.display  = 'none';
-    q('mtResults').style.display = 'block';
-
-    const m = Math.floor(timeTaken/60), s = timeTaken%60;
-    const timeStr = m + 'm ' + s + 's';
-    const accCol  = acc>=70?'#1D9E75':acc>=50?'#EF9F27':'#dc2626';
-    const ring    = Math.round(2*3.14159*40*acc/100);
-
-    const subRows = Object.entries(subBreak).map(function(e) {
-      const sub = e[0], d = e[1];
-      const a = (d.c+d.w)>0 ? Math.round(d.c/(d.c+d.w)*100):0;
-      const col = a>=70?'#1D9E75':a>=50?'#EF9F27':'#dc2626';
-      return '<tr><td>'+sub+'</td><td style="color:#1D9E75;font-weight:600;">'+d.c+'</td>'
-        +'<td style="color:#dc2626;font-weight:600;">'+d.w+'</td>'
-        +'<td style="color:var(--text3);">'+(d.t-d.c-d.w)+'</td>'
-        +'<td style="font-weight:700;color:'+col+';">'+a+'%</td></tr>';
-    }).join('');
-
-    // Build review section
-    var fullAcc = typeof hasFullAccess === 'function' && hasFullAccess();
-    var reviewRows = mt.questions.map(function(qq, idx) {
-      var locked = typeof isLocked === 'function' && isLocked(qq);
-      if (locked && !fullAcc) {
-        return '<div style="position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;min-height:80px;">'
-          + '<div style="filter:blur(5px);opacity:0.4;">Q'+(idx+1)+' — '+qq.question+'</div>'
-          + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;">'
-          + '<i class="ti ti-lock" style="font-size:20px;color:#7f1d1d;"></i>'
-          + '<span style="font-size:12px;color:#7f1d1d;font-weight:600;">Locked · <span style="cursor:pointer;text-decoration:underline;" onclick="openAuthModal(&quot;register&quot;)">Register free</span> to view</span>'
-          + '</div></div>';
-      }
-      var chosen = mt.answers[String(qq.id)];
-      var isCorrect = chosen && chosen === qq.answer;
-      var isWrong   = chosen && chosen !== qq.answer;
-      var statusIcon = !chosen ? '<span style="color:var(--text3);">○ Skipped</span>'
-        : isCorrect ? '<span style="color:#1D9E75;font-weight:700;">✓ Correct</span>'
-        : '<span style="color:#dc2626;font-weight:700;">✗ Wrong</span>';
-      var cardBg = !chosen ? '' : isCorrect ? 'background:#f0fdf4;' : 'background:#fff5f5;';
-      var opts = ['A','B','C','D'].map(function(ltr, i) {
-        var txt = [qq.optA, qq.optB, qq.optC, qq.optD][i];
-        if (!txt) return '';
-        var isAns = ltr === qq.answer;
-        var isChosen = ltr === chosen;
-        var bg = isAns ? '#dcfce7' : (isChosen && !isAns ? '#fee2e2' : 'var(--bg2)');
-        var fc = isAns ? '#166534' : (isChosen && !isAns ? '#991b1b' : 'var(--text)');
-        var fw = (isAns || isChosen) ? '600' : '400';
-        var suffix = isAns ? ' ✓' : (isChosen && !isAns ? ' ✗' : '');
-        return '<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:6px;background:'+bg+';color:'+fc+';font-weight:'+fw+';margin-bottom:4px;">'
-          + '<span style="font-weight:700;min-width:18px;">'+ltr+'.</span>'
-          + '<span>'+txt+suffix+'</span></div>';
-      }).join('');
-      var meta = (qq.year||'') + (qq.year && qq.subject ? ' · ' : '') + (qq.subject||'');
-      var expl = qq.explanation ? '<div style="margin-top:10px;padding:8px 10px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;font-size:12px;color:var(--text3);"><b>Explanation:</b> '+qq.explanation+'</div>' : '';
-      return '<div style="border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;'+ cardBg +'">'
-        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
-        + '<span style="font-size:12px;font-weight:600;color:var(--text3);">Q'+(idx+1)+' · '+meta+'</span>'
-        + statusIcon + '</div>'
-        + '<div style="font-size:14px;font-weight:500;margin-bottom:10px;">'+qq.question+'</div>'
-        + opts + expl
-        + '</div>';
-    }).join('');
-    var reviewSection = mt.questions.length === 0 ? ''
-      : '<div class="mt-setup-card" style="margin-top:16px;">'
-      + '<div class="mt-field-label"><i class="ti ti-list-check"></i> Review Questions</div>'
-      + reviewRows + '</div>';
-
-    q('mtResultsContent').innerHTML =
-      '<div style="text-align:center;padding:20px 0;">'
-      +'<svg width="100" height="100" viewBox="0 0 100 100">'
-      +'<circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" stroke-width="8"/>'
-      +'<circle cx="50" cy="50" r="40" fill="none" stroke="'+accCol+'" stroke-width="8"'
-      +' stroke-dasharray="'+ring+' 999" stroke-linecap="round" transform="rotate(-90 50 50)"/>'
-      +'</svg>'
-      +'<div style="font-size:28px;font-weight:800;color:'+accCol+';margin-top:-68px;margin-bottom:60px;">'+acc+'%</div>'
-      +'<div style="font-size:13px;color:var(--text3);margin-top:4px;">'
-      +(mt.year!=='all'?mt.year+' · ':'')+(mt.sub!=='all'?mt.sub+' · ':'')+'Score: '+score+'/'+total+' (−0.33 per wrong)</div>'
-      +'</div>'
-      +'<div class="mt-res-stats">'
-      +'<div class="mt-res-pill"><div class="mt-res-pill-v" style="color:#1D9E75;">'+correct+'</div><div class="mt-res-pill-l">Correct</div></div>'
-      +'<div class="mt-res-pill"><div class="mt-res-pill-v" style="color:#dc2626;">'+wrong+'</div><div class="mt-res-pill-l">Wrong</div></div>'
-      +'<div class="mt-res-pill"><div class="mt-res-pill-v" style="color:var(--text3);">'+skipped+'</div><div class="mt-res-pill-l">Skipped</div></div>'
-      +'<div class="mt-res-pill"><div class="mt-res-pill-v">'+timeStr+'</div><div class="mt-res-pill-l">Time taken</div></div>'
-      +'</div>'
-      +'<div class="mt-setup-card">'
-      +'<div class="mt-field-label"><i class="ti ti-chart-bar"></i> Subject Breakdown</div>'
-      +'<table class="mt-sub-table"><thead><tr><th>Subject</th><th style="color:#1D9E75;">Correct</th><th style="color:#dc2626;">Wrong</th><th>Skipped</th><th>Accuracy</th></tr></thead>'
-      +'<tbody>'+subRows+'</tbody></table></div>'
-      + reviewSection;
-
-    // Reload mock history
-    mtLoadHistory();
-  }
-
-  function mtLoadHistory() {
-    const token = localStorage.getItem('jwtToken');
-    if (!token) return;
-    fetch('/api/mockHistory', { headers: { Authorization: 'Bearer ' + token } })
-      .then(function(r){ return r.json(); })
-      .then(function(data) {
-        const rows = data.history || [];
-        if (!rows.length) return;
-        const card = q('mtHistCard');
-        if (card) card.style.display = 'block';
-        const list = q('mtHistList');
-        if (!list) return;
-
-        list.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
-          + '<thead><tr style="background:var(--bg2);font-weight:700;font-size:11px;">'
-          + '<th style="padding:8px 10px;text-align:left;">Date</th>'
-          + '<th style="padding:8px 6px;text-align:center;">Year</th>'
-          + '<th style="padding:8px 6px;text-align:center;">Subject</th>'
-          + '<th style="padding:8px 6px;text-align:center;">Score</th>'
-          + '<th style="padding:8px 6px;text-align:center;">Accuracy</th>'
-          + '<th style="padding:8px 6px;text-align:center;">Time</th>'
-          + '<th style="padding:8px 6px;text-align:center;">Q&apos;s</th>'
-          + '</tr></thead><tbody id="mtHistTbody"></tbody></table>';
-
-        var tbody = document.getElementById('mtHistTbody');
-        if (!tbody) return;
-        var html = '';
-        rows.forEach(function(r, idx) {
-          var d   = new Date(r.taken_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
-          var acc = r.total>0 ? Math.round(r.score/r.total*100) : 0;
-          var col = acc>=70?'#1D9E75':acc>=50?'#EF9F27':'#dc2626';
-          var accBg = acc>=70?'#dcfce7':acc>=50?'#FAEEDA':'#fee2e2';
-          var sets = r.settings||{};
-          var yr  = sets.year&&sets.year!=='all' ? sets.year : 'All';
-          var sub = sets.subject&&sets.subject!=='all' ? sets.subject : 'All';
-          var mins = Math.floor((r.time_taken||0)/60);
-          var secs = (r.time_taken||0)%60;
-          var qs   = r.questions || [];
-          var rowBg = idx%2===0 ? 'var(--bg)' : 'var(--bg2)';
-
-          // Main row
-          html += '<tr style="background:'+rowBg+';border-bottom:1px solid var(--border);cursor:pointer;" onclick="mtHistToggle('+idx+')">';
-          html += '<td style="padding:9px 10px;font-weight:500;">'+d+'</td>';
-          html += '<td style="padding:9px 6px;text-align:center;color:var(--text3);">'+yr+'</td>';
-          html += '<td style="padding:9px 6px;text-align:center;color:var(--text3);font-size:11px;">'+sub+'</td>';
-          html += '<td style="padding:9px 6px;text-align:center;font-weight:700;">'+r.score+'/'+r.total+'</td>';
-          html += '<td style="padding:9px 6px;text-align:center;"><span style="background:'+accBg+';color:'+col+';padding:2px 8px;border-radius:10px;font-weight:700;">'+acc+'%</span></td>';
-          html += '<td style="padding:9px 6px;text-align:center;color:var(--text3);">'+mins+'m '+secs+'s</td>';
-          html += '<td style="padding:9px 6px;text-align:center;color:var(--blue);">'+qs.length+' ▾</td>';
-          html += '</tr>';
-
-          // Expanded question review row
-          html += '<tr id="mtHistExp_'+idx+'" style="display:none;"><td colspan="7" style="padding:0;">';
-          html += '<div style="background:var(--bg2);padding:12px 14px;border-bottom:2px solid var(--border);">';
-          if (qs.length === 0) {
-            html += '<div style="color:var(--text3);font-size:12px;padding:8px 0;">No question details stored for this test (taken before this feature was added).</div>';
-          } else {
-            qs.forEach(function(qq, qi) {
-              var isOk  = qq.chosen && qq.chosen === qq.answer;
-              var isBad = qq.chosen && qq.chosen !== qq.answer;
-              var icon  = isOk  ? '<span style="color:#1D9E75;font-weight:700;">\u2713</span>'
-                        : isBad ? '<span style="color:#E24B4A;font-weight:700;">\u2717</span>'
-                        : '<span style="color:var(--text3);">\u25CB</span>';
-              var cardBg = isOk ? '#f0fdf4' : isBad ? '#fff5f5' : 'var(--bg)';
-              var cardBorder = isOk ? '#86efac' : isBad ? '#fca5a5' : 'var(--border)';
-              var expId = 'mhqe_'+idx+'_'+qi;
-              html += '<div onclick="mtHistQToggle(\''+expId+'\')" style="cursor:pointer;background:'+cardBg+';border:1px solid '+cardBorder+';border-radius:7px;padding:9px 12px;margin-bottom:6px;">';
-              html += '<div style="display:flex;align-items:flex-start;gap:8px;">';
-              html += '<span style="min-width:18px;font-size:13px;">'+icon+'</span>';
-              html += '<div style="flex:1;">';
-              html += '<div style="font-size:12px;font-weight:500;line-height:1.4;">'+(qq.question||'Q#'+qq.qId)+'</div>';
-              html += '<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+(qq.subject||'')+' \u00B7 '+(qq.year||'')+'</div>';
-              html += '</div></div>';
-              html += '<div id="'+expId+'" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid '+cardBorder+';">';
-              var opts = ['A','B','C','D'];
-              opts.forEach(function(l, oi) {
-                var txt = [qq.optA,qq.optB,qq.optC,qq.optD][oi];
-                if (!txt) return;
-                var isAns    = l === qq.answer;
-                var isChosen = l === qq.chosen;
-                var obg = isAns ? '#dcfce7' : (isChosen && !isAns ? '#fee2e2' : 'var(--bg2)');
-                var ocol= isAns ? '#166534' : (isChosen && !isAns ? '#991b1b' : 'var(--text)');
-                var ofw = (isAns||isChosen) ? '700' : '400';
-                var suf = isAns ? ' \u2713' : (isChosen&&!isAns ? ' \u2717' : '');
-                html += '<div style="padding:4px 8px;border-radius:5px;background:'+obg+';color:'+ocol+';font-weight:'+ofw+';margin-bottom:3px;font-size:12px;">'+l+'. '+txt+suf+'</div>';
-              });
-              if (qq.explanation) html += '<div style="margin-top:6px;padding:6px 8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;font-size:11px;color:var(--text3);"><b>Exp:</b> '+qq.explanation+'</div>';
-              html += '</div></div>';
-            });
-          }
-          html += '</div></td></tr>';
-        });
-        tbody.innerHTML = html;
-        // Attach row toggle via event listeners (not global functions)
-        rows.forEach(function(r, idx) {
-          var expRow = document.getElementById('mtHistExp_'+idx);
-          if (!expRow) return;
-          var mainRow = expRow.previousElementSibling;
-          if (mainRow) {
-            mainRow.style.cursor = 'pointer';
-            mainRow.addEventListener('click', function() {
-              expRow.style.display = expRow.style.display === 'none' ? 'table-row' : 'none';
-            });
-          }
-          // Q card toggle
-          (r.questions||[]).forEach(function(qq, qi) {
-            var expDiv = document.getElementById('mhqe_'+idx+'_'+qi);
-            if (!expDiv) return;
-            var qCard2 = expDiv.parentElement;
-            if (qCard2) qCard2.addEventListener('click', function(e) {
-              e.stopPropagation();
-              expDiv.style.display = expDiv.style.display === 'none' ? 'block' : 'none';
-            });
-          });
-        });
-      }).catch(function(){});
-  }
-
-  window.mtHistToggle = function(idx) {
-    var row = document.getElementById('mtHistExp_'+idx);
-    if (!row) return;
-    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
-  };
-
-  window.mtHistQToggle = function(expId) {
-    var el = document.getElementById(expId);
-    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
-  };
-
-  window.mtReset = function() {
-    if (mt.timer) clearInterval(mt.timer);
-    mt.active = false;
-    q('mtActive').style.display  = 'none';
-    q('mtResults').style.display = 'none';
-    q('mtSetup').style.display   = 'block';
-    mtLoadHistory();
-  };
-
-})();
-
-</script>
-
-<!-- ── Subject-Year Drill-down Modal ──────────────────────── -->
-<div class="syd-overlay" id="sydOverlay" onclick="if(event.target===this)closeSYD()">
-  <div class="syd-modal">
-    <div class="syd-header">
-      <span class="syd-title" id="sydTitle">Questions</span>
-      <button class="syd-close" onclick="closeSYD()">✕</button>
-    </div>
-    <div class="syd-body" id="sydBody"></div>
-  </div>
-</div>
-
-<!-- ── SLIDESHOW OVERLAY ───────────────────────────────────────── -->
-<div id="slideshowOverlay">
-  <div id="ssProgress" class="ss-progress" style="width:0%"></div>
-  <div class="ss-topbar">
-    <span class="ss-counter" id="ssCounter">Q 1 of 0</span>
-    <button class="ss-close" onclick="closeSlideshow()">✕</button>
-  </div>
-  <div class="ss-card-wrap" id="ssCardWrap"></div>
-  <div class="ss-controls">
-    <button class="ss-btn" id="ssPrev" onclick="ssPrev()">← Prev</button>
-    <button class="ss-btn play" id="ssPlayBtn" onclick="toggleSSPlay()">⏸ Pause</button>
-    <button class="ss-btn" id="ssNext" onclick="ssNext()">Next →</button>
-  </div>
-</div>
-
-<!-- ── Daily Breakdown Question Modal ─────────────────── -->
-<div id="dpModal" style="display:none;position:fixed;inset:0;z-index:9999;
-  background:rgba(0,0,0,0.55);align-items:center;justify-content:center;padding:16px;">
-  <div style="background:var(--bg);border-radius:16px;max-width:580px;width:100%;
-    max-height:88vh;overflow-y:auto;padding:20px 22px;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
-    <button onclick="dpCloseModal()" style="position:absolute;top:14px;right:16px;
-      background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">
-      <i class="ti ti-x" aria-hidden="tru
+  } catch(e) { document.getElementById('fpErr1').textContent = 'Server error, try ag
