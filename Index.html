@@ -10371,6 +10371,70 @@ function closeImgLightbox(e) {
 <script>
 let currentUser = null;
 
+// ── Auth & question-lock helpers ────────────────────────────────────────────
+// hasFullAccess: true when user is logged in (unlocks all questions)
+function hasFullAccess() {
+  return currentUser !== null;
+}
+
+// _lockedSet: random 50% of question IDs locked for guests
+let _lockedSet = new Set();
+
+function resetLockedCache() {
+  _lockedSet = new Set();
+  if (hasFullAccess()) return;                   // logged in → nothing locked
+  const ids = allQuestions.map(function(q){ return q.id; });
+  // deterministic shuffle via question id → same 50% each time
+  ids.sort(function(a,b){ return String(a) < String(b) ? -1 : 1; });
+  const half = Math.floor(ids.length / 2);
+  for (var i = half; i < ids.length; i++) _lockedSet.add(String(ids[i]));
+}
+
+function isLocked(q) {
+  if (hasFullAccess()) return false;
+  return _lockedSet.has(String(q.id));
+}
+
+function lockOverlayHTML() {
+  return '<div class="q-lock-overlay">'
+    + '<div class="q-lock-icon">🔒</div>'
+    + '<div class="q-lock-msg">Login to see all questions</div>'
+    + '<button class="q-lock-btn" onclick="openAuthModal(\'login\')">Login / Register</button>'
+    + '</div>';
+}
+
+function onAuthSuccess(user) {
+  currentUser = user;
+  closeAuthModal();
+  resetLockedCache();             // unlock everything now that user is logged in
+  // Re-render wherever applicable
+  if (typeof renderQuestions === 'function') renderQuestions();
+  // Update nav avatar / name if element exists
+  var navName = document.getElementById('navUserName');
+  if (navName) navName.textContent = user.name || user.email;
+  var navAvatar = document.getElementById('navUserAvatar');
+  if (navAvatar) navAvatar.style.display = '';
+  var loginBtn = document.getElementById('navLoginBtn');
+  if (loginBtn) loginBtn.style.display = 'none';
+}
+
+// Try to restore session from /api/me on load
+(function checkSession() {
+  fetch('/api/me', { credentials: 'include' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(data){
+      if (data && data.user) {
+        currentUser = data.user;
+        resetLockedCache();
+        var navName = document.getElementById('navUserName');
+        if (navName) navName.textContent = data.user.name || data.user.email;
+        var loginBtn = document.getElementById('navLoginBtn');
+        if (loginBtn) loginBtn.style.display = 'none';
+      }
+    })
+    .catch(function(){});
+})();
+
 function openAuthModal(tab) {
   document.getElementById("authModal").classList.add("open");
   if (tab) switchAuthTab(tab);
