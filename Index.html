@@ -10449,10 +10449,12 @@ function onAuthSuccess(user) {
   closeAuthModal();
   resetLockedCache();
   if (typeof renderQuestions === 'function') renderQuestions();
-  var navName = document.getElementById('navUserName');
-  if (navName) navName.textContent = user.name || user.email;
-  var loginBtn = document.getElementById('navLoginBtn');
-  if (loginBtn) loginBtn.style.display = 'none';
+  var authBtn = document.getElementById('authNavBtn');
+  if (authBtn) {
+    authBtn.textContent = user.name || user.email;
+    authBtn.classList.add('signed-in');
+    authBtn.onclick = function(){ showTab('progress', document.querySelector('[onclick*=progress]')); };
+  }
   _refreshAuthTabs();
 }
 
@@ -10465,10 +10467,12 @@ function onAuthSuccess(user) {
         window._currentUser = data.user;
         currentUser = data.user;
         resetLockedCache();
-        var navName = document.getElementById('navUserName');
-        if (navName) navName.textContent = data.user.name || data.user.email;
-        var loginBtn = document.getElementById('navLoginBtn');
-        if (loginBtn) loginBtn.style.display = 'none';
+        var authBtn = document.getElementById('authNavBtn');
+        if (authBtn) {
+          authBtn.textContent = data.user.name || data.user.email;
+          authBtn.classList.add('signed-in');
+          authBtn.onclick = function(){ showTab('progress', document.querySelector('[onclick*=progress]')); };
+        }
         _refreshAuthTabs();
       }
     })
