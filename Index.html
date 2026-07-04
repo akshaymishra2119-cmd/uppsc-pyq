@@ -5479,6 +5479,15 @@ function loadQuestions() {
       renderWeightTrend(allQuestions);
       renderSubjectBreakdown(allQuestions);
       renderYearProgressBadges();
+      // Fetch server yearMap for PYQ Practice strip (if not already loaded)
+      if (!window._tpYm && window._currentUser) {
+        fetch('/api/trackProgress', { credentials: 'include' })
+          .then(function(r){ return r.json(); })
+          .then(function(data){
+            if (data.yearMap) { window._tpYm = data.yearMap; renderYearProgressBadges(); }
+          })
+          .catch(function(){});
+      }
       // Refresh per-year dashboard with now-loaded questions
       if (_selectedYear) renderPerYearDashboard(_selectedYear);
       else if (_analyticsAllYears.length) renderPerYearDashboard(_analyticsAllYears[_analyticsAllYears.length-1]);
