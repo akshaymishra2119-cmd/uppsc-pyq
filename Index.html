@@ -350,6 +350,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   box-shadow:0 1px 6px rgba(109,40,217,.15);}
 .study-date{font-size:11px;color:var(--text3);margin-bottom:14px;font-weight:500;}
 .lp-loading{color:var(--text3);font-size:13px;text-align:center;padding:40px 0;}
+/* Study Material — new subject nav */
+.sm-subject-nav{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.sm-subj-btn{padding:8px 16px;font-size:13px;font-weight:600;border:1.5px solid var(--border);
+  border-radius:20px;background:var(--bg);color:var(--text2);cursor:pointer;transition:all .15s;}
+.sm-subj-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue);}
+.sm-subj-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25);}
+/* Polity Article cards */
+.sm-stats-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.sm-stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 16px;flex:1;min-width:120px;text-align:center;}
+.sm-stat-v{font-size:22px;font-weight:800;color:var(--blue);}
+.sm-stat-l{font-size:11px;color:var(--text3);margin-top:2px;}
+.sm-search{width:100%;padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;
+  background:var(--bg);color:var(--text);font-size:13px;margin-bottom:14px;outline:none;}
+.sm-search:focus{border-color:var(--blue);}
+.sm-article-card{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;transition:box-shadow .15s;}
+.sm-article-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.08);}
+.sm-article-hd{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:var(--bg);user-select:none;}
+.sm-article-hd:hover{background:var(--bg2);}
+.sm-article-num{background:var(--blue);color:#fff;border-radius:8px;padding:4px 10px;
+  font-size:12px;font-weight:800;white-space:nowrap;}
+.sm-article-title{font-size:14px;font-weight:600;color:var(--text);flex:1;}
+.sm-article-count{font-size:11px;background:var(--amber-light,#FEF3C7);color:var(--amber-dark,#92400E);
+  border-radius:12px;padding:3px 9px;font-weight:700;white-space:nowrap;}
+.sm-article-arrow{font-size:13px;color:var(--text3);transition:transform .2s;}
+.sm-article-card.open .sm-article-arrow{transform:rotate(180deg);}
+.sm-article-body{display:none;padding:14px;border-top:1px solid var(--border);background:var(--bg);}
+.sm-article-card.open .sm-article-body{display:block;}
+.sm-article-exp{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:12px;
+  background:var(--bg2);border-left:3px solid var(--blue);padding:10px 12px;border-radius:0 6px 6px 0;}
+.sm-article-qs{display:flex;flex-direction:column;gap:8px;}
+.sm-aq{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;}
+.sm-aq-meta{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
+.sm-aq-year{background:var(--bg3);color:var(--text2);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
+.sm-aq-subj{background:var(--blue-light,#DBEAFE);color:var(--blue-dark,#1E40AF);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
+.sm-aq-ans{background:var(--teal-light,#CCFBF1);color:var(--teal-dark,#134E4A);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
+.sm-aq-text{color:var(--text);line-height:1.5;}
+.sm-no-results{text-align:center;padding:40px;color:var(--text3);font-size:13px;}
 /* Editorial styles */
 .lp-ed-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
   padding:16px 18px;margin-bottom:12px;}
@@ -3111,19 +3149,14 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 
 <!-- ══ STUDY MATERIAL TAB ═══════════════════════════════════ -->
 <div class="tab" id="tab-study">
-  <div class="study-subtabs">
-    <button class="study-subtab active" data-tab="editorial" onclick="lpSwitch('editorial',this)">
-      📰 National Editorial
-    </button>
-    <button class="study-subtab" data-tab="upnews" onclick="lpSwitch('upnews',this)">
-      📍 UP News
-    </button>
-    <button class="study-subtab" data-tab="mcq" onclick="lpSwitch('mcq',this)">
-      💡 MCQ Practice
-    </button>
+  <!-- Subject nav -->
+  <div class="sm-subject-nav">
+    <button class="sm-subj-btn active" onclick="smSubject('polity',this)">⚖️ Polity</button>
+    <button class="sm-subj-btn" onclick="smSubject('history',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">🏛️ History</button>
+    <button class="sm-subj-btn" onclick="smSubject('geography',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">🌏 Geography</button>
+    <button class="sm-subj-btn" onclick="smSubject('economy',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">📈 Economy</button>
   </div>
-  <div class="study-date" id="lpDate"></div>
-  <div id="lpBody"><div class="lp-loading">Loading…</div></div>
+  <div id="smBody"><div class="lp-loading">Loading questions…</div></div>
 </div>
 
 </div><!-- /main -->
@@ -9283,84 +9316,216 @@ let _lpActive = 'editorial';
 let _lpCache  = {};
 let _studyInited = false;
 
+// ── Study Material Tab ─────────────────────────────────────────────────────
+function initLeftPanel() {} // backward compat
+function lpSwitch() {}      // backward compat
+function lpRender() {}      // backward compat
+
 function initStudyTab() {
-  const dateEl = document.getElementById('lpDate');
-  if (dateEl) dateEl.textContent =
-    new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   if (!_studyInited) {
     _studyInited = true;
-    lpSwitch('editorial', document.querySelector('.study-subtab[data-tab="editorial"]'));
+    smSubject('polity', document.querySelector('.sm-subj-btn.active'));
   }
 }
 
-// kept for backward compat (called on window.onload)
-function initLeftPanel() {}
-
-async function lpSwitch(tab, btn) {
-  _lpActive = tab;
-  document.querySelectorAll('.study-subtab').forEach(b => b.classList.remove('active'));
+function smSubject(subj, btn) {
+  document.querySelectorAll('.sm-subj-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  if (_lpCache[tab]) { lpRender(tab, _lpCache[tab]); return; }
-  document.getElementById('lpBody').innerHTML = '<div class="lp-loading">Loading…</div>';
-  try {
-    const data = await fetch(`/api/leftPanel/${tab}`).then(r => r.json());
-    _lpCache[tab] = data;
-    lpRender(tab, data);
-  } catch(e) {
-    document.getElementById('lpBody').innerHTML = '<div class="lp-loading">Could not load — is the server running?</div>';
+  const body = document.getElementById('smBody');
+  if (!body) return;
+  if (subj === 'polity') {
+    if (allQuestions && allQuestions.length) {
+      buildPolityStudyView(body);
+    } else {
+      body.innerHTML = '<div class="lp-loading">Questions still loading — try again in a moment.</div>';
+      setTimeout(() => smSubject('polity', btn), 1500);
+    }
+  } else {
+    body.innerHTML = `<div class="sm-no-results">📚 ${subj.charAt(0).toUpperCase()+subj.slice(1)} study notes coming soon!</div>`;
   }
 }
 
-function lpRender(tab, data) {
-  const body = document.getElementById('lpBody');
-  if (!data.ok || !data.items.length) {
-    body.innerHTML = '<div class="lp-loading">No file found for today yet.</div>'; return;
-  }
-  if (tab === 'editorial') {
-    body.innerHTML = data.items.map(item => `
-      <div class="lp-ed-item">
-        <div class="lp-ed-title">${item.title}</div>
-        ${item.bullets.map(b => `<div class="lp-ed-bullet">${b}</div>`).join('')}
-        ${item.takeaway ? `<div class="lp-ed-takeaway">💡 ${item.takeaway}</div>` : ''}
-      </div>`).join('');
-  } else if (tab === 'upnews') {
-    body.innerHTML = data.items.map(item => `
-      <div class="lp-up-item">
-        <div class="lp-cat-badge">${item.category}</div>
-        <div class="lp-up-headline">${item.headline}</div>
-        ${item.detail ? `<div class="lp-up-detail">${item.detail}</div>` : ''}
-      </div>`).join('');
-  } else if (tab === 'mcq') {
-    body.innerHTML = data.items.map((q,i) => `
-      <div class="lp-mcq-item" id="lpmcq-${i}">
-        <div class="lp-mcq-qno">Q${q.qno}</div>
-        <div class="lp-mcq-q">${q.question}</div>
-        <div class="lp-mcq-opts">
-          ${['a','b','c','d'].map(opt => q.options[opt] ? `
-            <div class="lp-mcq-opt" id="lpmcq-${i}-${opt}" onclick="lpMCQAnswer(${i},'${opt}','${q.answer}')">
-              <strong>${opt.toUpperCase()}.</strong> ${q.options[opt]}
-            </div>` : '').join('')}
-        </div>
-        <span class="lp-mcq-reveal" onclick="lpMCQReveal(${i},'${q.answer}')">Show Answer</span>
-      </div>`).join('');
-  }
-}
+// ── Article Knowledge Base ────────────────────────────────────────────────
+const ARTICLE_DB = {
+  '3':   { title: 'Formation of new States', exp: 'Parliament may by law form new States, alter areas, boundaries or names of existing States by simple majority.' },
+  '12':  { title: 'Definition of State', exp: 'Defines "State" for Part III (Fundamental Rights) — includes Parliament, State Legislatures, Central/State Govts, and other authorities under their control.' },
+  '13':  { title: 'Laws inconsistent with FRs void', exp: 'All laws inconsistent with Fundamental Rights are void to the extent of inconsistency. Includes pre-Constitutional laws and any State action.' },
+  '14':  { title: 'Equality before law', exp: 'The State shall not deny to any person equality before law or equal protection of laws within India.' },
+  '15':  { title: 'Prohibition of discrimination', exp: 'Prohibits discrimination on grounds of religion, race, caste, sex, or place of birth. State may make special provisions for women, children, SCs, STs, OBCs.' },
+  '16':  { title: 'Equality of opportunity in public employment', exp: 'Equal opportunity in matters of public employment. Reservation for backward classes, SCs, STs is permitted.' },
+  '17':  { title: 'Abolition of Untouchability', exp: 'Abolishes untouchability and forbids its practice in any form. Enforcement of disability arising out of untouchability is an offence.' },
+  '18':  { title: 'Abolition of Titles', exp: 'No title (except military or academic) shall be conferred by the State. Citizens cannot accept foreign titles.' },
+  '19':  { title: 'Protection of six freedoms', exp: 'Six freedoms: (1) speech & expression, (2) assembly, (3) association, (4) movement, (5) residence, (6) profession. Subject to reasonable restrictions.' },
+  '20':  { title: 'Protection in respect of conviction', exp: 'Three protections: (1) No ex-post-facto law, (2) No double jeopardy, (3) No self-incrimination.' },
+  '21':  { title: 'Protection of life and personal liberty', exp: 'No person shall be deprived of his life or personal liberty except according to procedure established by law. Most litigated FR — expanded by courts to include right to education, privacy, health, livelihood.' },
+  '21A': { title: 'Right to Education', exp: 'State shall provide free and compulsory education to all children of 6–14 years. Added by 86th Amendment 2002.' },
+  '22':  { title: 'Protection against arrest', exp: 'Rights on arrest: informed of grounds, consult advocate, produced before Magistrate within 24 hours. Does not apply to enemy aliens or preventive detention.' },
+  '23':  { title: 'Prohibition of traffic in human beings', exp: 'Prohibits traffic in human beings and begar (forced labour). Any contravention is an offence punishable by law.' },
+  '24':  { title: 'Prohibition of child labour', exp: 'No child below 14 shall be employed in factories, mines or hazardous occupations.' },
+  '25':  { title: 'Freedom of religion', exp: 'Right to freely profess, practise and propagate religion, subject to public order, morality and health.' },
+  '30':  { title: 'Rights of minorities to establish institutions', exp: 'All religious and linguistic minorities have the right to establish and administer educational institutions of their choice.' },
+  '32':  { title: 'Right to Constitutional Remedies', exp: 'Right to move Supreme Court for enforcement of Fundamental Rights. Dr. Ambedkar called it "heart and soul of Constitution". Five writs: Habeas Corpus, Mandamus, Prohibition, Certiorari, Quo Warranto.' },
+  '38':  { title: 'State to secure social order (DPSP)', exp: 'State shall strive to promote welfare of people by securing social, economic and political justice.' },
+  '39':  { title: 'Certain principles of policy (DPSP)', exp: 'Includes equal pay for equal work, right to adequate means of livelihood, prevention of concentration of wealth.' },
+  '39A': { title: 'Equal justice and free legal aid (DPSP)', exp: 'State shall secure equal justice and free legal aid to ensure opportunities for securing justice are not denied due to economic disability.' },
+  '40':  { title: 'Organisation of village panchayats (DPSP)', exp: 'State shall take steps to organise village panchayats and endow them with such powers as may be necessary for self-government.' },
+  '44':  { title: 'Uniform Civil Code (DPSP)', exp: 'State shall endeavour to secure a Uniform Civil Code for citizens throughout India.' },
+  '45':  { title: 'Free and compulsory education (DPSP)', exp: 'State shall endeavour to provide early childhood care and education for all children until they complete 14 years. Modified after Art 21A was added.' },
+  '51A': { title: 'Fundamental Duties', exp: '11 Fundamental Duties added by 42nd Amendment 1976 (10 duties) and 86th Amendment 2002 (11th duty — provide education to children 6–14). Not justiciable but courts consider them while deciding cases.' },
+  '52':  { title: 'The President of India', exp: 'There shall be a President of India — the constitutional head of the Union Executive.' },
+  '61':  { title: 'Impeachment of President', exp: 'President can be removed by impeachment for violation of Constitution by a resolution passed by 2/3 majority of total membership of both Houses.' },
+  '72':  { title: 'Pardoning power of President', exp: 'President can grant pardons, reprieves, respites or remissions of punishment to persons convicted in cases involving: (1) Court Martial, (2) offence against Union law, (3) death sentence.' },
+  '74':  { title: 'Council of Ministers to aid President', exp: 'Council of Ministers with PM at head to aid and advise the President. President shall act in accordance with such advice. Advice is binding (44th Amendment).' },
+  '76':  { title: 'Attorney General of India', exp: 'President appoints Attorney General — must be qualified to be a Judge of SC. Has right of audience in all courts in India. Not a member of Cabinet.' },
+  '79':  { title: 'Constitution of Parliament', exp: 'Parliament of India consists of President, Rajya Sabha, and Lok Sabha.' },
+  '108': { title: 'Joint sitting of both Houses', exp: 'President can summon joint sitting to resolve a deadlock on ordinary bills (not Money Bills or Constitutional Amendment Bills). Speaker of Lok Sabha presides.' },
+  '110': { title: 'Definition of Money Bill', exp: 'A bill dealing exclusively with taxation, borrowing, Consolidated Fund of India, Contingency Fund, custody of public money, auditing of accounts, or matters incidental thereto.' },
+  '112': { title: 'Annual Financial Statement (Budget)', exp: 'President shall lay before Parliament an Annual Financial Statement (Budget) showing estimated receipts and expenditure of the Union.' },
+  '123': { title: 'Ordinance making power of President', exp: 'President can promulgate Ordinances when Parliament is not in session. Must be ratified by Parliament within 6 weeks of reassembly. Cannot amend Constitution.' },
+  '124': { title: 'Establishment of Supreme Court', exp: 'There shall be a Supreme Court of India consisting of CJI and not more than 33 other judges (increased over time by Parliament).' },
+  '143': { title: 'Advisory jurisdiction of SC', exp: 'President may refer any question of law or fact of public importance to SC for its advisory opinion.' },
+  '148': { title: 'Comptroller and Auditor General', exp: 'CAG of India is appointed by President. Guardian of public purse. Audits accounts of Union and States. Reports placed before Parliament/State Legislature.' },
+  '155': { title: 'Appointment of Governor', exp: 'Governor of each State shall be appointed by the President by warrant under his hand and seal.' },
+  '161': { title: 'Pardoning power of Governor', exp: 'Governor can grant pardons, reprieves, respites or remissions of punishment in cases of offences against State law (not death sentence — that is President\'s power).' },
+  '162': { title: 'Extent of executive power of State', exp: 'Executive power of a State extends to matters with respect to which the State Legislature has power to make laws.' },
+  '163': { title: 'Council of Ministers to aid Governor', exp: 'Council of Ministers with CM at head to aid and advise the Governor. Governor acts in his discretion in matters specified by Constitution.' },
+  '171': { title: 'Composition of Legislative Councils', exp: 'Total members of Legislative Council shall not exceed 1/3 of total members in Legislative Assembly and not less than 40.' },
+  '213': { title: 'Governor\'s Ordinance making power', exp: 'Governor can promulgate Ordinances when State Legislature is not in session. Cannot exceed legislative competence of State.' },
+  '226': { title: 'Power of High Courts to issue writs', exp: 'Every HC has power to issue writs for enforcement of FRs and for any other purpose — broader jurisdiction than SC under Art 32.' },
+  '243':  { title: 'Definitions — Panchayats', exp: 'Key definitions for Part IX (Panchayats): Gram Sabha, Intermediate level, Panchayat, Panchayat area, Population, Village. Added by 73rd Amendment 1992.' },
+  '243K': { title: 'State Election Commission', exp: 'SEC superintends, directs and controls preparation of electoral rolls and conduct of elections to Panchayats. SEC headed by State Election Commissioner appointed by Governor.' },
+  '243ZA':{ title: 'Elections to Municipalities', exp: 'SEC superintends and controls elections to Municipalities. Added by 74th Amendment 1992.' },
+  '245': { title: 'Extent of laws made by Parliament and State Legislatures', exp: 'Parliament can make laws for whole or any part of India. State Legislature can make laws for whole or part of the State.' },
+  '248': { title: 'Residuary powers of legislation', exp: 'Parliament has exclusive power to make laws on any matter not enumerated in Concurrent or State List (Residuary Powers).' },
+  '249': { title: 'Parliament to legislate on State subjects in national interest', exp: 'Rajya Sabha can pass a resolution by 2/3 majority declaring it necessary in national interest for Parliament to legislate on a State List subject.' },
+  '256': { title: 'Obligation of States', exp: 'Executive power of every State shall be so exercised as to ensure compliance with laws made by Parliament and existing laws.' },
+  '263': { title: 'Inter-State Council', exp: 'President may establish an Inter-State Council for inquiring into disputes between States, investigating subjects of common interest.' },
+  '280': { title: 'Finance Commission', exp: 'President constitutes Finance Commission every 5 years to recommend distribution of taxes between Centre and States, grants-in-aid to States. Quasi-judicial body.' },
+  '300A': { title: 'Right to property', exp: 'No person shall be deprived of his property save by authority of law. Property is now a constitutional right (not FR) after 44th Amendment 1978.' },
+  '312': { title: 'All India Services', exp: 'Parliament may by law create one or more All India Services. Rajya Sabha must pass a resolution by 2/3 majority to create new AIS. IAS, IPS, IFoS are existing AIS.' },
+  '315': { title: 'Public Service Commissions', exp: 'There shall be a UPSC for the Union and PSC for each State. A Joint PSC for two or more States may be established by Parliament.' },
+  '324': { title: 'Election Commission of India', exp: 'Superintendence, direction and control of elections vested in ECI. Consists of CEC and other ECs appointed by President. CEC cannot be removed except by impeachment.' },
+  '338': { title: 'National Commission for SCs', exp: 'NCSC investigates and monitors safeguards for Scheduled Castes, inquires into complaints regarding deprivation of rights. Chairman appointed by President.' },
+  '338A': { title: 'National Commission for STs', exp: 'NCST investigates and monitors safeguards for Scheduled Tribes. Separate from NCSC after 89th Amendment 2003.' },
+  '340': { title: 'National Commission for OBCs', exp: 'President may appoint a Commission to investigate conditions of socially and educationally backward classes and recommend steps for their advancement.' },
+  '343': { title: 'Official Language of the Union', exp: 'Hindi in Devanagari script is the official language of the Union. English to continue for official purposes for 15 years from commencement (1950).' },
+  '350B': { title: 'Special Officer for Linguistic Minorities', exp: 'President shall appoint a Special Officer for Linguistic Minorities to investigate all matters relating to safeguards provided to linguistic minorities.' },
+  '351': { title: 'Directive for development of Hindi', exp: 'It shall be the duty of the Union to promote the spread of Hindi and to develop it so that it may serve as a medium of expression for composite culture of India.' },
+  '352': { title: 'Proclamation of National Emergency', exp: 'President can proclaim National Emergency if security of India or any part is threatened by war, external aggression, or armed rebellion. Approved by Parliament by 2/3 special majority within 1 month.' },
+  '356': { title: 'President\'s Rule in States', exp: 'If President is satisfied that government of a State cannot be carried on in accordance with Constitution, President\'s Rule (Article 356) can be imposed. Approved by Parliament within 2 months.' },
+  '360': { title: 'Financial Emergency', exp: 'President can proclaim Financial Emergency if financial stability of India or any part thereof is threatened. Never imposed so far.' },
+  '368': { title: 'Power to amend the Constitution', exp: 'Parliament may amend any provision of Constitution. Some provisions require ratification by at least half the State Legislatures (e.g. federal provisions, SC jurisdiction). Basic Structure cannot be amended.' },
+  '370': { title: 'Special provisions for J&K', exp: 'Article 370 gave special status to J&K. Abrogated in August 2019 by Presidential Order. J&K reorganised into two UTs: J&K (with Legislature) and Ladakh (without Legislature).' },
+  '371': { title: 'Special provisions for certain States', exp: 'Special provisions for Maharashtra, Gujarat (Art 371), Nagaland (371A), Assam (371B), Manipur (371C), Andhra Pradesh/Telangana (371D), Sikkim (371F), Mizoram (371G), Arunachal Pradesh (371H), Goa (371I).' },
+};
 
-function lpMCQAnswer(idx, chosen, correct) {
-  ['a','b','c','d'].forEach(o => {
-    const el = document.getElementById(`lpmcq-${idx}-${o}`);
-    if (!el) return;
-    el.classList.remove('correct','wrong');
-    if (o === correct) el.classList.add('correct');
-    else if (o === chosen) el.classList.add('wrong');
-    el.onclick = null;
+// ── Build Polity Article View ─────────────────────────────────────────────
+function buildPolityStudyView(body) {
+  // 1. Scan all polity questions from the live question bank
+  var polityQs = allQuestions.filter(function(q) {
+    return (q.subject||'').toLowerCase().includes('polity');
   });
-  const reveal = document.querySelector(`#lpmcq-${idx} .lp-mcq-reveal`);
-  if (reveal) reveal.style.display = 'none';
+
+  // 2. Extract article numbers from each question + explanation
+  var artMap = {}; // { '32': [q, q, ...] }
+  var artRe = /(?:[Aa]rticle|Art\.?|अनुच्छेद)\s+(\d+[A-Za-z]?)/g;
+
+  polityQs.forEach(function(q) {
+    var text = (q.question||'') + ' ' + (q.explanation||'') + ' '
+             + (q.optA||'') + ' ' + (q.optB||'') + ' ' + (q.optC||'') + ' ' + (q.optD||'');
+    var seen = new Set();
+    var m;
+    artRe.lastIndex = 0;
+    while ((m = artRe.exec(text)) !== null) {
+      var num = m[1].toUpperCase();
+      if (seen.has(num)) continue;
+      seen.add(num);
+      if (!artMap[num]) artMap[num] = [];
+      artMap[num].push(q);
+    }
+  });
+
+  // 3. Also include questions where subTopic contains "Article XX"
+  polityQs.forEach(function(q) {
+    var st = (q.subTopic||'');
+    var m2 = /Article\s+(\d+[A-Za-z]?)/i.exec(st);
+    if (m2) {
+      var num = m2[1].toUpperCase();
+      if (!artMap[num]) artMap[num] = [];
+      if (!artMap[num].includes(q)) artMap[num].push(q);
+    }
+  });
+
+  var artNums = Object.keys(artMap).sort(function(a,b) {
+    var na = parseInt(a), nb = parseInt(b);
+    return na !== nb ? na - nb : a.localeCompare(b);
+  });
+
+  var totalArticles = artNums.length;
+  var totalQs = polityQs.length;
+  var coveredQs = new Set();
+  artNums.forEach(function(n) { artMap[n].forEach(function(q){ coveredQs.add(q.id); }); });
+
+  // 4. Render
+  var html = `
+    <div class="sm-stats-bar">
+      <div class="sm-stat"><div class="sm-stat-v">${totalQs}</div><div class="sm-stat-l">Polity Questions</div></div>
+      <div class="sm-stat"><div class="sm-stat-v" style="color:var(--amber-dark,#92400E);">${totalArticles}</div><div class="sm-stat-l">Articles Found</div></div>
+      <div class="sm-stat"><div class="sm-stat-v" style="color:var(--teal);">${coveredQs.size}</div><div class="sm-stat-l">Qs Mapped to Articles</div></div>
+    </div>
+    <input class="sm-search" id="smSearch" placeholder="🔍  Search article number or keyword…" oninput="smFilterArticles(this.value)">
+    <div id="smArticleList">`;
+
+  html += artNums.map(function(num) {
+    var qs = artMap[num];
+    var info = ARTICLE_DB[num] || ARTICLE_DB[num.replace(/[A-Z]$/,'')] || null;
+    var title = info ? info.title : 'Constitutional Provision';
+    var exp   = info ? info.exp   : 'Refer to Constitution of India for details.';
+    var qCards = qs.map(function(q) {
+      return `<div class="sm-aq">
+        <div class="sm-aq-meta">
+          <span class="sm-aq-year">${q.year||'—'}</span>
+          <span class="sm-aq-subj">${q.subTopic||q.subject||''}</span>
+          <span class="sm-aq-ans">Ans: ${q.answer}</span>
+        </div>
+        <div class="sm-aq-text">${q.question}</div>
+        ${q.explanation ? `<div style="font-size:11px;color:var(--text3);margin-top:5px;">💡 ${q.explanation}</div>` : ''}
+      </div>`;
+    }).join('');
+    return `<div class="sm-article-card" id="sma-${num}" data-title="${title.toLowerCase()} article ${num.toLowerCase()}">
+      <div class="sm-article-hd" onclick="smToggleArticle('${num}')">
+        <span class="sm-article-num">Art. ${num}</span>
+        <span class="sm-article-title">${title}</span>
+        <span class="sm-article-count">${qs.length} Q${qs.length>1?'s':''}</span>
+        <span class="sm-article-arrow">▼</span>
+      </div>
+      <div class="sm-article-body">
+        <div class="sm-article-exp">${exp}</div>
+        <div class="sm-article-qs">${qCards}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (artNums.length === 0) {
+    html += `<div class="sm-no-results">No articles detected in current question bank.<br>Add polity questions mentioning "Article XX" to see them here.</div>`;
+  }
+
+  html += '</div>'; // close smArticleList
+  body.innerHTML = html;
 }
 
-function lpMCQReveal(idx, correct) {
-  lpMCQAnswer(idx, null, correct);
+function smToggleArticle(num) {
+  var card = document.getElementById('sma-' + num);
+  if (card) card.classList.toggle('open');
+}
+
+function smFilterArticles(val) {
+  var v = val.trim().toLowerCase();
+  document.querySelectorAll('.sm-article-card').forEach(function(card) {
+    if (!v) { card.style.display = ''; return; }
+    var searchStr = card.getAttribute('data-title') || '';
+    card.style.display = searchStr.includes(v) ? '' : 'none';
+  });
 }
 
 // Navigate to news tab
