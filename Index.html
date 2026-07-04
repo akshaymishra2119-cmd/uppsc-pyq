@@ -3569,6 +3569,7 @@ function initPortal() {
 // ══════════════════════════════════════════════════════════════
 // ── Repeat Question Compare Modal ────────────────────────────
 function openRepeatModal(qId) {
+  var currentUser = window._currentUser;   // bridge from auth block
   const qs = (typeof allQuestions !== 'undefined') ? allQuestions : [];
   const clicked = qs.find(q => q.id === qId);
   if (!clicked) return;
@@ -6115,6 +6116,7 @@ async function saveAttemptToServer(data) {
 }
 
 async function refreshDashboardStats() {
+  var currentUser = window._currentUser;
   if (!currentUser) return;
   try {
     const res  = await fetch('/api/myStats', { credentials: 'include' });
@@ -7297,6 +7299,7 @@ function toggleBookmark(headline) {
 function loadProgress() {
   const prompt = document.getElementById("progressLoginPrompt");
   const content = document.getElementById("progressContent");
+  var currentUser = window._currentUser;   // bridge: auth set in second script block
   if (!currentUser) {
     if (prompt) prompt.style.display = "";
     if (content) content.style.display = "none";
