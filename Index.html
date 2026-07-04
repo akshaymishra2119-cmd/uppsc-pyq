@@ -2152,6 +2152,9 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 <div class="pyq-shell">
 
   <!-- ── Year tabs ─────────────────────────────────── -->
+  <!-- Year completion progress strip -->
+  <div id="ycPracticeStrip" style="display:none;overflow-x:auto;padding:0 0 10px;"></div>
+
   <div class="pyq-year-tabs" id="pyqYearTabs">
     <button class="pyq-yr-btn active" id="pyq-yr-all" onclick="selectPyqYear('all',this)">All Years</button>
     <!-- populated by JS after questions load -->
@@ -5475,6 +5478,7 @@ function loadQuestions() {
       renderStatementAnalysis(allQuestions);
       renderWeightTrend(allQuestions);
       renderSubjectBreakdown(allQuestions);
+      renderYearProgressBadges();
       // Refresh per-year dashboard with now-loaded questions
       if (_selectedYear) renderPerYearDashboard(_selectedYear);
       else if (_analyticsAllYears.length) renderPerYearDashboard(_analyticsAllYears[_analyticsAllYears.length-1]);
@@ -5540,6 +5544,84 @@ function selectPyqYear(year, btn) {
   if (btn) btn.classList.add('active');
   applyFilters();
   updatePyqSidebarCounts();
+}
+
+// ── Year-wise Completion helpers ─────────────────────────────
+function ycToggle(yr) {
+  var body = document.getElementById('yc_body_'+yr);
+  var chev = document.getElementById('yc_chev_'+yr);
+  if (!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  if (chev) chev.style.transform = isOpen ? '' : 'rotate(90deg)';
+  if (!isOpen) ycLoadList(yr, 'rem');
+}
+function ycSwitchTab(yr, type) {
+  ['rem','done'].forEach(function(t) {
+    var el = document.getElementById('yct_'+t+'_'+yr);
+    if (el) { el.classList.remove('active-rem','active-done'); }
+  });
+  var active = document.getElementById('yct_'+type+'_'+yr);
+  if (active) active.classList.add('active-'+type);
+  ycLoadList(yr, type);
+}
+function ycLoadList(yr, type) {
+  var listEl = document.getElementById('yc_list_'+yr);
+  if (!listEl) return;
+  var qs = (typeof allQuestions!=='undefined'?allQuestions:[]).filter(function(q){ return String(q.year)===String(yr); });
+  var resultMap = window._ycResultMap || {};
+  var filtered = type==='rem'
+    ? qs.filter(function(q){ return !attemptedQIds.has(String(q.id)); })
+    : qs.filter(function(q){ return attemptedQIds.has(String(q.id)); });
+  if (!filtered.length) {
+    listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0;">'+(type==='rem'?'All questions completed! 🎉':'No questions attempted yet.')+'</div>';
+    return;
+  }
+  var html = filtered.slice(0,60).map(function(q) {
+    var res = resultMap[String(q.id)];
+    var icon = type==='rem'
+      ? '<i class="ti ti-circle-dashed" style="color:var(--text3);font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>'
+      : (res==='correct'
+        ? '<i class="ti ti-circle-check" style="color:#1D9E75;font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>'
+        : '<i class="ti ti-circle-x" style="color:#E24B4A;font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>');
+    return '<div class="yc-q-item">'+icon
+      +'<div><div style="color:var(--text);">'+(q.question||'Q#'+q.id)+'</div>'
+      +'<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+(q.subject||'')+' · Q#'+q.id+'</div></div>'
+      +'</div>';
+  }).join('');
+  if (filtered.length>60) html += '<div style="font-size:11px;color:var(--text3);text-align:center;padding:6px 0;">+'+(filtered.length-60)+' more</div>';
+  listEl.innerHTML = html;
+}
+
+function renderYearProgressBadges() {
+  var strip = document.getElementById('ycPracticeStrip');
+  if (!strip || typeof allQuestions==='undefined') return;
+  var qByYear = {};
+  allQuestions.forEach(function(q){
+    var yr = String(q.year||''); if(!yr) return;
+    if(!qByYear[yr]) qByYear[yr]=0;
+    qByYear[yr]++;
+  });
+  var years = Object.keys(qByYear).sort();
+  if (!years.length) return;
+  var html = years.map(function(yr){
+    var total = qByYear[yr];
+    var done = 0;
+    attemptedQIds.forEach(function(id){
+      var q = (allQuestions||[]).find(function(x){ return String(x.id)===String(id) && String(x.year)===yr; });
+      if(q) done++;
+    });
+    var pct = total>0 ? Math.round(done/total*100) : 0;
+    var col = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--border)';
+    return '<div style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;padding:4px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-right:6px;">'
+      +'<div style="font-size:11px;font-weight:600;color:var(--text);">'+yr+'</div>'
+      +'<div style="width:36px;height:4px;border-radius:2px;background:var(--border);overflow:hidden;">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:2px;"></div></div>'
+      +'<div style="font-size:10px;color:'+col+';font-weight:500;">'+pct+'%</div>'
+      +'</div>';
+  }).join('');
+  strip.innerHTML = html;
+  strip.style.display = '';
 }
 
 function buildYearTabs() {
@@ -7646,6 +7728,58 @@ function renderServerProgress(data) {
     +dayTable
     +'</div>';
 
+  // ── SECTION: Year-wise Completion ─────────────────────────────
+  // Build result map from daily history (latest result per q_id)
+  var qResultMap = {};
+  Object.values(dh).forEach(function(day) {
+    (day.questions||[]).forEach(function(q) {
+      if (q.q_id) qResultMap[String(q.q_id)] = q.result;
+    });
+  });
+  window._ycResultMap = qResultMap;
+
+  var secYearCompletion = '';
+  if (typeof allQuestions !== 'undefined' && allQuestions.length > 0) {
+    var qByYear = {};
+    allQuestions.forEach(function(q) {
+      var yr = String(q.year||''); if (!yr) return;
+      if (!qByYear[yr]) qByYear[yr] = [];
+      qByYear[yr].push(q);
+    });
+    var ycCards = Object.keys(qByYear).sort().map(function(yr) {
+      var total = qByYear[yr].length;
+      var ymData = ym[yr] || {};
+      var done = ymData.done || 0;
+      var pct = total > 0 ? Math.round(done/total*100) : 0;
+      var rem = total - done;
+      var barCol = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--border)';
+      var pctCol = pct>=80?'#1D9E75':pct>=40?'#BA7517':pct>0?'#E24B4A':'var(--text3)';
+      var statTxt = pct===0 ? 'Not started' : '<span style="color:'+pctCol+';font-weight:600;">'+pct+'% done</span>';
+      return '<div class="yc-card" id="yc_'+yr+'">'
+        +'<div class="yc-row" data-yr="'+yr+'" onclick="ycToggle(this.dataset.yr)">'
+        +'<div><div class="yc-yr">'+yr+'</div><div class="yc-total">'+total+' Qs</div></div>'
+        +'<div class="yc-bar-wrap">'
+        +'<div style="height:6px;border-radius:3px;background:var(--border);overflow:hidden;">'
+        +'<div style="height:100%;width:'+pct+'%;background:'+barCol+';border-radius:3px;"></div></div>'
+        +'<div class="yc-stats">'+statTxt
+        +(rem>0?' &nbsp;<span style="color:var(--text3);">'+rem+' left</span>':'')+'</div>'
+        +'</div>'
+        +'<i class="ti ti-chevron-right" id="yc_chev_'+yr+'" style="font-size:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;"></i>'
+        +'</div>'
+        +'<div class="yc-body" id="yc_body_'+yr+'" style="display:none;border-top:1px solid var(--border);padding:12px 16px;">'
+        +'<div style="display:flex;gap:6px;margin-bottom:10px;">'
+        +'<button class="yc-tab yc-tab-rem active-rem" id="yct_rem_'+yr+'" data-yr="'+yr+'" data-tp="rem" onclick="ycSwitchTab(this.dataset.yr,this.dataset.tp)">⏳ Remaining ('+rem+')</button>'
+        +'<button class="yc-tab yc-tab-done" id="yct_done_'+yr+'" data-yr="'+yr+'" data-tp="done" onclick="ycSwitchTab(this.dataset.yr,this.dataset.tp)">✅ Completed ('+done+')</button>'
+        +'</div>'
+        +'<div class="yc-list" id="yc_list_'+yr+'"></div>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+    secYearCompletion = '<div class="tp-section">'
+      +'<div class="tp-sec-hdr">📅 Year-wise Completion</div>'
+      +ycCards+'</div>';
+  }
+
   // ── CSS ──────────────────────────────────────────────────────
   var css = '<style>'
     +'.tp-section{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px;}'
@@ -7699,9 +7833,21 @@ function renderServerProgress(data) {
     +'.dp-qmeta{font-size:11px;color:var(--text3);margin-top:3px;}'
     +'.dp-empty{font-size:12px;color:var(--text3);padding:8px 0;}'
     +'.dp-view{text-align:center;font-size:11px;color:var(--text3);}@media(max-width:560px){.dp-head,.dp-row{grid-template-columns:2fr 1fr 1fr 1fr 48px;}.dp-stat:nth-child(4){display:none;}}'
+    +'.yc-card{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;}'
+    +'.yc-row{display:grid;grid-template-columns:60px 1fr 20px;gap:12px;align-items:center;padding:12px 16px;cursor:pointer;}'
+    +'.yc-row:hover{background:var(--bg2);}'
+    +'.yc-yr{font-size:13px;font-weight:600;color:var(--text);}'
+    +'.yc-total{font-size:10px;color:var(--text3);margin-top:1px;}'
+    +'.yc-bar-wrap{display:flex;flex-direction:column;gap:4px;}'
+    +'.yc-stats{display:flex;justify-content:space-between;font-size:11px;}'
+    +'.yc-tab{font-size:11px;padding:3px 10px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--text2);cursor:pointer;font-weight:500;}'
+    +'.yc-tab.active-rem{background:#fff5f5;color:#993C1D;border-color:#F5C4B3;}'
+    +'.yc-tab.active-done{background:#f0fdf4;color:#0F6E56;border-color:#9FE1CB;}'
+    +'.yc-q-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:7px;border:1px solid var(--border);background:var(--bg);margin-bottom:5px;font-size:12px;line-height:1.5;}'
+    +'.yc-list{max-height:240px;overflow-y:auto;}'
     +'</style>';
 
-  tl.innerHTML = css + secTimeline + sec2 + sec9 + sec3 + sec5 + sec7;
+  tl.innerHTML = css + secTimeline + secYearCompletion + sec2 + sec9 + sec3 + sec5 + sec7;
 
   // ── Mock history q-panels: attach after innerHTML ───────────────
   tl.querySelectorAll('.tp5btn').forEach(function(btn) {
