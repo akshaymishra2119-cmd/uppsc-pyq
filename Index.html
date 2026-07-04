@@ -6106,6 +6106,7 @@ async function saveAttemptToServer(data) {
   try {
     await fetch('/api/saveAttempt', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
@@ -6116,7 +6117,7 @@ async function saveAttemptToServer(data) {
 async function refreshDashboardStats() {
   if (!currentUser) return;
   try {
-    const res  = await fetch('/api/myStats');
+    const res  = await fetch('/api/myStats', { credentials: 'include' });
     const data = await res.json();
     if (data.error) return;
 
@@ -7306,7 +7307,7 @@ function loadProgress() {
   const tl = document.getElementById("timelineContent");
   if (tl) tl.innerHTML = `<div class="loading"><i class="ti ti-loader"></i>Loading your progress…</div>`;
 
-  fetch('/api/trackProgress')
+  fetch('/api/trackProgress', { credentials: 'include' })
     .then(r => r.json())
     .then(data => {
       if (data.error) {
@@ -8021,7 +8022,7 @@ function openExamDateModal() {
   const d = prompt('Enter your exam date (YYYY-MM-DD):');
   if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
   fetch('/api/setExamDate', {
-    method:'POST', headers:{'Content-Type':'application/json'},
+    method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ examDate: d })
   }).then(r=>r.json()).then(()=>{ showToast('Exam date saved!'); loadProgress(); });
 }
