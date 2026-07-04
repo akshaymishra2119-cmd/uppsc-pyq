@@ -4006,6 +4006,15 @@ function showSubQs(cardId, filter) {
       </span>
     </div>` +
     questions.map((q, idx) => {
+      // Guest blur after SYD_FREE_LIMIT questions
+      if (!hasFullAccess() && idx >= SYD_FREE_LIMIT) {
+        return `<div style="position:relative;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;min-height:80px;">
+          ${lockOverlayHTML()}
+          <div style="filter:blur(4px);opacity:0.5;pointer-events:none;padding:12px 14px;">
+            <div style="font-size:13px;color:var(--text1);line-height:1.6;">${q.question||'—'}</div>
+          </div>
+        </div>`;
+      }
       const isRepeat = q._isRepeat;
       const ri = (q.repeatsIn || '').trim();
       const prevYears = ri ? ri.split(',').map(y=>y.trim()).filter(y => y && y < String(q.year)).sort() : [];
