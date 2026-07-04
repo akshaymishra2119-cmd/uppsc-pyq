@@ -10276,6 +10276,7 @@ async function openSYD(subject, year) {
       }).then(r => r.json());
       const pool = Array.isArray(data) ? data : (data.questions || []);
       allQuestions = pool; // cache for future use
+      resetLockedCache();
       _renderSYD(subject, year, pool);
     } catch(e) {
       document.getElementById('sydBody').innerHTML =
@@ -10304,6 +10305,7 @@ async function openAnswerDrill(year, letter) {
       }).then(r => r.json());
       pool = Array.isArray(data) ? data : (data.questions || []);
       allQuestions = pool;
+      resetLockedCache();
     } catch(e) {
       document.getElementById('sydBody').innerHTML =
         `<p style="color:var(--red);padding:24px;text-align:center;">Failed to load: ${e.message}</p>`;
