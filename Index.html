@@ -6235,7 +6235,15 @@ function renderQuestions() {
   if (countEl) countEl.textContent = `Showing ${filteredQ.length} question${filteredQ.length!==1?'s':''}`;
 
   // Card view mode
-  if (_qView === 'card') { renderCardView(); return; }
+  if (_qView === 'card') {
+    try {
+      renderCardView();
+    } catch(e) {
+      document.getElementById('qContainer').innerHTML =
+        '<div style="color:red;padding:20px;font-size:13px;">Study Mode error: ' + e.message + '<br><pre>' + e.stack + '</pre></div>';
+    }
+    return;
+  }
 
   // ── Infinite scroll: render first _qRenderLimit questions ──
   const _scrollY = window.scrollY;
