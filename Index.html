@@ -6531,16 +6531,29 @@ function updateLiveScore() {
 // ══════════════════════════════════════════════════════════════
 // MOCK TEST
 // ══════════════════════════════════════════════════════════════
-function openMockModal() {
-  document.getElementById("mockModal").style.display = "flex";
-  populateMockTopics();
-  // Populate year options dynamically
+function _populateMockYears() {
   const yearWrap = document.getElementById('mt-year-opts');
-  if (yearWrap && allQuestions.length) {
-    const years = [...new Set(allQuestions.map(q => String(q.year)).filter(Boolean))].sort();
-    yearWrap.innerHTML = `<span class="mock-opt selected" data-val="all" onclick="selectMockOpt('year',this)">All</span>`
-      + years.map(y => `<span class="mock-opt" data-val="${y}" onclick="selectMockOpt('year',this)">${y}</span>`).join('');
+  if (!yearWrap) return;
+  const years = [...new Set(allQuestions.map(q => String(q.year)).filter(Boolean))].sort();
+  yearWrap.innerHTML = `<span class="mock-opt selected" data-val="all" onclick="selectMockOpt('year',this)">All</span>`
+    + years.map(y => `<span class="mock-opt" data-val="${y}" onclick="selectMockOpt('year',this)">${y}</span>`).join('');
+}
+
+async function openMockModal() {
+  document.getElementById("mockModal").style.display = "flex";
+  // Ensure questions are loaded before populating year/topic filters
+  if (!allQuestions || !allQuestions.length) {
+    try {
+      const data = await fetch('/api/getQuestions', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ shuffle: false, limit: 5000 })
+      }).then(r => r.json());
+      allQuestions = Array.isArray(data) ? data : (data.questions || []);
+      resetLockedCache();
+    } catch(e) { console.error('openMockModal fetch:', e); }
   }
+  _populateMockYears();
+  populateMockTopics();
 }
 function closeMockModal() { document.getElementById("mockModal").style.display = "none"; }
 
