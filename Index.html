@@ -8209,6 +8209,9 @@ function renderServerProgress(data) {
     });
   });
   window._ycResultMap = qResultMap;
+  // Seed attemptedQIds from server data so filters are always in sync
+  Object.keys(qResultMap).forEach(function(id) { attemptedQIds.add(id); });
+  localStorage.setItem("pyqAttempted", JSON.stringify([...attemptedQIds]));
 
   // Always emit the wrapper; cards filled by patchYearCompletionSection after innerHTML
   window._tpYmForPatch = ym;
