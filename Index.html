@@ -6236,12 +6236,17 @@ function renderQuestions() {
 
   // Card view mode
   if (_qView === 'card') {
-    try {
-      renderCardView();
-    } catch(e) {
-      document.getElementById('qContainer').innerHTML =
-        '<div style="color:red;padding:20px;font-size:13px;">Study Mode error: ' + e.message + '<br><pre>' + e.stack + '</pre></div>';
-    }
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);"><i class="ti ti-loader" style="animation:spin 1s linear infinite;"></i> Loading Study Mode…</div>';
+    var _snapView = _qView;
+    requestAnimationFrame(function() {
+      if (_qView !== 'card') return; // user switched back before frame fired
+      try {
+        renderCardView();
+      } catch(e) {
+        document.getElementById('qContainer').innerHTML =
+          '<div style="color:red;padding:20px;font-size:13px;">Study Mode error: ' + e.message + '<br><pre>' + e.stack + '</pre></div>';
+      }
+    });
     return;
   }
 
