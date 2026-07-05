@@ -11143,6 +11143,19 @@ function onAuthSuccess(user) {
         resetLockedCache();
         _updateNavBtn(data.user);
         _refreshAuthTabs();
+        // Seed attemptedQIds from server in background so PYQ filters are accurate
+        fetch('/api/trackProgress', { credentials:'include' })
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(tp){
+            if (!tp || !tp.dailyHistory) return;
+            Object.values(tp.dailyHistory).forEach(function(day){
+              (day.questions||[]).forEach(function(q){
+                if (q.q_id) attemptedQIds.add(String(q.q_id));
+              });
+            });
+            localStorage.setItem('pyqAttempted', JSON.stringify([...attemptedQIds]));
+          })
+          .catch(function(){});
       }
     })
     .catch(function(){});
