@@ -11342,5 +11342,20 @@ async function doResetPassword() {
     <div class="syd-body" id="sydBody"></div>
   </div>
 </div>
+
+<!-- Slideshow Fullscreen Overlay -->
+<div id="slideshowOverlay" onclick="if(event.target===this)closeSlideshow()">
+  <div id="ssProgress" class="ss-progress" style="width:0%"></div>
+  <div class="ss-topbar">
+    <span id="ssCounter" class="ss-counter">Q 1 of 0</span>
+    <button class="ss-close" onclick="closeSlideshow()">&#x2715;</button>
+  </div>
+  <div class="ss-card-wrap" id="ssCardWrap"></div>
+  <div class="ss-controls">
+    <button class="ss-btn" id="ssPrev" onclick="ssPrev()">&#8592; Prev</button>
+    <button class="ss-btn play" id="ssPlayBtn" onclick="toggleSSPlay()">&#9646;&#9646; Pause</button>
+    <button class="ss-btn" id="ssNext" onclick="ssNext()">Next &#8594;</button>
+  </div>
+</div>
 </body>
 </html>
