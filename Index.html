@@ -3696,6 +3696,269 @@ function showTab(id, btn) {
   if (id === "mock")          initMockTab();
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// MOCK TEST TAB
+// ══════════════════════════════════════════════════════════════
+let _mtSettings  = { year:'all', sub:'all', time:120 };
+let _mtPool      = [];   // questions for current test
+let _mtAnswers   = {};   // qIdx → letter chosen
+let _mtTimer     = null; // setInterval ref
+let _mtTimeLeft  = 0;    // seconds
+let _mtStarted   = false;
+
+async function initMockTab() {
+  if (!allQuestions || !allQuestions.length) {
+    try {
+      const data = await fetch('/api/getQuestions', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ shuffle:false, limit:5000 })
+      }).then(r => r.json());
+      allQuestions = Array.isArray(data) ? data : (data.questions || []);
+      resetLockedCache();
+    } catch(e) { console.error('initMockTab:', e); }
+  }
+  // Populate year buttons
+  const yearWrap = document.getElementById('mtYearOpts');
+  if (yearWrap && allQuestions.length) {
+    const years = [...new Set(allQuestions.map(q => String(q.year)).filter(Boolean))].sort();
+    yearWrap.innerHTML =
+      '<div class="mt-opt sel" data-val="all" onclick="mtSelect('year',this)">All Years</div>'
+      + years.map(y =>
+        '<div class="mt-opt" data-val="' + y + '" onclick="mtSelect('year',this)">' + y + '</div>'
+      ).join('');
+  }
+  mtUpdateCount();
+  mtShowHistory();
+}
+
+function mtSelect(type, el) {
+  const wrap = el.parentElement;
+  wrap.querySelectorAll('.mt-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+  _mtSettings[type] = type === 'time' ? parseInt(el.dataset.val) : el.dataset.val;
+  mtUpdateCount();
+}
+
+function mtFilterPool() {
+  let pool = allQuestions.slice();
+  if (_mtSettings.year !== 'all') pool = pool.filter(q => String(q.year) === _mtSettings.year);
+  if (_mtSettings.sub  !== 'all') pool = pool.filter(q => String(q.subject||'') === _mtSettings.sub);
+  return pool;
+}
+
+function mtUpdateCount() {
+  const el = document.getElementById('mtQCount');
+  if (!el) return;
+  const pool = mtFilterPool();
+  if (!pool.length) {
+    el.textContent = 'No questions match the selected filters.';
+  } else {
+    el.innerHTML = '<strong>' + pool.length + '</strong> questions available for this selection';
+  }
+}
+
+function mtShuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function mtStart() {
+  const pool = mtFilterPool();
+  if (!pool.length) { alert('No questions match the selected filters.'); return; }
+  _mtPool    = mtShuffle(pool.slice());
+  _mtAnswers = {};
+  _mtStarted = true;
+  // Switch screens
+  document.getElementById('mtSetup').style.display   = 'none';
+  document.getElementById('mtActive').style.display  = '';
+  document.getElementById('mtResults').style.display = 'none';
+  // Render questions
+  mtRenderActiveTest();
+  // Start timer
+  _mtTimeLeft = _mtSettings.time * 60;
+  mtTickTimer();
+  _mtTimer = setInterval(mtTickTimer, 1000);
+}
+
+function mtRenderActiveTest() {
+  const total = _mtPool.length;
+  document.getElementById('mtLiveTotal').textContent = total + ' questions';
+  document.getElementById('mtLiveSkip').textContent  = '○ ' + total + ' left';
+  document.getElementById('mtLiveCorr').textContent  = '✓ 0';
+  document.getElementById('mtProgFill').style.width  = '0%';
+  // Palette
+  const pal = document.getElementById('mtPalette');
+  pal.innerHTML = _mtPool.map(function(q,i){
+    return '<button class="mt-pal-btn" id="mtPal'+i+'" onclick="mtScrollTo('+i+')">'+(i+1)+'</button>';
+  }).join('');
+  // Questions
+  const container = document.getElementById('mtQContainer');
+  container.innerHTML = _mtPool.map(function(q,i){
+    const opts = ['A','B','C','D'].map(function(l){
+      const k = 'opt'+l;
+      if (!q[k]) return '';
+      return '<button class="mt-opt-btn" id="mtOpt'+i+l+'" onclick="mtChoose('+i+',''+l+'')">'
+        + '<span class="mt-opt-ltr">'+l+'</span>'
+        + '<span>'+q[k]+'</span>'
+        + '</button>';
+    }).join('');
+    return '<div class="mt-qcard" id="mtCard'+i+'">'
+      + '<div class="mt-qnum">Q'+(i+1)+' &middot; '+(q.year||'')+' &middot; '+(q.subject||'')+'</div>'
+      + '<div class="mt-qtext">'+q.question+'</div>'
+      + '<div class="mt-opts-grid">'+opts+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+function mtChoose(idx, letter) {
+  // Clear previous choice for this question
+  ['A','B','C','D'].forEach(function(l){
+    const btn = document.getElementById('mtOpt'+idx+l);
+    if (btn) btn.classList.remove('chosen');
+  });
+  _mtAnswers[idx] = letter;
+  const chosen = document.getElementById('mtOpt'+idx+letter);
+  if (chosen) chosen.classList.add('chosen');
+  // Update palette
+  const pal = document.getElementById('mtPal'+idx);
+  if (pal) { pal.classList.add('ans'); }
+  // Update live stats
+  const answered = Object.keys(_mtAnswers).length;
+  const left      = _mtPool.length - answered;
+  document.getElementById('mtLiveSkip').textContent = '○ ' + left + ' left';
+  document.getElementById('mtProgFill').style.width = Math.round(answered / _mtPool.length * 100) + '%';
+}
+
+function mtScrollTo(idx) {
+  const card = document.getElementById('mtCard'+idx);
+  if (card) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function mtTickTimer() {
+  if (_mtTimeLeft <= 0) {
+    clearInterval(_mtTimer);
+    mtSubmit();
+    return;
+  }
+  const m = Math.floor(_mtTimeLeft / 60);
+  const s = _mtTimeLeft % 60;
+  const val = document.getElementById('mtTimerVal');
+  if (val) {
+    val.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    val.className   = 'mt-timer-val' + (_mtTimeLeft <= 120 ? ' danger' : '');
+  }
+  _mtTimeLeft--;
+}
+
+function mtConfirmSubmit() {
+  const answered = Object.keys(_mtAnswers).length;
+  const total    = _mtPool.length;
+  if (answered < total && !confirm('You have answered ' + answered + ' of ' + total + ' questions. Submit anyway?')) return;
+  mtSubmit();
+}
+
+function mtSubmit() {
+  clearInterval(_mtTimer);
+  const timeTaken = _mtSettings.time * 60 - _mtTimeLeft;
+  // Grade
+  let correct = 0, wrong = 0;
+  _mtPool.forEach(function(q,i){
+    const ans = _mtAnswers[i];
+    if (ans && ans === q.answer) correct++;
+    else if (ans) wrong++;
+  });
+  const skipped = _mtPool.length - correct - wrong;
+  // Save to history
+  mtSaveHistory({ year:_mtSettings.year, sub:_mtSettings.sub, total:_mtPool.length, correct, wrong, skipped, timeTaken, ts:Date.now() });
+  // Show results screen
+  document.getElementById('mtActive').style.display  = 'none';
+  document.getElementById('mtResults').style.display = '';
+  mtRenderResults(correct, wrong, skipped, timeTaken);
+}
+
+function mtRenderResults(correct, wrong, skipped, timeTaken) {
+  const total    = _mtPool.length;
+  const pct      = total ? Math.round(correct/total*100) : 0;
+  const mm       = Math.floor(timeTaken/60);
+  const ss       = timeTaken%60;
+  const timeStr  = mm+'m '+String(ss).padStart(2,'0')+'s';
+  // Subject breakdown
+  const bySub = {};
+  _mtPool.forEach(function(q,i){
+    const s = q.subject || 'Other';
+    if (!bySub[s]) bySub[s] = {c:0,w:0,sk:0};
+    const ans = _mtAnswers[i];
+    if (ans === q.answer) bySub[s].c++;
+    else if (ans) bySub[s].w++;
+    else bySub[s].sk++;
+  });
+  const subRows = Object.entries(bySub).map(function(e){
+    const [s,v] = e;
+    const t = v.c+v.w+v.sk;
+    return '<tr><td>'+s+'</td><td style="color:var(--teal)">'+v.c+'</td>'
+      +'<td style="color:var(--red)">'+v.w+'</td><td>'+v.sk+'</td>'
+      +'<td>'+Math.round(v.c/t*100)+'%</td></tr>';
+  }).join('');
+
+  document.getElementById('mtResultsContent').innerHTML =
+    '<div style="text-align:center;padding:16px 0;">'
+    +  '<div style="font-size:48px;font-weight:800;color:'+(pct>=60?'var(--teal)':'var(--red)')+'">'+pct+'%</div>'
+    +  '<div style="font-size:13px;color:var(--text3);margin-top:4px;">Score &middot; Time: '+timeStr+'</div>'
+    +'</div>'
+    +'<div class="mt-res-stats">'
+    +  '<div class="mt-res-pill"><div class="mt-res-pill-v" style="color:var(--teal)">'+correct+'</div><div class="mt-res-pill-l">Correct</div></div>'
+    +  '<div class="mt-res-pill"><div class="mt-res-pill-v" style="color:var(--red)">'+wrong+'</div><div class="mt-res-pill-l">Wrong</div></div>'
+    +  '<div class="mt-res-pill"><div class="mt-res-pill-v">'+skipped+'</div><div class="mt-res-pill-l">Skipped</div></div>'
+    +  '<div class="mt-res-pill"><div class="mt-res-pill-v">'+total+'</div><div class="mt-res-pill-l">Total</div></div>'
+    +'</div>'
+    +'<table class="mt-sub-table"><thead><tr><th>Subject</th><th>✓</th><th>✗</th><th>Skip</th><th>Acc%</th></tr></thead>'
+    +'<tbody>'+subRows+'</tbody></table>';
+}
+
+function mtReset() {
+  clearInterval(_mtTimer);
+  _mtStarted = false;
+  document.getElementById('mtSetup').style.display   = '';
+  document.getElementById('mtActive').style.display  = 'none';
+  document.getElementById('mtResults').style.display = 'none';
+  mtUpdateCount();
+  mtShowHistory();
+}
+
+function mtSaveHistory(entry) {
+  try {
+    let hist = JSON.parse(localStorage.getItem('mt_hist') || '[]');
+    hist.unshift(entry);
+    hist = hist.slice(0, 10);
+    localStorage.setItem('mt_hist', JSON.stringify(hist));
+  } catch(e) {}
+}
+
+function mtShowHistory() {
+  try {
+    const hist = JSON.parse(localStorage.getItem('mt_hist') || '[]');
+    const card = document.getElementById('mtHistCard');
+    const list = document.getElementById('mtHistList');
+    if (!hist.length || !card || !list) { if(card) card.style.display='none'; return; }
+    card.style.display = '';
+    list.innerHTML = hist.slice(0,5).map(function(h){
+      const d = new Date(h.ts);
+      const pct = Math.round(h.correct/h.total*100);
+      return '<div class="mt-hist-row">'
+        +'<span>'+d.toLocaleDateString()+'</span>'
+        +'<span style="color:var(--teal)">'+h.correct+'/'+h.total+'</span>'
+        +'<span style="color:'+(pct>=60?'var(--teal)':'var(--red)')+'">'+pct+'%</span>'
+        +'<span>'+(h.year==='all'?'All':h.year)+'</span>'
+        +'<span style="color:var(--text3)">'+h.sub+'</span>'
+        +'</div>';
+    }).join('');
+  } catch(e) {}
+}
+
 // ══════════════════════════════════════════════════════════════
 // HOME
 // ══════════════════════════════════════════════════════════════
