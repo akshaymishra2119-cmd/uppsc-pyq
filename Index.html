@@ -3722,11 +3722,10 @@ async function initMockTab() {
   const yearWrap = document.getElementById('mtYearOpts');
   if (yearWrap && allQuestions.length) {
     const years = [...new Set(allQuestions.map(q => String(q.year)).filter(Boolean))].sort();
-    yearWrap.innerHTML =
-      '<div class="mt-opt sel" data-val="all" onclick="mtSelect('year',this)">All Years</div>'
-      + years.map(y =>
-        '<div class="mt-opt" data-val="' + y + '" onclick="mtSelect('year',this)">' + y + '</div>'
-      ).join('');
+    const mkYr = function(val, label, sel) {
+      return '<div class="mt-opt' + (sel ? ' sel' : '') + '" data-val="' + val + '" data-mtype="year" onclick="mtSelect(this.dataset.mtype,this)">' + label + '</div>';
+    };
+    yearWrap.innerHTML = mkYr('all', 'All Years', true) + years.map(function(y){ return mkYr(y, y, false); }).join('');
   }
   mtUpdateCount();
   mtShowHistory();
@@ -3801,7 +3800,7 @@ function mtRenderActiveTest() {
     const opts = ['A','B','C','D'].map(function(l){
       const k = 'opt'+l;
       if (!q[k]) return '';
-      return '<button class="mt-opt-btn" id="mtOpt'+i+l+'" onclick="mtChoose('+i+',''+l+'')">'
+      return '<button class="mt-opt-btn" id="mtOpt'+i+l+'" data-idx="'+i+'" data-ltr="'+l+'" onclick="mtChoose(this.dataset.idx,this.dataset.ltr)">'
         + '<span class="mt-opt-ltr">'+l+'</span>'
         + '<span>'+q[k]+'</span>'
         + '</button>';
@@ -3815,6 +3814,7 @@ function mtRenderActiveTest() {
 }
 
 function mtChoose(idx, letter) {
+  idx = parseInt(idx);
   // Clear previous choice for this question
   ['A','B','C','D'].forEach(function(l){
     const btn = document.getElementById('mtOpt'+idx+l);
