@@ -6234,9 +6234,6 @@ function renderQuestions() {
 
   if (countEl) countEl.textContent = `Showing ${filteredQ.length} question${filteredQ.length!==1?'s':''}`;
 
-  // Always kill any active scroll observer before any render
-  if (_qScrollObs) { _qScrollObs.disconnect(); _qScrollObs = null; }
-
   // Card view mode
   if (_qView === 'card') { renderCardView(); return; }
 
@@ -6252,24 +6249,13 @@ function renderQuestions() {
   // Restore scroll position (important after answer re-renders)
   if (_scrollY > 0) window.scrollTo(0, _scrollY);
 
-  // Setup IntersectionObserver to append next batch
+  // Add Load More button if more questions remain
   if (_hasMore) {
-    const sentinel = document.getElementById('_qSentinel');
-    if (sentinel && window.IntersectionObserver) {
-      _qScrollObs = new IntersectionObserver(function(entries) {
-        if (!entries[0].isIntersecting) return;
-        _qScrollObs.disconnect(); _qScrollObs = null;
-        sentinel.remove();
-        const nextBatch = filteredQ.slice(_qRenderLimit, _qRenderLimit + 25);
-        _qRenderLimit += 25;
-        const frag2 = document.createElement('div');
-        frag2.innerHTML = nextBatch.map(function(q2, i) { return _buildQCardHTML(q2, _qRenderLimit - 25 + i); }).join('');
-        const container = document.getElementById('qContainer');
-        while (frag2.firstChild) container.appendChild(frag2.firstChild);
-        if (filteredQ.length > _qRenderLimit) { const s2=document.createElement('div'); s2.id='_qSentinel'; s2.style.height='4px'; container.appendChild(s2); obs2(s2); }
-      }, { rootMargin: '300px' });
-      _qScrollObs.observe(sentinel);
-    }
+    const _btn = document.createElement('div');
+    _btn.id = '_qSentinel';
+    _btn.style.cssText = 'text-align:center;padding:20px 0 8px;';
+    _btn.innerHTML = '<button onclick="loadMoreQs()" style="padding:9px 28px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg2);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);">Show 25 more (' + (filteredQ.length - _qRenderLimit) + ' remaining)</button>';
+    document.getElementById('qContainer').appendChild(_btn);
   }
 }
 
@@ -6352,29 +6338,22 @@ function _buildQCardHTML(q, idx) {
 }
 
 
-function obs2(sentinel) {
-  if (!sentinel || !window.IntersectionObserver) return;
-  const obs = new IntersectionObserver(function(entries) {
-    if (!entries[0].isIntersecting) return;
-    obs.disconnect();
-    sentinel.remove();
-    const el = document.getElementById('qContainer');
-    const nextBatch = filteredQ.slice(_qRenderLimit, _qRenderLimit + 25);
-    _qRenderLimit += 25;
-    const frag = document.createElement('div');
-    frag.innerHTML = nextBatch.map(function(q, i) {
-      return _buildQCardHTML(q, _qRenderLimit - 25 + i);
-    }).join('');
-    while (frag.firstChild) el.appendChild(frag.firstChild);
-    if (filteredQ.length > _qRenderLimit) {
-      const s2 = document.createElement('div');
-      s2.id = '_qSentinel';
-      s2.style.height = '4px';
-      el.appendChild(s2);
-      obs2(s2);
-    }
-  }, { rootMargin: '300px' });
-  obs.observe(sentinel);
+function loadMoreQs() {
+  var s = document.getElementById('_qSentinel');
+  if (s) s.remove();
+  var container = document.getElementById('qContainer');
+  var from = _qRenderLimit;
+  _qRenderLimit += 25;
+  var frag = document.createElement('div');
+  frag.innerHTML = filteredQ.slice(from, _qRenderLimit).map(function(q,i){ return _buildQCardHTML(q, from+i); }).join('');
+  while (frag.firstChild) container.appendChild(frag.firstChild);
+  if (filteredQ.length > _qRenderLimit) {
+    var btn = document.createElement('div');
+    btn.id = '_qSentinel';
+    btn.style.cssText = 'text-align:center;padding:20px 0 8px;';
+    btn.innerHTML = '<button onclick="loadMoreQs()" style="padding:9px 28px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg2);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);">Show 25 more (' + (filteredQ.length - _qRenderLimit) + ' remaining)</button>';
+    container.appendChild(btn);
+  }
 }
 
 function renderOneQ(idx) {
@@ -6443,7 +6422,6 @@ function renderOneQ(idx) {
 // ── CARD VIEW ─────────────────────────────────────────────────
 let _qView = 'list'; // 'list' | 'card'
 let _qRenderLimit = 25;  // infinite scroll batch size
-let _qScrollObs = null;   // active IntersectionObserver ref
 
 const SUBJECT_COLORS = {
   'History':         ['#1E3A5F','#2563EB'], 'Modern History':  ['#1E3A5F','#2563EB'],
