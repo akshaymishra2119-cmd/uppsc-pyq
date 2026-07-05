@@ -6690,7 +6690,7 @@ function attemptQ(qId, chosen, correct, idx) {
   answers[qId + "_chosen"] = chosen;
   const timeTaken = startTimes[qId] ? Math.round((new Date()-startTimes[qId])/1000) : 0;
   const q = filteredQ.find(q => q.id === qId);
-  google.script.run.saveProgress({ userName, qId, subject:q.subject, year:q.year, result, timeTaken });
+  saveAttemptToServer({ qId, subject:q.subject, year:q.year, result, timeTaken, mode:'pyq' });
   // Track in heatmap + attempted set + subject dates
   trackAttemptHeatmap();
   attemptedQIds.add(String(qId));
@@ -6758,7 +6758,7 @@ function skipQ(qId, idx) {
   if (mockActive) { mockSkipQ(qId); return; }
   answers[qId] = "skipped";
   const q = filteredQ.find(q => q.id === qId);
-  google.script.run.saveProgress({ userName, qId, subject:q.subject, year:q.year, result:"skipped", timeTaken:0 });
+  saveAttemptToServer({ qId, subject:q.subject, year:q.year, result:"skipped", timeTaken:0, mode:"pyq" });
   renderQuestions();
 }
 
@@ -7026,7 +7026,7 @@ function mockAttemptQ(qId, chosen, correct) {
     expEl.innerHTML = `<strong>Correct:</strong> ${q.answer}. ${q.answerText||''}` + (q.explanation ? `<br><br>${q.explanation}` : '');
   }
   updateMockLiveScore();
-  google.script.run.saveProgress({ userName, qId, subject:q.subject, year:q.year, result, timeTaken });
+  saveAttemptToServer({ qId, subject:q.subject, year:q.year, result, timeTaken, mode:'mock' });
   trackAttemptHeatmap();
   attemptedQIds.add(String(qId));
   localStorage.setItem("pyqAttempted", JSON.stringify([...attemptedQIds]));
