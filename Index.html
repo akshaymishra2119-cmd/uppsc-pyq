@@ -6234,11 +6234,13 @@ function renderQuestions() {
 
   if (countEl) countEl.textContent = `Showing ${filteredQ.length} question${filteredQ.length!==1?'s':''}`;
 
+  // Always kill any active scroll observer before any render
+  if (_qScrollObs) { _qScrollObs.disconnect(); _qScrollObs = null; }
+
   // Card view mode
   if (_qView === 'card') { renderCardView(); return; }
 
   // ── Infinite scroll: render first _qRenderLimit questions ──
-  if (_qScrollObs) { _qScrollObs.disconnect(); _qScrollObs = null; }
   const _scrollY = window.scrollY;
   const _toRender = filteredQ.slice(0, _qRenderLimit);
   const _hasMore  = filteredQ.length > _qRenderLimit;
