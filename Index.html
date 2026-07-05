@@ -6139,6 +6139,7 @@ function updatePyqSidebarCounts() {
 }
 
 function applyFilters() {
+  _qRenderLimit = 25; // reset for new filter context
   if (mockActive) return; // don't re-filter during mock test
   const subject = document.getElementById("f-subject").value;
   const year    = document.getElementById("f-year").value;
@@ -6236,7 +6237,40 @@ function renderQuestions() {
   // Card view mode
   if (_qView === 'card') { renderCardView(); return; }
 
-  el.innerHTML = filteredQ.map((q, idx) => {
+  // ── Infinite scroll: render first _qRenderLimit questions ──
+  const _scrollY = window.scrollY;
+  const _toRender = filteredQ.slice(0, _qRenderLimit);
+  const _hasMore  = filteredQ.length > _qRenderLimit;
+
+  el.innerHTML = _toRender.map(function(q, idx) { return _buildQCardHTML(q, idx); }).join('') + (_hasMore
+    ? '<div id="_qSentinel" style="height:4px;margin:8px 0;"></div>'
+    : '');
+
+  // Restore scroll position (important after answer re-renders)
+  if (_scrollY > 0) window.scrollTo(0, _scrollY);
+
+  // Setup IntersectionObserver to append next batch
+  if (_hasMore) {
+    const sentinel = document.getElementById('_qSentinel');
+    if (sentinel && window.IntersectionObserver) {
+      const obs = new IntersectionObserver(function(entries) {
+        if (!entries[0].isIntersecting) return;
+        obs.disconnect();
+        sentinel.remove();
+        const nextBatch = filteredQ.slice(_qRenderLimit, _qRenderLimit + 25);
+        _qRenderLimit += 25;
+        const frag2 = document.createElement('div');
+        frag2.innerHTML = nextBatch.map(function(q2, i) { return _buildQCardHTML(q2, _qRenderLimit - 25 + i); }).join('');
+        const container = document.getElementById('qContainer');
+        while (frag2.firstChild) container.appendChild(frag2.firstChild);
+        if (filteredQ.length > _qRenderLimit) { const s2=document.createElement('div'); s2.id='_qSentinel'; s2.style.height='4px'; container.appendChild(s2); obs2(s2); }
+      }, { rootMargin: '300px' });
+      obs.observe(sentinel);
+    }
+  }
+}
+
+function _buildQCardHTML(q, idx) {
     const ans      = answers[q.id];
     const shown    = ans !== undefined;
     const diffCls  = q.difficulty==="Easy" ? "badge-teal" : q.difficulty==="Medium" ? "badge-amber" : "badge-red";
@@ -6312,7 +6346,32 @@ function renderQuestions() {
       ${explanation}
       ${skipBtn}
     </div>`;
-  }).join("");
+}
+
+
+function obs2(sentinel) {
+  if (!sentinel || !window.IntersectionObserver) return;
+  const obs = new IntersectionObserver(function(entries) {
+    if (!entries[0].isIntersecting) return;
+    obs.disconnect();
+    sentinel.remove();
+    const el = document.getElementById('qContainer');
+    const nextBatch = filteredQ.slice(_qRenderLimit, _qRenderLimit + 25);
+    _qRenderLimit += 25;
+    const frag = document.createElement('div');
+    frag.innerHTML = nextBatch.map(function(q, i) {
+      return _buildQCardHTML(q, _qRenderLimit - 25 + i);
+    }).join('');
+    while (frag.firstChild) el.appendChild(frag.firstChild);
+    if (filteredQ.length > _qRenderLimit) {
+      const s2 = document.createElement('div');
+      s2.id = '_qSentinel';
+      s2.style.height = '4px';
+      el.appendChild(s2);
+      obs2(s2);
+    }
+  }, { rootMargin: '300px' });
+  obs.observe(sentinel);
 }
 
 function renderOneQ(idx) {
@@ -6380,6 +6439,7 @@ function renderOneQ(idx) {
 
 // ── CARD VIEW ─────────────────────────────────────────────────
 let _qView = 'list'; // 'list' | 'card'
+let _qRenderLimit = 25;  // infinite scroll batch size
 
 const SUBJECT_COLORS = {
   'History':         ['#1E3A5F','#2563EB'], 'Modern History':  ['#1E3A5F','#2563EB'],
@@ -6400,6 +6460,7 @@ let _slideTimer = null;
 let _slideSpeed = 5000; // ms per card
 
 function setQView(view) {
+  _qRenderLimit = 25; // reset for mode switch
   if (view === 'card' && mockActive) { showToast('Exit mock test before switching to Study Mode'); return; }
   if (view === 'list') { _studyIdx = 0; stopSlideshow(); }
   _qView = view;
