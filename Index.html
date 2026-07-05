@@ -6238,6 +6238,7 @@ function renderQuestions() {
   if (_qView === 'card') { renderCardView(); return; }
 
   // ── Infinite scroll: render first _qRenderLimit questions ──
+  if (_qScrollObs) { _qScrollObs.disconnect(); _qScrollObs = null; }
   const _scrollY = window.scrollY;
   const _toRender = filteredQ.slice(0, _qRenderLimit);
   const _hasMore  = filteredQ.length > _qRenderLimit;
@@ -6253,9 +6254,9 @@ function renderQuestions() {
   if (_hasMore) {
     const sentinel = document.getElementById('_qSentinel');
     if (sentinel && window.IntersectionObserver) {
-      const obs = new IntersectionObserver(function(entries) {
+      _qScrollObs = new IntersectionObserver(function(entries) {
         if (!entries[0].isIntersecting) return;
-        obs.disconnect();
+        _qScrollObs.disconnect(); _qScrollObs = null;
         sentinel.remove();
         const nextBatch = filteredQ.slice(_qRenderLimit, _qRenderLimit + 25);
         _qRenderLimit += 25;
@@ -6265,7 +6266,7 @@ function renderQuestions() {
         while (frag2.firstChild) container.appendChild(frag2.firstChild);
         if (filteredQ.length > _qRenderLimit) { const s2=document.createElement('div'); s2.id='_qSentinel'; s2.style.height='4px'; container.appendChild(s2); obs2(s2); }
       }, { rootMargin: '300px' });
-      obs.observe(sentinel);
+      _qScrollObs.observe(sentinel);
     }
   }
 }
@@ -6440,6 +6441,7 @@ function renderOneQ(idx) {
 // ── CARD VIEW ─────────────────────────────────────────────────
 let _qView = 'list'; // 'list' | 'card'
 let _qRenderLimit = 25;  // infinite scroll batch size
+let _qScrollObs = null;   // active IntersectionObserver ref
 
 const SUBJECT_COLORS = {
   'History':         ['#1E3A5F','#2563EB'], 'Modern History':  ['#1E3A5F','#2563EB'],
