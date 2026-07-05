@@ -6461,7 +6461,7 @@ function setQView(view) {
   _qView = view;
   document.getElementById('btnListView').classList.toggle('active', view === 'list');
   document.getElementById('btnCardView').classList.toggle('active', view === 'card');
-  document.getElementById('btnDownloadCards').style.display = (view === 'card' && isAdmin) ? 'flex' : 'none';
+  var _dlBtn = document.getElementById('btnDownloadCards'); if (_dlBtn) _dlBtn.style.display = (view === 'card' && isAdmin) ? 'flex' : 'none';
   renderQuestions();
 }
 
