@@ -3212,8 +3212,10 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   <div class="sm-subject-nav">
     <button class="sm-subj-btn active" onclick="smSubject('polity',this)">⚖️ Polity</button>
     <button class="sm-subj-btn" onclick="smSubject('history',this)">🏛️ History</button>
-    <button class="sm-subj-btn" onclick="smSubject('geography',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">🌏 Geography</button>
-    <button class="sm-subj-btn" onclick="smSubject('economy',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">📈 Economy</button>
+    <button class="sm-subj-btn" onclick="smSubject('geography',this)">🌏 Geography</button>
+    <button class="sm-subj-btn" onclick="smSubject('economy',this)">📈 Economy</button>
+    <button class="sm-subj-btn" onclick="smSubject('environment',this)">🌿 Environment</button>
+    <button class="sm-subj-btn" onclick="smSubject('science',this)">🔬 Science & Tech</button>
   </div>
   <div id="smBody"><div class="lp-loading">Loading questions…</div></div>
 </div>
@@ -10047,6 +10049,18 @@ function smSubject(subj, btn) {
       body.innerHTML = '<div class="lp-loading">Questions still loading — try again in a moment.</div>';
       setTimeout(() => smSubject('history', btn), 1500);
     }
+  } else if (subj === 'geography') {
+    if (allQuestions && allQuestions.length) { buildGeographyStudyView(body); }
+    else { body.innerHTML='<div class="lp-loading">Loading…</div>'; setTimeout(()=>smSubject('geography',btn),1500); }
+  } else if (subj === 'economy') {
+    if (allQuestions && allQuestions.length) { buildEconomyStudyView(body); }
+    else { body.innerHTML='<div class="lp-loading">Loading…</div>'; setTimeout(()=>smSubject('economy',btn),1500); }
+  } else if (subj === 'environment') {
+    if (allQuestions && allQuestions.length) { buildEnvironmentStudyView(body); }
+    else { body.innerHTML='<div class="lp-loading">Loading…</div>'; setTimeout(()=>smSubject('environment',btn),1500); }
+  } else if (subj === 'science') {
+    if (allQuestions && allQuestions.length) { buildScienceStudyView(body); }
+    else { body.innerHTML='<div class="lp-loading">Loading…</div>'; setTimeout(()=>smSubject('science',btn),1500); }
   } else {
     body.innerHTML = `<div class="sm-no-results">📚 ${subj.charAt(0).toUpperCase()+subj.slice(1)} study notes coming soon!</div>`;
   }
@@ -10448,6 +10462,203 @@ function buildPolityStudyView(body) {
 
   html += '</div>';
   body.innerHTML = html;
+}
+
+
+// ── Shared grouped study view helper ────────────────────────────────────
+function _smBuildGroupedView(body, groups, eraMap, totalQs, unclassified, labelText) {
+  function getQType(q) {
+    var txt = (q.question||'').toLowerCase();
+    if (/consider the following|which of the following statements/.test(txt)) return 'Statement';
+    if (/arrange|chronological|correct order/.test(txt)) return 'Order';
+    if ((q.qType||'') === 'Match') return 'Match';
+    return 'Direct';
+  }
+  function groupBySubTopic(qs) {
+    var map = {};
+    qs.forEach(function(q) {
+      var key = (q.subTopic||'').trim() || 'General';
+      if (!map[key]) map[key] = [];
+      map[key].push(q);
+    });
+    return Object.keys(map).sort(function(a,b){ return map[b].length-map[a].length; }).map(function(k){ return {label:k,qs:map[k]}; });
+  }
+  function renderTopicCard(sg, groupId, idx) {
+    var qs = sg.qs, label = sg.label;
+    var cardId = groupId + '-' + idx;
+    var barW = Math.min(Math.round((qs.length/5)*80)+10, 90);
+    var isHigh = qs.length >= 3;
+    var timesLabel = qs.length===1 ? 'Asked once' : 'Asked '+qs.length+' times';
+    var qCardHtml = qs.map(function(q,qi) {
+      var extraAttr = qi>=2 ? ' class="sm-aq sm-aq-extra" style="display:none"' : ' class="sm-aq"';
+      var optsHtml = '';
+      if (q.optA||q.optB||q.optC||q.optD) {
+        optsHtml = '<div class="sm-aq-opts">' + ['A','B','C','D'].map(function(ltr) {
+          var txt=q['opt'+ltr]||''; if(!txt) return '';
+          var ok=(q.answer||'').toUpperCase()===ltr;
+          return '<div class="sm-aq-opt'+(ok?' correct':'')+'"><span class="sm-opt-lbl">'+ltr+'.</span>'+txt+'</div>';
+        }).join('') + '</div>';
+      }
+      return '<div'+extraAttr+'>'
+        +'<div class="sm-aq-meta">'
+        +'<span class="sm-aq-year">'+(q.year||'—')+'</span>'
+        +'<span class="sm-aq-subj">'+(q.subject||'')+'</span>'
+        +'<span class="sm-aq-ans">Ans: '+(q.answer||'?')+'</span>'
+        +'<span class="sm-aq-type">'+getQType(q)+'</span>'
+        +'</div>'
+        +'<div class="sm-aq-text">'+q.question+'</div>'
+        +optsHtml
+        +(q.explanation?'<div class="sm-aq-exp">💡 '+q.explanation+'</div>':'')
+        +'</div>';
+    }).join('');
+    var seeMoreBtn = qs.length>2
+      ? '<span class="sm-see-more" id="smmore-'+cardId+'" data-cid="'+cardId+'" onclick="smExpandQs(this.dataset.cid)">+ '+(qs.length-2)+' more question'+(qs.length-2>1?'s':'')+' ›</span>'
+      : '';
+    return '<div class="sm-article-card" id="sma-'+cardId+'" data-title="'+(label+' '+groupId).toLowerCase()+'">'
+      +'<div class="sm-article-hd" data-cid2="'+cardId+'" onclick="smToggleArticle(this.dataset.cid2)">'
+      +'<div class="sm-art-info">'
+      +'<div class="sm-article-title">'+label+'</div>'
+      +'<div class="sm-freq-row"><div class="sm-freq-bar" style="width:'+barW+'px'+(isHigh?';background:var(--purple)':'')+'"></div><span class="sm-freq-label">'+timesLabel+'</span></div>'
+      +'</div>'
+      +'<div class="sm-art-right">'
+      +'<span class="sm-article-count'+(isHigh?' high':'')+'">'+qs.length+' Q'+(qs.length>1?'s':'')+'</span>'
+      +'<span class="sm-article-arrow">▼</span>'
+      +'</div></div>'
+      +'<div class="sm-article-body"><div class="sm-article-qs">'+qCardHtml+seeMoreBtn+'</div></div>'
+      +'</div>';
+  }
+  var totalMapped = 0;
+  groups.forEach(function(g){ totalMapped += eraMap[g.id].length; });
+  var html = '<div class="sm-stats-bar">'
+    +'<div class="sm-stat"><div class="sm-stat-v">'+totalQs+'</div><div class="sm-stat-l">'+labelText+' Questions</div></div>'
+    +'<div class="sm-stat"><div class="sm-stat-v" style="color:#B45309;">'+groups.filter(function(g){return eraMap[g.id].length>0;}).length+'</div><div class="sm-stat-l">Topics</div></div>'
+    +'<div class="sm-stat"><div class="sm-stat-v" style="color:#0D9488;">'+totalMapped+'</div><div class="sm-stat-l">Qs Mapped</div></div>'
+    +'</div>'
+    +'<div class="sm-search-wrap"><input class="sm-search" id="smSearch" placeholder="Search topic or keyword…" oninput="smFilterArticles(this.value)"></div>'
+    +'<div id="smArticleList">';
+  groups.forEach(function(group) {
+    var qs = eraMap[group.id];
+    if (!qs.length) return;
+    var sgs = groupBySubTopic(qs);
+    html += '<div class="sm-part-hd sm-part-section">'+group.icon+' '+group.label+' <span style="opacity:.5;font-size:11px;font-weight:400;margin-left:6px;">· '+qs.length+' Qs</span></div>';
+    sgs.forEach(function(sg,idx){ html += renderTopicCard(sg, group.id, idx); });
+  });
+  if (unclassified.length) {
+    var sgs = groupBySubTopic(unclassified);
+    html += '<div class="sm-part-hd sm-part-section">📋 General <span style="opacity:.5;font-size:11px;font-weight:400;margin-left:6px;">· '+unclassified.length+' Qs</span></div>';
+    sgs.forEach(function(sg,idx){ html += renderTopicCard(sg,'general',idx); });
+  }
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function _smAssignGroups(qs, GROUPS) {
+  var eraMap = {}; GROUPS.forEach(function(g){ eraMap[g.id]=[]; });
+  var assignedIds = new Set(); var unclassified = [];
+  qs.forEach(function(q) {
+    var st = (q.subTopic||'').trim(); var assigned = false;
+    for (var i=0;i<GROUPS.length;i++) {
+      if (GROUPS[i].subTopics.indexOf(st)!==-1 && !assignedIds.has(q.id)) {
+        eraMap[GROUPS[i].id].push(q); assignedIds.add(q.id); assigned=true; break;
+      }
+    }
+    if (!assigned) {
+      var text = [(q.question||''),(q.explanation||''),(q.subTopic||'')].join(' ');
+      for (var j=0;j<GROUPS.length;j++) {
+        if (GROUPS[j].kw && GROUPS[j].kw.test(text) && !assignedIds.has(q.id)) {
+          eraMap[GROUPS[j].id].push(q); assignedIds.add(q.id); assigned=true; break;
+        }
+      }
+    }
+    if (!assigned) unclassified.push(q);
+  });
+  return { eraMap:eraMap, unclassified:unclassified };
+}
+
+// ── Geography Study View ─────────────────────────────────────────────────
+function buildGeographyStudyView(body) {
+  var qs = allQuestions.filter(function(q){ return (q.subject||'').toLowerCase().includes('geography'); });
+  var GROUPS = [
+    { id:'physical', label:'Physical Geography', icon:'🗺️', subTopics:['Physical Geography','Mountains','Atmosphere','Oceanography','Geology','Deccan Traps'],
+      kw:/mountain|himalaya|atmosphere|ocean|geological|plateau|watershed|physical geography|tectonic|volcano|earthquake/i },
+    { id:'rivers', label:'Rivers & Water Resources', icon:'🌊', subTopics:['Rivers','Water Resources','Canals'],
+      kw:/river|dam|lake|canal|tributary|drainage|ganges|yamuna|brahmaputra|ganga|indus|narmada|godavari|waterfall/i },
+    { id:'climate', label:'Climate, Soils & Vegetation', icon:'🌡️', subTopics:['Climate','Soils','Local Storms','Vegetation'],
+      kw:/climate|monsoon|rainfall|soil|vegetation|forest type|tropical|temperate|drought|loo|norwesters/i },
+    { id:'resources', label:'Natural Resources & Industry', icon:'⛏️', subTopics:['Coal Fields','Mineral Resources','Aluminium Plants','Refineries'],
+      kw:/coal|mineral|iron|steel|aluminium|refinery|oil|petroleum|mine|bauxite|lignite|mica/i },
+    { id:'agri', label:'Agriculture', icon:'🌾', subTopics:['Agriculture'],
+      kw:/agriculture|crop|wheat|rice|irrigation|farm|fertilizer|kharif|rabi|green revolution/i },
+    { id:'parks', label:'National Parks & Passes', icon:'🏔️', subTopics:['National Parks','Mountain Passes'],
+      kw:/national park|wildlife sanctuary|tiger reserve|biosphere|mountain pass|jim corbett|kaziranga/i },
+    { id:'world', label:'World Geography', icon:'🌍', subTopics:['World Geography'],
+      kw:/world geography|continent|country|africa|europe|latin america|pacific|atlantic|amazon|sahara|mediterranean/i },
+    { id:'census', label:'Census & Population', icon:'📊', subTopics:['Census','States','City Planning'],
+      kw:/census|population density|demographic|birth rate|death rate|sex ratio/i },
+    { id:'up', label:'UP Geography', icon:'📍', subTopics:['UP Geography','UP Divisions'],
+      kw:/uttar pradesh geography|up geography|up division/i }
+  ];
+  var r = _smAssignGroups(qs, GROUPS);
+  _smBuildGroupedView(body, GROUPS, r.eraMap, qs.length, r.unclassified, 'Geography');
+}
+
+// ── Economy Study View ───────────────────────────────────────────────────
+function buildEconomyStudyView(body) {
+  var qs = allQuestions.filter(function(q){ return (q.subject||'').toLowerCase().includes('economy') || (q.subject||'').toLowerCase().includes('economic'); });
+  var GROUPS = [
+    { id:'schemes', label:'Government Schemes & Programmes', icon:'📋', subTopics:['Government Schemes','Schemes'],
+      kw:/scheme|yojana|mission|pradhan mantri|national mission|programme|abhiyan|jan dhan|swachh/i },
+    { id:'sdg', label:'Development & SDGs', icon:'🎯', subTopics:['Development','SDGs','Sustainable Development','Human Development','Human Capital'],
+      kw:/sdg|sustainable development|human development|hdi|development goal|millennium|undp/i },
+    { id:'poverty', label:'Poverty & Food Security', icon:'🍞', subTopics:['Poverty','Food Security','Malthus Theory'],
+      kw:/poverty|hunger|food security|malnutrition|bpl|below poverty line|famine|malthus|pds|public distribution/i },
+    { id:'budget', label:'Budget, Finance & National Income', icon:'💰', subTopics:['Budget','Finance','Finance Commission','National Income','Economic Survey'],
+      kw:/budget|fiscal|revenue|expenditure|deficit|gdp|gnp|national income|finance commission|economic survey|tax/i },
+    { id:'banking', label:'Banking & International Economy', icon:'🏦', subTopics:['Banking','International Reports','International'],
+      kw:/bank|rbi|monetary|interest rate|inflation|world bank|imf|wto|international monetary|repo rate/i },
+    { id:'population', label:'Population & Census', icon:'👥', subTopics:['Population','Census'],
+      kw:/population|census|demographic|birth rate|death rate|fertility|migration/i }
+  ];
+  var r = _smAssignGroups(qs, GROUPS);
+  _smBuildGroupedView(body, GROUPS, r.eraMap, qs.length, r.unclassified, 'Economy');
+}
+
+// ── Environment Study View ───────────────────────────────────────────────
+function buildEnvironmentStudyView(body) {
+  var qs = allQuestions.filter(function(q){ return (q.subject||'').toLowerCase().includes('environment'); });
+  var GROUPS = [
+    { id:'ecology', label:'Ecology & Ecosystem', icon:'🌿', subTopics:['Ecology','Ecosystem','Forests'],
+      kw:/ecology|ecosystem|food chain|food web|biome|habitat|niche|trophic|forest|decomposer|producer|consumer/i },
+    { id:'biodiversity', label:'Biodiversity & Conservation', icon:'🦁', subTopics:['Biodiversity','Conservation','Coral Reefs','Tribes'],
+      kw:/biodiversity|species|endemic|extinction|conservation|coral|reef|tiger|elephant|rhino|hotspot|iucn/i },
+    { id:'pollution', label:'Pollution', icon:'🏭', subTopics:['Pollution','Diseases'],
+      kw:/pollution|air quality|water pollution|noise|solid waste|plastic|smog|particulate|effluent|sewage/i },
+    { id:'climate', label:'Climate Change', icon:'🌍', subTopics:['Climate Change','International Agreements'],
+      kw:/climate change|global warming|carbon|greenhouse|kyoto|paris agreement|cop|unfccc|emission|ipcc/i },
+    { id:'policy', label:'Legislation & Policy', icon:'⚖️', subTopics:['Legislation','Energy','Agriculture'],
+      kw:/environment protection act|wildlife act|forest act|legislation|policy|green energy|renewable|solar/i }
+  ];
+  var r = _smAssignGroups(qs, GROUPS);
+  _smBuildGroupedView(body, GROUPS, r.eraMap, qs.length, r.unclassified, 'Environment');
+}
+
+// ── Science & Tech Study View ────────────────────────────────────────────
+function buildScienceStudyView(body) {
+  var qs = allQuestions.filter(function(q){ return (q.subject||'').toLowerCase().includes('science'); });
+  var GROUPS = [
+    { id:'biology', label:'Biology', icon:'🧬', subTopics:['Biology'],
+      kw:/biology|cell|dna|rna|genetics|organism|plant|animal|human body|virus|bacteria|disease|vitamin|hormone|protein|enzyme/i },
+    { id:'chemistry', label:'Chemistry', icon:'⚗️', subTopics:['Chemistry'],
+      kw:/chemistry|element|compound|acid|base|periodic table|reaction|molecule|atom|polymer|alloy|metal/i },
+    { id:'physics', label:'Physics', icon:'⚡', subTopics:['Physics'],
+      kw:/physics|force|energy|motion|electricity|magnetism|light|sound|wave|nuclear|quantum|newton|optics/i },
+    { id:'space', label:'Space & Technology', icon:'🚀', subTopics:['Space Missions','Space Science','ISRO Missions','Space Technology'],
+      kw:/space|isro|satellite|rocket|orbit|mars|moon|chandrayaan|mangalyaan|nasa|esa|telescope|asteroid/i },
+    { id:'computers', label:'Computers & Digital Tech', icon:'💻', subTopics:['Computers'],
+      kw:/computer|software|hardware|internet|digital|algorithm|artificial intelligence|ai|machine learning|blockchain/i }
+  ];
+  var r = _smAssignGroups(qs, GROUPS);
+  _smBuildGroupedView(body, GROUPS, r.eraMap, qs.length, r.unclassified, 'Science & Tech');
 }
 
 
