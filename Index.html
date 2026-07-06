@@ -6022,12 +6022,18 @@ function patchYearCompletionSection(containerId, ns) {
   var ycCards = Object.keys(qByYear).sort().map(function(yr) {
     var total = qByYear[yr].length;
     var ymData = ym[yr] || {};
+    // Use round-aware counting (never exceeds 100%)
+    var yrQIds = qByYear[yr].map(function(q){ return String(q.id); });
+    var ri = (typeof getRoundInfo === 'function') ? getRoundInfo(yrQIds, total) : { pct: Math.min(100, total>0?Math.round((ymData.done||0)/total*100):0), badge: 0 };
+    var pct = ri.pct;
+    var badge = ri.badge;
     var done = ymData.done || 0;
-    var pct = total > 0 ? Math.round(done/total*100) : 0;
-    var rem = total - done;
+    var rem = Math.max(0, total - Math.round(pct/100*total));
     var barCol = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--border)';
     var pctCol = pct>=80?'#1D9E75':pct>=40?'#BA7517':pct>0?'#E24B4A':'var(--text3)';
-    var statTxt = pct===0 ? 'Not started' : '<span style="color:'+pctCol+';font-weight:600;">'+pct+'% done</span>';
+    var badgeHtml = badge ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:'+(badge===2?'#7c3aed':'#1d4ed8')+';color:#fff;font-size:9px;font-weight:800;margin-left:6px;">'+badge+'</span>' : '';
+    var roundLabel = badge ? 'R'+(badge+1)+': '+pct+'%' : pct+'%';
+    var statTxt = pct===0 ? 'Not started' : '<span style="color:'+pctCol+';font-weight:600;">'+roundLabel+' done</span>'+badgeHtml;
     return '<div class="yc-card" id="'+ns+'_'+yr+'">'
       +'<div class="yc-row" data-yr="'+yr+'" data-ns="'+ns+'" onclick="ycToggle(this.dataset.yr,this.dataset.ns)">'
       +'<div><div class="yc-yr">'+yr+'</div><div class="yc-total">'+total+' Qs</div></div>'
