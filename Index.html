@@ -351,48 +351,51 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .study-date{font-size:11px;color:var(--text3);margin-bottom:14px;font-weight:500;}
 .lp-loading{color:var(--text3);font-size:13px;text-align:center;padding:40px 0;}
 /* Study Material — new subject nav */
-.sm-subject-nav{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
-.sm-subj-btn{padding:8px 16px;font-size:13px;font-weight:600;border:1.5px solid var(--border);
-  border-radius:20px;background:var(--bg);color:var(--text2);cursor:pointer;transition:all .15s;}
-.sm-subj-btn:hover:not([disabled]){border-color:var(--blue);color:var(--blue);}
-.sm-subj-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25);}
+.sm-subject-nav{display:flex;gap:0;margin-bottom:20px;flex-wrap:wrap;border-bottom:2px solid var(--border);}
+.sm-subj-btn{padding:10px 20px;font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
+  border:none;border-bottom:3px solid transparent;margin-bottom:-2px;
+  background:transparent;color:var(--text3);cursor:pointer;transition:all .18s;}
+.sm-subj-btn:hover:not([disabled]){color:var(--blue);border-bottom-color:rgba(37,99,235,.3);}
+.sm-subj-btn.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700;}
 /* Polity Article cards — redesigned */
-.sm-stats-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
-.sm-stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;text-align:center;}
-.sm-stat-v{font-size:22px;font-weight:800;color:var(--blue);}
-.sm-stat-l{font-size:11px;color:var(--text3);margin-top:2px;}
+.sm-stats-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.sm-stat{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:12px;padding:12px 18px;flex:1;min-width:120px;text-align:center;}
+.sm-stat-v{font-size:24px;font-weight:800;color:#1d4ed8;}
+.sm-stat-l{font-size:10px;font-weight:600;color:#64748b;margin-top:3px;letter-spacing:.4px;text-transform:uppercase;}
 .sm-search-wrap{position:relative;margin-bottom:16px;}
 .sm-search-wrap::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;}
 .sm-search{width:100%;padding:9px 14px 9px 34px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;outline:none;}
 .sm-search:focus{border-color:var(--blue);}
 /* Part group headers */
-.sm-part-hd{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin:18px 0 8px;padding:0 2px;display:flex;align-items:center;gap:8px;}
-.sm-part-hd::after{content:'';flex:1;height:1px;background:var(--border);}
+.sm-part-hd{font-size:10px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.1em;
+  margin:22px 0 10px;padding:6px 12px;display:flex;align-items:center;gap:10px;
+  background:linear-gradient(90deg,#eff6ff,transparent);border-left:3px solid #3b82f6;border-radius:0 6px 6px 0;}
+.sm-part-hd::after{content:'';flex:1;height:1px;background:#bfdbfe;}
 /* Article cards */
-.sm-article-card{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--bg);transition:box-shadow .15s;}
-.sm-article-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.07);}
-.sm-article-card.open{border-color:var(--blue);}
+.sm-article-card{border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px;overflow:hidden;background:#fff;transition:box-shadow .18s,border-color .18s;}
+.sm-article-card:hover{box-shadow:0 3px 12px rgba(37,99,235,.08);border-color:#bfdbfe;}
+.sm-article-card.open{border-color:#3b82f6;box-shadow:0 3px 14px rgba(37,99,235,.12);}
 .sm-article-hd{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;user-select:none;}
-.sm-article-hd:hover{background:var(--bg2);}
+.sm-article-hd:hover{background:#f8faff;}
 .sm-art-badge{background:var(--blue);color:#fff;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:700;white-space:nowrap;min-width:66px;text-align:center;flex-shrink:0;}
 .sm-art-info{flex:1;min-width:0;}
 .sm-article-title{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sm-freq-row{display:flex;align-items:center;gap:6px;margin-top:4px;}
-.sm-freq-bar{height:3px;border-radius:2px;background:var(--blue);opacity:.5;}
+.sm-freq-bar{height:4px;border-radius:2px;background:#93c5fd;}
 .sm-freq-label{font-size:11px;color:var(--text3);}
 .sm-art-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
 .sm-part-tag{font-size:11px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:2px 7px;white-space:nowrap;}
-.sm-article-count{font-size:11px;background:#FEF3C7;color:#92400E;border-radius:12px;padding:3px 9px;font-weight:700;white-space:nowrap;}
-.sm-article-count.high{background:#FEE2E2;color:#991B1B;}
+.sm-article-count{font-size:11px;background:#dbeafe;color:#1e40af;border-radius:12px;padding:3px 9px;font-weight:700;white-space:nowrap;}
+.sm-article-count.high{background:#fce7f3;color:#9d174d;}
 .sm-article-arrow{font-size:12px;color:var(--text3);transition:transform .2s;}
 .sm-article-card.open .sm-article-arrow{transform:rotate(180deg);}
 /* Article body */
-.sm-article-body{display:none;border-top:1px solid var(--border);}
+.sm-article-body{display:none;border-top:1px solid #e2e8f0;background:#fafbff;}
 .sm-article-card.open .sm-article-body{display:block;}
 .sm-article-exp{font-size:13px;color:var(--text2);line-height:1.65;background:var(--bg2);border-left:3px solid var(--blue);padding:10px 14px;margin:12px 14px 8px;border-radius:0 6px 6px 0;}
 .sm-article-qs{display:flex;flex-direction:column;gap:7px;padding:0 14px 14px;}
 /* Question cards */
-.sm-aq{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;}
+.sm-aq{background:#f8faff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:13px;}
 .sm-aq-meta{display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap;align-items:center;}
 .sm-aq-year{background:var(--bg3,#f3f4f6);color:var(--text2);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
 .sm-aq-subj{background:var(--blue-light,#DBEAFE);color:var(--blue-dark,#1E40AF);border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
@@ -3210,12 +3213,12 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 <div class="tab" id="tab-study">
   <!-- Subject nav -->
   <div class="sm-subject-nav">
-    <button class="sm-subj-btn active" onclick="smSubject('polity',this)">⚖️ Polity</button>
-    <button class="sm-subj-btn" onclick="smSubject('history',this)">🏛️ History</button>
-    <button class="sm-subj-btn" onclick="smSubject('geography',this)">🌏 Geography</button>
-    <button class="sm-subj-btn" onclick="smSubject('economy',this)">📈 Economy</button>
-    <button class="sm-subj-btn" onclick="smSubject('environment',this)">🌿 Environment</button>
-    <button class="sm-subj-btn" onclick="smSubject('science',this)">🔬 Science & Tech</button>
+    <button class="sm-subj-btn active" onclick="smSubject('polity',this)">Polity</button>
+    <button class="sm-subj-btn" onclick="smSubject('history',this)">History</button>
+    <button class="sm-subj-btn" onclick="smSubject('geography',this)">Geography</button>
+    <button class="sm-subj-btn" onclick="smSubject('economy',this)">Economy</button>
+    <button class="sm-subj-btn" onclick="smSubject('environment',this)">Environment</button>
+    <button class="sm-subj-btn" onclick="smSubject('science',this)">Science & Tech</button>
   </div>
   <div id="smBody"><div class="lp-loading">Loading questions…</div></div>
 </div>
