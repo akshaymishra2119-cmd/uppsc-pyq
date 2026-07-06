@@ -450,6 +450,26 @@ app.get('/api/mockHistory', authMiddleware, async (req, res) => {
   }
 });
 
+
+// ── ATTEMPT COUNTS PER QUESTION ───────────────────────────────
+app.get('/api/attemptCounts', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT q_id, COUNT(*) AS attempts
+       FROM progress
+       WHERE user_id = $1 AND (mode IS NULL OR mode != 'mock')
+       GROUP BY q_id`,
+      [req.user.id]
+    );
+    const counts = {};
+    rows.forEach(r => { counts[r.q_id] = parseInt(r.attempts); });
+    res.json(counts);
+  } catch(e) {
+    console.error('attemptCounts error:', e.message);
+    res.status(500).json({ error: 'Could not load attempt counts' });
+  }
+});
+
 // ── TRACK PROGRESS (comprehensive 8-section) ──────────────────
 app.get('/api/trackProgress', authMiddleware, async (req, res) => {
   try {

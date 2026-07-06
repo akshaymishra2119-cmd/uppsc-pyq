@@ -6073,21 +6073,18 @@ function renderYearProgressBadges() {
     +'</div>';
   var html = allBadge + years.map(function(yr){
     var total = qByYear[yr];
-    var done = 0;
-    if (serverYm && serverYm[yr]) {
-      done = serverYm[yr].done || 0;
-    } else {
-      var yearIds = new Set(allQuestions.filter(function(q){ return String(q.year)===yr; }).map(function(q){ return String(q.id); }));
-      attemptedQIds.forEach(function(id){ if(yearIds.has(String(id))) done++; });
-    }
-    var pct = total>0 ? Math.round(done/total*100) : 0;
+    var yrQIds = allQuestions.filter(function(q){ return String(q.year)===yr; }).map(function(q){ return String(q.id); });
+    var ri = getRoundInfo(yrQIds, total);
+    var pct = ri.pct, badge = ri.badge;
     var col = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--text3)';
     var isActive = curYr===yr;
-    return '<div class="pyq-yr-badge'+(isActive?' pyq-yr-badge-active':'')+'" data-yr="'+yr+'" onclick="selectPyqYear(this.dataset.yr)">'
+    var badgeHtml = badge ? '<div style="position:absolute;top:-5px;left:-4px;background:'+(badge===2?'#7c3aed':'#1d4ed8')+';color:#fff;font-size:8px;font-weight:800;width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1;">'+badge+'</div>' : '';
+    return '<div class="pyq-yr-badge'+(isActive?' pyq-yr-badge-active':'')+'" data-yr="'+yr+'" onclick="selectPyqYear(this.dataset.yr)" style="position:relative;">'
+      +badgeHtml
       +'<div style="font-size:11px;font-weight:600;">'+yr+'</div>'
       +'<div style="width:36px;height:4px;border-radius:2px;background:var(--border);overflow:hidden;margin:2px 0;">'
       +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:2px;"></div></div>'
-      +'<div style="font-size:10px;color:'+col+';font-weight:500;">'+pct+'%</div>'
+      +'<div style="font-size:10px;color:'+col+';font-weight:500;">'+(badge?'R'+(badge+1)+': ':'')+pct+'%</div>'
       +'</div>';
   }).join('');
   strip.innerHTML = html;
@@ -6787,6 +6784,9 @@ function attemptQ(qId, chosen, correct, idx) {
   trackAttemptHeatmap();
   attemptedQIds.add(String(qId));
   localStorage.setItem("pyqAttempted", JSON.stringify([...attemptedQIds]));
+  // Update local round counter
+  if (!window._attemptCounts) window._attemptCounts = {};
+  window._attemptCounts[String(qId)] = (window._attemptCounts[String(qId)] || 0) + 1;
   // Track subject date for streak
   const subDates = JSON.parse(localStorage.getItem("subjectDates") || "{}");
   const today = new Date().toISOString().split("T")[0];
@@ -7122,6 +7122,9 @@ function mockAttemptQ(qId, chosen, correct) {
   trackAttemptHeatmap();
   attemptedQIds.add(String(qId));
   localStorage.setItem("pyqAttempted", JSON.stringify([...attemptedQIds]));
+  // Update local round counter
+  if (!window._attemptCounts) window._attemptCounts = {};
+  window._attemptCounts[String(qId)] = (window._attemptCounts[String(qId)] || 0) + 1;
   const subDates2 = JSON.parse(localStorage.getItem("subjectDates") || "{}");
   const today2    = new Date().toISOString().split("T")[0];
   if (!subDates2[q.subject]) subDates2[q.subject] = [];
@@ -11557,6 +11560,45 @@ function buildSydQBlock(q, i) {
 
 <script>
 // currentUser stored on window so the stubs in main block can read it
+
+// ── Per-question attempt counts (round tracking) ─────────────
+window._attemptCounts = {}; // { q_id: totalAttempts }
+
+function fetchAttemptCounts() {
+  fetch('/api/attemptCounts', { credentials: 'include' })
+    .then(function(r){ return r.ok ? r.json() : {}; })
+    .then(function(data){
+      window._attemptCounts = data || {};
+      // Re-render year strip with round data
+      if (typeof renderYearStrip === 'function') renderYearStrip();
+    })
+    .catch(function(){});
+}
+
+// Get round info for a set of q_ids
+function getRoundInfo(qIds, total) {
+  if (!total) return { pct: 0, badge: 0 };
+  var ac = window._attemptCounts || {};
+  var hasServerData = Object.keys(ac).length > 0;
+  var r1 = 0, r2 = 0;
+  qIds.forEach(function(id) {
+    var sid = String(id);
+    if (hasServerData) {
+      var c = ac[sid] || 0;
+      if (c >= 1) r1++;
+      if (c >= 2) r2++;
+    } else {
+      // Fallback: localStorage for non-logged-in users (round 1 only)
+      if (attemptedQIds && attemptedQIds.has(sid)) r1++;
+    }
+  });
+  if (r1 >= total) {
+    var pct2 = Math.round(r2 / total * 100);
+    return { pct: pct2, badge: r2 >= total ? 2 : 1 };
+  }
+  return { pct: Math.round(r1 / total * 100), badge: 0 };
+}
+
 window._currentUser = null;
 var currentUser = null;  // keep local alias for auth UI
 
@@ -11605,6 +11647,7 @@ function onAuthSuccess(user) {
   _updateNavBtn(user);
   if (typeof renderQuestions === 'function') renderQuestions();
   _refreshAuthTabs();
+  fetchAttemptCounts();
 }
 
 // Restore session on page load
@@ -11631,6 +11674,8 @@ function onAuthSuccess(user) {
             localStorage.setItem('pyqAttempted', JSON.stringify([...attemptedQIds]));
           })
           .catch(function(){});
+        // Fetch per-question attempt counts for round tracking
+        fetchAttemptCounts();
       }
     })
     .catch(function(){});
