@@ -2038,23 +2038,41 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 @media(max-width:640px){
 
   /* Banner — mobile adaptive */
+  .gc-topbar{padding:4px 12px;gap:4px;}
+  .gc-topbar-text{font-size:8px;letter-spacing:1px;}
+  .gc-topbar-dot{display:none;}
   .gc-banner-inner{
-    flex-wrap:wrap;
-    padding:14px 16px 16px;gap:12px;
+    flex-direction:column;align-items:stretch;
+    padding:12px 14px 14px;gap:10px;
   }
-  .gc-countdown{display:none;} /* hidden on mobile — saves space */
-  .gc-logo-wrap{width:54px;height:54px;}
-  .gc-logo-wrap svg{width:34px;height:34px;}
+  /* Top row: login + countdown side by side */
+  .gc-left-group{
+    flex-direction:row;justify-content:space-between;align-items:center;
+    gap:10px;margin-right:0;
+  }
+  #authNavBtn{font-size:11px;padding:7px 14px;}
+  .gc-countdown{padding:8px 14px;min-width:0;flex:1;max-width:140px;}
+  .gc-cd-num{font-size:28px;}
+  /* Chakra + divider hidden on mobile */
+  .gc-logo-wrap{display:none;}
   .gc-divider{display:none;}
-  .gc-title{font-size:22px !important;}
-  .gc-brand{gap:8px;flex-wrap:wrap;}
-  .gc-tagline{font-size:11px;}
-  .gc-powered{font-size:9px;}
-  .gc-stats-row{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .gc-stat-pill{padding:5px 11px;font-size:11px;}
+  /* Title block full width */
+  .gc-title-block{width:100%;}
+  .gc-eyebrow{font-size:8px;letter-spacing:2px;margin-bottom:5px;}
+  .gc-pyq-prefix{font-size:11px;}
+  .gc-title{font-size:26px !important;}
+  .gc-edition{font-size:9px;padding:3px 10px;}
+  .gc-brand{gap:6px;flex-wrap:wrap;}
+  .gc-tagline{font-size:10px;}
+  .gc-powered{font-size:9px;margin-bottom:10px;}
+  /* Stats: scrollable row */
+  .gc-stats-row{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;gap:6px;}
+  .gc-stat-pill{padding:6px 10px;flex-shrink:0;}
   .gc-stat-pill strong{font-size:13px;}
-  .gc-right-block{display:none;} /* badge hidden on small screens */
-  .gc-banner-glow{display:none;}
+  .gc-stat-pill span{font-size:8px;}
+  /* Right block hidden */
+  .gc-right-block{display:none;}
+  .gc-banner-glow1,.gc-banner-glow2{display:none;}
 
   /* Topbar */
   .topbar{padding:8px 12px;}
