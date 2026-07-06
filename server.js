@@ -1109,8 +1109,8 @@ app.get('/api/getUPPSCNews', async (req, res) => {
     }
     // Fallback: try RSS proxy (often blocked from cloud)
     const feeds = [
-      'https://news.google.com/rss/search?q=Uttar+Pradesh+government+scheme+yojana&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=UPPSC+UP+PSC+exam+recruitment&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://www.insightsonindia.com/feed/',          // InsightsOnIndia daily CA
+      'https://www.drishtiias.com/feed/',               // DrishtiIAS daily CA
     ];
     const results = await Promise.all(feeds.map(u => fetchFeedViaProxy(u)));
     const seen = new Set();
@@ -1168,8 +1168,9 @@ app.get('/api/getCurrentAffairs', async (req, res) => {
     }
     // Fallback: try RSS proxy
     const feeds = [
-      'https://news.google.com/rss/search?q=India+government+policy+scheme+budget&hl=en-IN&gl=IN&ceid=IN:en',
-      'https://news.google.com/rss/search?q=India+economy+RBI+inflation+trade+export&hl=en-IN&gl=IN&ceid=IN:en',
+      'https://www.visionias.in/resources/rss.php',     // VisionIAS current affairs
+      'https://sansadtv.nic.in/feed/',                  // Sansad TV (RSTV)
+      'https://www.insightsonindia.com/feed/',          // InsightsOnIndia fallback
     ];
     const results = await Promise.all(feeds.map(u => fetchFeedViaProxy(u)));
     const seen = new Set();
