@@ -3211,7 +3211,7 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   <!-- Subject nav -->
   <div class="sm-subject-nav">
     <button class="sm-subj-btn active" onclick="smSubject('polity',this)">⚖️ Polity</button>
-    <button class="sm-subj-btn" onclick="smSubject('history',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">🏛️ History</button>
+    <button class="sm-subj-btn" onclick="smSubject('history',this)">🏛️ History</button>
     <button class="sm-subj-btn" onclick="smSubject('geography',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">🌏 Geography</button>
     <button class="sm-subj-btn" onclick="smSubject('economy',this)" style="opacity:.5;cursor:not-allowed;" disabled title="Coming soon">📈 Economy</button>
   </div>
@@ -10040,6 +10040,13 @@ function smSubject(subj, btn) {
       body.innerHTML = '<div class="lp-loading">Questions still loading — try again in a moment.</div>';
       setTimeout(() => smSubject('polity', btn), 1500);
     }
+  } else if (subj === 'history') {
+    if (allQuestions && allQuestions.length) {
+      buildHistoryStudyView(body);
+    } else {
+      body.innerHTML = '<div class="lp-loading">Questions still loading — try again in a moment.</div>';
+      setTimeout(() => smSubject('history', btn), 1500);
+    }
   } else {
     body.innerHTML = `<div class="sm-no-results">📚 ${subj.charAt(0).toUpperCase()+subj.slice(1)} study notes coming soon!</div>`;
   }
@@ -10443,16 +10450,183 @@ function buildPolityStudyView(body) {
   body.innerHTML = html;
 }
 
-function smToggleArticle(num) {
-  var card = document.getElementById('sma-' + num);
+
+// ── History Study View ───────────────────────────────────────────────────
+function buildHistoryStudyView(body) {
+  var histQs = allQuestions.filter(function(q) {
+    return (q.subject||'').toLowerCase().includes('history');
+  });
+
+  var ERAS = [
+    { id: 'ancient', label: 'Ancient India', icon: '🏛️', range: 'Pre-600 CE',
+      subTopics: ['Vedic Period','Harappa','Archaeology','Buddhist Texts','Ancient Texts','Puranas','Ancient Trade','Foreign Travellers','Philosophy','Ashoka','Mauryan Period','Chronology'],
+      kw: /vedic|harapp|maurya|ashoka|buddha|jain|gupta|upanishad|rigveda|rig veda|megasthenes|fa.?hien|xuanzang|hiuen|chandragupta|kautilya|arthashastra|indus valley|sangam|chola|pallava|chalukya/i
+    },
+    { id: 'medieval', label: 'Medieval India', icon: '🕌', range: '600–1750 CE',
+      subTopics: ['Medieval History','Mughal History','Mughal Period','Bairam Khan','Bhakti Movement','Bhakti Saints','Sen Rulers'],
+      kw: /mughal|akbar|babur|humayun|aurangzeb|jahangir|delhi sultanate|bhakti|sufi|sultanate|medieval|kabir|mirabai|tukaram|chaitanya|ramdas|iltutmish|balban|ghori|ghazni|alauddin|feroz|rajput/i
+    },
+    { id: 'british', label: 'Rise of British & 1857', icon: '⚔️', range: '1750–1857',
+      subTopics: ['British India','1857 Revolt','Peshwas','Maratha History','State Formation'],
+      kw: /1857|sepoy|maratha|peshwa|east india company|british conquest|dalhousie|doctrine of lapse|plassey|buxar|subsidiary alliance|wellesley|cornwallis|regulating act|charter act|wood.?s despatch/i
+    },
+    { id: 'freedom', label: 'Freedom Struggle', icon: '🇮🇳', range: '1857–1947',
+      subTopics: ['Freedom Struggle','Freedom Movement','Social Reform','Justice Party','Workers Party','Early Organisations','Events 1911','Gandhi-Irwin Pact','Age of Consent','Poona Pact','Civil Disobedience','Round Table Conference','Poona Agreement','Modern Period'],
+      kw: /congress|gandhi|nehru|freedom|independence|civil disobedience|quit india|non.cooperation|khilafat|partition|1947|tilak|gokhale|lajpat|savarkar|bose|subhash|swadeshi|rowlatt|jallianwala|salt march|dandi|round table|poona|irwin|cripps|wavell|mountbatten|extremist|moderate|home rule|lucknow pact|montagu/i
+    },
+    { id: 'books', label: 'Books & Literature', icon: '📚', range: 'Historical Works',
+      subTopics: ['Books','Essayists','Economists Books'],
+      kw: /wrote|authored|book titled|publication|treatise|manuscript|chronicle|biography/i
+    },
+    { id: 'up', label: 'UP History', icon: '📍', range: 'Uttar Pradesh',
+      subTopics: ['UP History'],
+      kw: /uttar pradesh history|awadh|nawab of lucknow|up special.*history/i
+    }
+  ];
+
+  var eraMap = {};
+  ERAS.forEach(function(e) { eraMap[e.id] = []; });
+  var assignedIds = new Set();
+  var unclassified = [];
+
+  histQs.forEach(function(q) {
+    var st = (q.subTopic||'').trim();
+    var assigned = false;
+    // Pass 1: subTopic exact match
+    for (var i = 0; i < ERAS.length; i++) {
+      if (ERAS[i].subTopics.indexOf(st) !== -1 && !assignedIds.has(q.id)) {
+        eraMap[ERAS[i].id].push(q); assignedIds.add(q.id); assigned = true; break;
+      }
+    }
+    if (!assigned) {
+      // Pass 2: keyword scan
+      var text = [(q.question||''),(q.explanation||''),(q.subTopic||'')].join(' ');
+      for (var j = 0; j < ERAS.length; j++) {
+        if (ERAS[j].kw.test(text) && !assignedIds.has(q.id)) {
+          eraMap[ERAS[j].id].push(q); assignedIds.add(q.id); assigned = true; break;
+        }
+      }
+    }
+    if (!assigned) unclassified.push(q);
+  });
+
+  // Within each era, group by subTopic
+  function groupBySubTopic(qs) {
+    var map = {};
+    qs.forEach(function(q) {
+      var key = (q.subTopic||'').trim() || 'General';
+      if (!map[key]) map[key] = [];
+      map[key].push(q);
+    });
+    // Sort groups by count desc
+    return Object.keys(map).sort(function(a,b){ return map[b].length - map[a].length; }).map(function(k){ return {label:k, qs:map[k]}; });
+  }
+
+  function getQType(q) {
+    var txt = (q.question||'').toLowerCase();
+    if (/consider the following|which of the following statements/.test(txt)) return 'Statement';
+    if (/arrange|chronological|correct order/.test(txt)) return 'Order';
+    if ((q.qType||'') === 'Match') return 'Match';
+    return 'Direct';
+  }
+
+  function renderTopicCard(group, eraId, idx) {
+    var qs = group.qs;
+    var label = group.label;
+    var cardId = 'hist-' + eraId + '-' + idx;
+    var maxFreqLocal = Math.max.apply(null, ERAS.map(function(e){ return eraMap[e.id].length || 1; }));
+    var barW = Math.min(Math.round((qs.length / 5) * 80) + 10, 90);
+    var isHigh = qs.length >= 3;
+    var timesLabel = qs.length === 1 ? 'Asked once' : 'Asked ' + qs.length + ' times';
+
+    var qCardHtml = qs.map(function(q, qi) {
+      var extraAttr = qi >= 2 ? ' class="sm-aq sm-aq-extra" style="display:none"' : ' class="sm-aq"';
+      var optsHtml = '';
+      if (q.optA || q.optB || q.optC || q.optD) {
+        optsHtml = '<div class="sm-aq-opts">'
+          + ['A','B','C','D'].map(function(ltr) {
+            var txt = q['opt'+ltr] || '';
+            if (!txt) return '';
+            var isCorrect = (q.answer||'').toUpperCase() === ltr;
+            return '<div class="sm-aq-opt' + (isCorrect ? ' correct' : '') + '"><span class="sm-opt-lbl">' + ltr + '.</span>' + txt + '</div>';
+          }).join('')
+          + '</div>';
+      }
+      return '<div' + extraAttr + '>'
+        + '<div class="sm-aq-meta">'
+        + '<span class="sm-aq-year">' + (q.year||'—') + '</span>'
+        + '<span class="sm-aq-subj">' + (q.subject||'History') + '</span>'
+        + '<span class="sm-aq-ans">Ans: ' + (q.answer||'?') + '</span>'
+        + '<span class="sm-aq-type">' + getQType(q) + '</span>'
+        + '</div>'
+        + '<div class="sm-aq-text">' + q.question + '</div>'
+        + optsHtml
+        + (q.explanation ? '<div class="sm-aq-exp">💡 ' + q.explanation + '</div>' : '')
+        + '</div>';
+    }).join('');
+
+    var seeMoreBtn = qs.length > 2
+      ? '<span class="sm-see-more" id="smmore-' + cardId + '" onclick="smExpandQs('' + cardId + '')">+ ' + (qs.length-2) + ' more question' + (qs.length-2>1?'s':'') + ' ›</span>'
+      : '';
+
+    return '<div class="sm-article-card" id="sma-' + cardId + '" data-title="' + (label+' '+eraId).toLowerCase() + '">'
+      + '<div class="sm-article-hd" onclick="smToggleArticle('' + cardId + '')">'
+      + '<div class="sm-art-info">'
+      + '<div class="sm-article-title">' + label + '</div>'
+      + '<div class="sm-freq-row"><div class="sm-freq-bar" style="width:' + barW + 'px' + (isHigh?';background:var(--purple)':'') + '"></div><span class="sm-freq-label">' + timesLabel + '</span></div>'
+      + '</div>'
+      + '<div class="sm-art-right">'
+      + '<span class="' + ('sm-article-count' + (isHigh?' high':'')) + '">' + qs.length + ' Q' + (qs.length>1?'s':'') + '</span>'
+      + '<span class="sm-article-arrow">▼</span>'
+      + '</div>'
+      + '</div>'
+      + '<div class="sm-article-body"><div class="sm-article-qs">' + qCardHtml + seeMoreBtn + '</div></div>'
+      + '</div>';
+  }
+
+  var totalQs = histQs.length;
+  var totalMapped = assignedIds.size;
+
+  var html = '<div class="sm-stats-bar">'
+    + '<div class="sm-stat"><div class="sm-stat-v">' + totalQs + '</div><div class="sm-stat-l">History Questions</div></div>'
+    + '<div class="sm-stat"><div class="sm-stat-v" style="color:#B45309;">' + ERAS.filter(function(e){return eraMap[e.id].length>0;}).length + '</div><div class="sm-stat-l">Eras Covered</div></div>'
+    + '<div class="sm-stat"><div class="sm-stat-v" style="color:#0D9488;">' + totalMapped + '</div><div class="sm-stat-l">Qs Mapped</div></div>'
+    + '</div>'
+    + '<div class="sm-search-wrap"><input class="sm-search" id="smSearch" placeholder="Search topic or keyword…" oninput="smFilterArticles(this.value)"></div>'
+    + '<div id="smArticleList">';
+
+  ERAS.forEach(function(era) {
+    var qs = eraMap[era.id];
+    if (!qs.length) return;
+    var groups = groupBySubTopic(qs);
+    html += '<div class="sm-part-hd sm-part-section">' + era.icon + ' ' + era.label + ' <span style="opacity:.5;font-size:11px;font-weight:400;margin-left:6px;">· ' + era.range + ' · ' + qs.length + ' Qs</span></div>';
+    groups.forEach(function(g, idx) {
+      html += renderTopicCard(g, era.id, idx);
+    });
+  });
+
+  if (unclassified.length) {
+    var groups = groupBySubTopic(unclassified);
+    html += '<div class="sm-part-hd sm-part-section">📋 General / Unclassified <span style="opacity:.5;font-size:11px;font-weight:400;margin-left:6px;">· ' + unclassified.length + ' Qs</span></div>';
+    groups.forEach(function(g, idx) {
+      html += renderTopicCard(g, 'general', idx);
+    });
+  }
+
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function smToggleArticle(id) {
+  var card = document.getElementById('sma-' + id);
   if (card) card.classList.toggle('open');
 }
 
-function smExpandQs(num) {
-  var card = document.getElementById('sma-' + num);
+function smExpandQs(id) {
+  var card = document.getElementById('sma-' + id);
   if (!card) return;
   card.querySelectorAll('.sm-aq-extra').forEach(function(el){ el.style.display = ''; });
-  var btn = document.getElementById('smmore-' + num);
+  var btn = document.getElementById('smmore-' + id);
   if (btn) btn.style.display = 'none';
 }
 
