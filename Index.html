@@ -646,10 +646,14 @@ textarea{resize:vertical;min-height:70px;}
 .pyq-subj-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;
   border-radius:10px;border:1.5px solid var(--border);background:var(--bg);
   cursor:pointer;font-size:12.5px;font-weight:600;color:var(--text2);
-  white-space:nowrap;transition:all .15s;flex-shrink:0;}
+  white-space:nowrap;transition:all .18s;flex-shrink:0;position:relative;overflow:hidden;}
+.pyq-subj-btn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0%;
+  border-radius:10px 0 0 10px;transition:width .4s ease,background .4s;pointer-events:none;z-index:0;}
+.pyq-subj-btn > *{position:relative;z-index:1;}
 .pyq-subj-btn:hover{background:var(--bg3);color:var(--text);border-color:var(--border2);}
 .pyq-subj-btn.active{background:linear-gradient(135deg,#1a56db,#1e40af);
   color:#fff;border-color:#1a56db;box-shadow:0 3px 10px rgba(26,86,219,.28);}
+.pyq-subj-btn.active::before{display:none;}
 .pyq-subj-icon{font-size:15px;line-height:1;}
 .pyq-subj-label{line-height:1.2;}
 .pyq-subj-count{font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;
@@ -5903,6 +5907,78 @@ function clearDrill() {
   applyFilters();
 }
 
+
+function updateSubjPillFills(filteredQs, activeYear) {
+  var ac = window._attemptCounts || {};
+  var hasData = Object.keys(ac).length > 0 || (attemptedQIds && attemptedQIds.size > 0);
+  // Group filtered questions by subject
+  var subjMap = {};
+  filteredQs.forEach(function(q) {
+    var s = q.subject || 'General Studies';
+    if (!subjMap[s]) subjMap[s] = [];
+    subjMap[s].push(String(q.id));
+  });
+  // All button
+  var allIds = filteredQs.map(function(q){ return String(q.id); });
+  var allRi = getRoundInfo(allIds, allIds.length);
+  _applyPillFill('pyq-subj-all', allRi.pct, allIds.length - Math.round(allRi.pct/100*allIds.length), activeYear !== 'all');
+
+  Object.keys(subjMap).forEach(function(s) {
+    var ids = subjMap[s];
+    var ri = getRoundInfo(ids, ids.length);
+    var left = ids.length - Math.round(ri.pct/100*ids.length);
+    _applyPillFill('pyq-subj-'+s, ri.pct, left, activeYear !== 'all');
+  });
+}
+
+function _applyPillFill(btnId, pct, left, showLeft) {
+  var btn = document.getElementById(btnId);
+  if (!btn || btn.classList.contains('active')) return;
+  // Fill color based on completion
+  var fillColor = pct >= 100 ? 'rgba(29,158,117,0.15)'
+    : pct >= 70 ? 'rgba(29,158,117,0.10)'
+    : pct >= 40 ? 'rgba(239,159,39,0.12)'
+    : pct > 0   ? 'rgba(226,75,74,0.08)'
+    : 'transparent';
+  btn.style.setProperty('--subj-fill', fillColor);
+  // Apply via inline style on ::before via CSS variable trick — use background instead
+  if (pct > 0) {
+    btn.style.background = 'linear-gradient(to right, '+fillColor+' '+pct+'%, var(--bg) '+pct+'%)';
+    if (pct >= 100) {
+      btn.style.borderColor = 'rgba(29,158,117,0.4)';
+    } else if (pct >= 40) {
+      btn.style.borderColor = '';
+    }
+  } else {
+    btn.style.background = '';
+    btn.style.borderColor = '';
+  }
+  // Update count label
+  if (showLeft) {
+    var countEl = btn.querySelector('.pyq-subj-count');
+    if (countEl) {
+      if (pct >= 100) {
+        countEl.textContent = '✓';
+        countEl.style.background = 'rgba(29,158,117,0.2)';
+        countEl.style.color = '#1D9E75';
+      } else if (left > 0) {
+        countEl.textContent = left + ' left';
+        countEl.style.background = '';
+        countEl.style.color = '';
+      }
+    }
+  } else {
+    // Reset count to total when "All" years selected
+    var countEl = btn.querySelector('.pyq-subj-count');
+    if (countEl) {
+      countEl.style.background = '';
+      countEl.style.color = '';
+      btn.style.background = '';
+      btn.style.borderColor = '';
+    }
+  }
+}
+
 function selectPyqSubject(subject, btn) {
   const sel = document.getElementById("f-subject");
   if (sel) sel.value = subject;
@@ -5922,6 +5998,12 @@ function selectPyqYear(year) {
   // update active badge in strip
   document.querySelectorAll('.pyq-yr-badge').forEach(function(b){
     b.classList.toggle('pyq-yr-badge-active', b.dataset.yr === String(year));
+  });
+  // Reset pill styles before reapplying
+  document.querySelectorAll('.pyq-subj-btn:not(.active)').forEach(function(b){
+    b.style.background = ''; b.style.borderColor = '';
+    var c = b.querySelector('.pyq-subj-count');
+    if (c) { c.style.background = ''; c.style.color = ''; }
   });
   applyFilters();
   updatePyqSidebarCounts();
@@ -6141,6 +6223,8 @@ function updatePyqSidebarCounts() {
     const el = document.getElementById('pyq-cnt-' + s);
     if (el) el.textContent = c;
   });
+  // Apply completion fill to subject pills based on current year selection
+  updateSubjPillFills(base, activeYear);
 
   // ── Update all dynamic stat pills/labels from loaded questions ──
   const qs = (typeof allQuestions !== 'undefined') ? allQuestions : [];
