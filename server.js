@@ -55,13 +55,25 @@ function fetchSheetQuestions() {
             const cell = row.c[i];
             return cell && cell.v !== null && cell.v !== undefined ? String(cell.v) : '';
           };
+          // gviz returns DATE columns as "Date(YYYY,M,D)" — extract just the 4-digit year
+          const vYear = (row, i) => {
+            const raw = v(row, i);
+            const dm  = raw.match(/^Date\((\d{4})/);
+            return dm ? dm[1] : raw.replace(/\.0$/, ''); // also strip trailing .0 from floats
+          };
 
           const rows = parsed.table.rows.filter(row => v(row, 0).trim());
+
+          // Log sample year cell to help diagnose format issues
+          if (rows.length > 0) {
+            const sampleCell = rows[0].c[1];
+            console.log('🗓  Year col sample — raw v:', sampleCell && sampleCell.v, '| parsed:', vYear(rows[0], 1));
+          }
 
           // Map by column position (matches Code.js order exactly)
           const questions = rows.map(row => ({
             id:          v(row,  0),
-            year:        v(row,  1),
+            year:        vYear(row, 1),
             subject:     v(row,  2),
             subTopic:    v(row,  3),
             topic:       v(row,  3),
@@ -113,6 +125,11 @@ function fetchSheetQuestions() {
           });
           const repeatCount = merged.filter(q => q.repeatsIn.includes(',')).length;
           console.log(`🔁 Repeating topics computed: ${repeatCount} questions flagged`);
+
+          // Log year distribution for debugging
+          const yrDist = {};
+          merged.forEach(q => { yrDist[q.year] = (yrDist[q.year]||0)+1; });
+          console.log('📅 Year distribution:', JSON.stringify(Object.entries(yrDist).sort().map(([y,c])=>y+':'+c)));
 
           _sheetsCache     = merged;
           _sheetsCacheTime = Date.now();
@@ -832,7 +849,7 @@ app.post('/api/getQuestions', async (req, res) => {
       }
     }
 
-    rows = rows.slice(0, filters.limit || 2000);
+    rows = rows.slice(0, filters.limit || 5000);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
