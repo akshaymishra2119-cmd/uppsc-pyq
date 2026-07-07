@@ -33,9 +33,13 @@ let _sheetsCache     = null;
 let _sheetsCacheTime = 0;
 
 // Fetch and parse Google Sheets public gviz endpoint (no API key needed)
-function fetchSheetQuestions() {
+// Tries multiple tab name variants in case of casing mismatch
+const SHEET_TAB_VARIANTS = ['QUESTION_BANK', 'Question_Bank', 'question_bank', 'Sheet1'];
+
+function fetchOneTab(tabName) {
   return new Promise((resolve, reject) => {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
+    console.log(`📡 Fetching sheet tab: ${tabName}`);
     https.get(url, res => {
       let raw = '';
       res.on('data', chunk => raw += chunk);
@@ -45,7 +49,7 @@ function fetchSheetQuestions() {
           const jsonStr = raw.replace(/^[^{(]*\(/, '').replace(/\)[\s;]*$/, '').replace(/^[^{]*/, '');
           const parsed  = JSON.parse(jsonStr);
 
-          console.log(`📊 Sheet rows: ${parsed.table.rows.length}, cols: ${parsed.table.cols.length}`);
+          console.log(`📊 Tab '${tabName}' rows: ${parsed.table.rows.length}, cols: ${parsed.table.cols.length}`);
 
           // Sheet has no header row — map by column POSITION (matches Code.js column order)
           // Col: 0=Q_ID 1=Year 2=Subject 3=Sub_Topic 4=Question 5=Opt_A 6=Opt_B 7=Opt_C
@@ -136,11 +140,29 @@ function fetchSheetQuestions() {
   console.log('UPPSC Study Portal started on port ' + PORT);
           resolve(merged);
         } catch (err) {
-          reject(new Error('Sheet parse error: ' + err.message));
+          reject(new Error(`Sheet parse error for tab '${tabName}': ${err.message}`));
         }
       });
-    }).on('error', reject);
+    }).on('error', e => reject(new Error(`Network error fetching '${tabName}': ${e.message}`)));
   });
+}
+
+async function fetchSheetQuestions() {
+  let lastErr;
+  for (const tab of SHEET_TAB_VARIANTS) {
+    try {
+      const result = await fetchOneTab(tab);
+      if (result && result.length > 0) {
+        console.log(`✅ Sheet loaded from tab '${tab}': ${result.length} questions`);
+        return result;
+      }
+      console.warn(`⚠️  Tab '${tab}' returned 0 rows — trying next variant`);
+    } catch(e) {
+      console.warn(`⚠️  Tab '${tab}' failed: ${e.message}`);
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('All sheet tab variants failed or returned 0 rows');
 }
 
 // Return cached questions, fetching fresh if TTL expired
