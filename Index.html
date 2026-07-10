@@ -3123,67 +3123,83 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 <div class="tab" id="tab-account">
 
   <!-- AUTH STRIP (shown when logged out) -->
-  <div id="acct-auth-strip" style="display:none;background:#f8f7ff;border-bottom:1px solid #e5e7eb;padding:18px 24px;">
-    <div style="max-width:860px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:200px;">
-        <div style="font-size:14px;font-weight:700;color:#1a1a2e;">👤 Login or Register to Subscribe</div>
-        <div style="font-size:11px;color:#6b7280;margin-top:2px;">30-day free trial · No credit card needed</div>
+  <!-- AUTH SECTION (logged out) -->
+  <div id="acct-auth-strip" style="display:none;background:#ffffff;border-bottom:2px solid #e5e7eb;">
+    <div style="max-width:960px;margin:0 auto;padding:40px 24px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
+      <!-- Left: value prop -->
+      <div>
+        <div style="display:inline-block;background:#ede9fe;color:#5b21b6;font-size:11px;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px;margin-bottom:16px;">FREE 30-DAY TRIAL</div>
+        <h2 style="font-size:26px;font-weight:900;color:#1a1a2e;line-height:1.25;margin:0 0 12px;">Get full access to<br>SimplerSense PCS Prep</h2>
+        <p style="font-size:13px;color:#6b7280;margin:0 0 24px;line-height:1.6;">10,000+ PYQ questions, daily current affairs, mock tests and analytics — all in one place.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;"><span style="width:22px;height:22px;border-radius:50%;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span><span style="font-size:13px;color:#374151;">2005–2025 PCS questions with repeat analysis</span></div>
+          <div style="display:flex;align-items:center;gap:10px;"><span style="width:22px;height:22px;border-radius:50%;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span><span style="font-size:13px;color:#374151;">Daily current affairs &amp; editorial digests</span></div>
+          <div style="display:flex;align-items:center;gap:10px;"><span style="width:22px;height:22px;border-radius:50%;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span><span style="font-size:13px;color:#374151;">Full-length mock tests with leaderboard</span></div>
+          <div style="display:flex;align-items:center;gap:10px;"><span style="width:22px;height:22px;border-radius:50%;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✓</span><span style="font-size:13px;color:#374151;">Plans starting at just ₹100/month</span></div>
+        </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div style="background:#fff;border-radius:10px;padding:14px 18px;min-width:220px;">
-          <div style="display:flex;gap:0;margin-bottom:12px;background:#f3f4f6;border-radius:6px;padding:2px;">
-            <button id="acctTabLogin" onclick="switchAcctTab('login')" style="flex:1;padding:7px;border:none;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:#4f46e5;">Login</button>
-            <button id="acctTabReg" onclick="switchAcctTab('register')" style="flex:1;padding:7px;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#6b7280;">Register</button>
+      <!-- Right: auth card -->
+      <div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:16px;padding:28px 24px;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:17px;font-weight:800;color:#1a1a2e;">Welcome to SimplerSense</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:4px;">Login or create a free account</div>
+        </div>
+        <!-- Tab switcher -->
+        <div style="display:flex;background:#e5e7eb;border-radius:8px;padding:3px;margin-bottom:18px;">
+          <button id="acctTabLogin" onclick="switchAcctTab('login')" style="flex:1;padding:8px;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:#4f46e5;box-shadow:0 1px 3px rgba(0,0,0,0.1);">Login</button>
+          <button id="acctTabReg" onclick="switchAcctTab('register')" style="flex:1;padding:8px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#6b7280;box-shadow:none;">Register</button>
+        </div>
+        <!-- Login form -->
+        <div id="acctLoginForm">
+          <input class="auth-field acct-light" id="acctLoginEmail" type="email" placeholder="Email address" style="margin-bottom:10px;" />
+          <input class="auth-field acct-light" id="acctLoginPassword" type="password" placeholder="Password" style="margin-bottom:6px;" />
+          <div class="auth-err" id="acctLoginErr" style="color:#ef4444;font-size:11px;min-height:16px;margin-bottom:6px;"></div>
+          <button onclick="doAcctLogin()" style="width:100%;padding:11px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Login →</button>
+          <div style="text-align:center;margin-top:10px;"><a href="#" onclick="switchAcctTab('forgot');return false;" style="font-size:12px;color:#6366f1;">Forgot password?</a></div>
+        </div>
+        <!-- Register form -->
+        <div id="acctRegForm" style="display:none;">
+          <input class="auth-field acct-light" id="acctRegName" type="text" placeholder="Full name *" style="margin-bottom:10px;" />
+          <input class="auth-field acct-light" id="acctRegEmail" type="email" placeholder="Email address *" style="margin-bottom:10px;" />
+          <input class="auth-field acct-light" id="acctRegPhone" type="tel" placeholder="Mobile number (optional)" style="margin-bottom:10px;" />
+          <input class="auth-field acct-light" id="acctRegPassword" type="password" placeholder="Password (min 6 chars) *" style="margin-bottom:6px;" />
+          <div class="auth-err" id="acctRegErr" style="color:#ef4444;font-size:11px;min-height:16px;margin-bottom:6px;"></div>
+          <button onclick="doAcctRegister()" style="width:100%;padding:11px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Create Free Account →</button>
+        </div>
+        <!-- Forgot form -->
+        <div id="acctForgotForm" style="display:none;">
+          <input class="auth-field acct-light" id="acctFpEmail" type="email" placeholder="Your registered email" style="margin-bottom:10px;" />
+          <div id="acctFpOtpBox" style="display:none;">
+            <input class="auth-field acct-light" id="acctFpOtp" type="text" maxlength="6" placeholder="6-digit OTP" style="letter-spacing:6px;text-align:center;font-size:16px;font-weight:700;margin-bottom:10px;" />
+            <input class="auth-field acct-light" id="acctFpPass" type="password" placeholder="New password" style="margin-bottom:10px;" />
           </div>
-          <div id="acctLoginForm">
-            <input class="auth-field acct-light" id="acctLoginEmail" type="email" placeholder="Email address" />
-            <input class="auth-field acct-light" id="acctLoginPassword" type="password" placeholder="Password" />
-            <div class="auth-err" id="acctLoginErr" style="color:#ef4444;font-size:11px;margin-bottom:6px;"></div>
-            <button onclick="doAcctLogin()" style="width:100%;padding:9px;background:#4f46e5;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">Login →</button>
-            <div style="text-align:center;margin-top:8px;"><a href="#" onclick="switchAcctTab('forgot');return false;" style="font-size:11px;color:#6366f1;">Forgot password?</a></div>
-          </div>
-          <div id="acctRegForm" style="display:none;">
-            <input class="auth-field acct-light" id="acctRegName" type="text" placeholder="Full name *" />
-            <input class="auth-field acct-light" id="acctRegEmail" type="email" placeholder="Email address *" />
-            <input class="auth-field acct-light" id="acctRegPhone" type="tel" placeholder="Mobile number (optional)" />
-            <input class="auth-field acct-light" id="acctRegPassword" type="password" placeholder="Password (min 6 chars) *" />
-            <div class="auth-err" id="acctRegErr" style="color:#ef4444;font-size:11px;margin-bottom:6px;"></div>
-            <button onclick="doAcctRegister()" style="width:100%;padding:9px;background:#4f46e5;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">Create Free Account →</button>
-          </div>
-          <div id="acctForgotForm" style="display:none;">
-            <input class="auth-field acct-light" id="acctFpEmail" type="email" placeholder="Your registered email" />
-            <div id="acctFpOtpBox" style="display:none;">
-              <input class="auth-field acct-light" id="acctFpOtp" type="text" maxlength="6" placeholder="6-digit OTP" style="letter-spacing:6px;text-align:center;font-size:16px;font-weight:700;" />
-              <input class="auth-field acct-light" id="acctFpPass" type="password" placeholder="New password" />
-            </div>
-            <div class="auth-err" id="acctFpErr" style="font-size:11px;margin-bottom:6px;"></div>
-            <button id="acctFpBtn" onclick="doAcctForgot()" style="width:100%;padding:9px;background:#4f46e5;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">Send OTP →</button>
-            <div style="text-align:center;margin-top:6px;"><a href="#" onclick="switchAcctTab('login');return false;" style="font-size:11px;color:#6b7280;">← Back to Login</a></div>
-          </div>
+          <div class="auth-err" id="acctFpErr" style="font-size:11px;min-height:16px;margin-bottom:6px;"></div>
+          <button id="acctFpBtn" onclick="doAcctForgot()" style="width:100%;padding:11px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Send OTP →</button>
+          <div style="text-align:center;margin-top:8px;"><a href="#" onclick="switchAcctTab('login');return false;" style="font-size:12px;color:#6b7280;">← Back to Login</a></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- LOGGED IN STRIP -->
-  <div id="acct-user-strip" style="display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 24px;">
-    <div style="max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-      <!-- Avatar + name -->
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;letter-spacing:1px;flex-shrink:0;" id="acctAvatar">?</div>
+  <!-- USER HEADER (logged in) -->
+  <div id="acct-user-strip" style="display:none;background:#ffffff;border-bottom:2px solid #e5e7eb;">
+    <div style="max-width:960px;margin:0 auto;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <!-- Avatar + info -->
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;" id="acctAvatar">?</div>
         <div>
-          <div style="font-size:15px;font-weight:700;color:#1a1a2e;line-height:1.2;" id="acctName">—</div>
-          <div style="font-size:11px;color:#6b7280;margin-top:1px;" id="acctEmail">—</div>
+          <div style="font-size:16px;font-weight:800;color:#1a1a2e;" id="acctName">—</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px;" id="acctEmail">—</div>
         </div>
       </div>
-      <!-- Subscription badge -->
-      <div id="acctSubCard" style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-radius:10px;border:1.5px solid #10b981;background:#f0fdf4;">
+      <!-- Subscription status -->
+      <div id="acctSubCard" style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-radius:12px;border:1.5px solid #10b981;background:#f0fdf4;">
         <span id="acctSubLabel" style="font-size:13px;font-weight:700;color:#065f46;">✅ Subscribed</span>
-        <span style="width:1px;height:16px;background:#d1fae5;display:inline-block;"></span>
-        <span id="acctSubDetail" style="font-size:11px;color:#047857;font-weight:500;"></span>
+        <div style="width:1px;height:18px;background:#bbf7d0;"></div>
+        <span id="acctSubDetail" style="font-size:12px;color:#047857;font-weight:500;"></span>
       </div>
       <!-- Logout -->
-      <button onclick="doLogout()" style="padding:8px 18px;background:#fff;border:1.5px solid #e5e7eb;color:#6b7280;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#6b7280'">Logout</button>
+      <button onclick="doLogout()" style="padding:9px 20px;background:#fff;border:1.5px solid #e5e7eb;color:#6b7280;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#6b7280'">Logout</button>
     </div>
   </div>
 
