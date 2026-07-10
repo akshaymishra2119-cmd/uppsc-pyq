@@ -104,6 +104,29 @@ async function fetchFeed(rssUrl, count = 30) {
   return await fetchViaProxy(rssUrl, count);
 }
 
+// ── Filter out question/quiz/test content ────────────────────
+const QUESTION_SKIP = [
+  /\bquiz\b/i,
+  /\bmock test\b/i,
+  /\bpractice (question|paper|test)\b/i,
+  /\bprelims (practice|question)\b/i,
+  /\bmains (practice|question|answer)\b/i,
+  /\binsights secure\b/i,
+  /\btest series\b/i,
+  /\banswer writing\b/i,
+  /\bmodel answer\b/i,
+  /\bupsc question\b/i,
+  /^Q\.\s/i,                          // starts with "Q. "
+  /^\d+\.\s+Which\b/i,                // "1. Which..."
+  /^\d+\.\s+What\b/i,                 // "1. What..."
+  /\(a\).*\(b\).*\(c\)/i,            // multiple-choice options in body
+];
+
+function isQuestionContent(title, desc) {
+  const text = title + ' ' + (desc || '');
+  return QUESTION_SKIP.some(rx => rx.test(text));
+}
+
 // ── Category keywords ────────────────────────────────────────
 const CATEGORIES = {
   'Awards & Honours':      /\b(award|honour|medal|prize|padma|bharat ratna|felicitat|recogni[sz])/i,
@@ -167,8 +190,8 @@ const FEEDS = [
   },
   {
     name:   'Insights on India',
-    url:    'https://www.insightsonindia.com/feed/',
-    altUrl: 'https://www.insightsonindia.com/category/today-important-news/feed/',
+    url:    'https://www.insightsonindia.com/category/today-important-news/feed/',
+    altUrl: 'https://www.insightsonindia.com/feed/',
   },
   {
     name:   'Vision IAS',
@@ -207,6 +230,11 @@ async function scrapeAll() {
 
     for (const item of items) {
       if (!item.title || item.title.length < 10) continue;
+      // Skip question/quiz/test content — news only
+      if (isQuestionContent(item.title, item.description)) {
+        console.log(`   ⏭  Skipped (question content): ${item.title.slice(0,60)}`);
+        continue;
+      }
 
       // Use actual pubDate from RSS — fall back to today only if missing/invalid
       const pubD    = parsePubDate(item.pubDate);
