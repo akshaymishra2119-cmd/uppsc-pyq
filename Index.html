@@ -3166,13 +3166,50 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
         <div style="text-align:center;margin-top:8px;"><a href="#" onclick="switchAcctTab('login');return false;" style="font-size:12px;color:#6b7280;">← Back to Login</a></div>
       </div>
     </div>
-    <!-- Plans preview -->
-    <div style="margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;">
-      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px;text-align:center;">📦 Plans start at ₹100/month</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
-        <div style="background:#f0fdf4;border-radius:8px;padding:10px;"><div style="font-size:16px;font-weight:800;color:#166534;">₹100</div><div style="font-size:11px;color:#6b7280;">1 Month</div></div>
-        <div style="background:#eff6ff;border-radius:8px;padding:10px;"><div style="font-size:16px;font-weight:800;color:#1d4ed8;">₹500</div><div style="font-size:11px;color:#6b7280;">6 Months</div></div>
-        <div style="background:#fef9c3;border-radius:8px;padding:10px;border:2px solid #fbbf24;"><div style="font-size:16px;font-weight:800;color:#92400e;">₹1000</div><div style="font-size:11px;color:#6b7280;">12 Months ⭐</div></div>
+    <!-- Full subscription plans -->
+    <div style="margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="text-align:center;margin-bottom:6px;">
+        <div style="font-size:17px;font-weight:800;color:var(--text1);">Choose Your Plan</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Register first, then subscribe — or subscribe after login</div>
+      </div>
+      <div style="margin:16px 0 8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px 8px;text-align:center;">
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">1 MONTH</div>
+          <div style="font-size:22px;font-weight:800;color:#1a1a2e;">₹100</div>
+          <div style="font-size:10px;color:#9ca3af;">₹100/mo</div>
+        </div>
+        <div style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px 8px;text-align:center;">
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">2 MONTHS</div>
+          <div style="font-size:22px;font-weight:800;color:#1a1a2e;">₹200</div>
+          <div style="font-size:10px;color:#9ca3af;">₹100/mo</div>
+        </div>
+        <div style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px 8px;text-align:center;">
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">3 MONTHS</div>
+          <div style="font-size:22px;font-weight:800;color:#1a1a2e;">₹300</div>
+          <div style="font-size:10px;color:#9ca3af;">₹100/mo</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px 8px;text-align:center;">
+          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">4 MONTHS</div>
+          <div style="font-size:22px;font-weight:800;color:#1a1a2e;">₹400</div>
+          <div style="font-size:10px;color:#9ca3af;">₹100/mo</div>
+        </div>
+        <div style="border:1.5px solid #10b981;border-radius:12px;padding:14px 8px;text-align:center;background:#f0fdf4;">
+          <div style="font-size:9px;color:#059669;font-weight:800;margin-bottom:2px;">SAVE ₹100</div>
+          <div style="font-size:11px;color:#065f46;font-weight:600;margin-bottom:4px;">6 MONTHS</div>
+          <div style="font-size:22px;font-weight:800;color:#065f46;">₹500</div>
+          <div style="font-size:10px;color:#059669;">₹83/mo</div>
+        </div>
+        <div style="border:2px solid #f59e0b;border-radius:12px;padding:14px 8px;text-align:center;background:#fffbeb;">
+          <div style="font-size:9px;color:#d97706;font-weight:800;margin-bottom:2px;">BEST VALUE ⭐</div>
+          <div style="font-size:11px;color:#92400e;font-weight:600;margin-bottom:4px;">12 MONTHS</div>
+          <div style="font-size:22px;font-weight:800;color:#92400e;">₹1000</div>
+          <div style="font-size:10px;color:#d97706;">₹83/mo</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:10px;background:#eff6ff;border-radius:8px;font-size:11px;color:#1e40af;text-align:center;">
+        🔐 Login or Register above to subscribe · UPI / Cards / Net Banking accepted
       </div>
     </div>
   </div>
@@ -11754,6 +11791,8 @@ function buildSydQBlock(q, i) {
 #tab-account .auth-field{background:#f9fafb;color:#1a1a2e;border:1.5px solid #e5e7eb;}
 #tab-account .auth-field::placeholder{color:#9ca3af;}
 #tab-account .auth-field:focus{border-color:#4f46e5;background:#fff;}
+#tab-account input[type=password]{background:#f9fafb!important;color:#1a1a2e!important;-webkit-text-fill-color:#1a1a2e!important;}
+#tab-account input:-webkit-autofill{-webkit-box-shadow:0 0 0 30px #f9fafb inset!important;-webkit-text-fill-color:#1a1a2e!important;}
 .auth-field::placeholder{color:rgba(255,255,255,0.3);}
 .auth-field:-webkit-autofill,
 .auth-field:-webkit-autofill:hover,
