@@ -9283,7 +9283,7 @@ function showDayQuestions(dateKey, filter) {
   if (existing) existing.remove();
 
   var qHtml = qs.length === 0
-    ? '<div style="padding:24px;text-align:center;color:#64748b;font-size:13px;">No question details available for this session.<br><span style="font-size:11px;">(Questions attempted before the diary feature was added won't appear here)</span></div>'
+    ? '<div style="padding:24px;text-align:center;color:#64748b;font-size:13px;">No question details available for this session.<br><span style="font-size:11px;">(Questions attempted before the diary feature was added won\'t appear here)</span></div>'
     : qs.map(function(q, i) {
         var isRight = q.result === 'correct';
         var opts = [['A', q.optA||q.opt_a], ['B', q.optB||q.opt_b], ['C', q.optC||q.opt_c], ['D', q.optD||q.opt_d]];
@@ -9324,7 +9324,7 @@ function showDayQuestions(dateKey, filter) {
     +'<div style="font-size:15px;font-weight:700;color:#1e293b;">'+filterLabel+' — '+dateLbl+'</div>'
     +'<div style="font-size:12px;color:#64748b;margin-top:2px;">'+qs.length+' question'+(qs.length===1?'':'s')+'</div>'
     +'</div>'
-    +'<button onclick="document.getElementById('dayQModal').remove();" style="background:#f1f5f9;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:18px;color:#64748b;line-height:1;">✕</button>'
+    +'<button onclick="document.getElementById(\'dayQModal\').remove();" style="background:#f1f5f9;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:18px;color:#64748b;line-height:1;">✕</button>'
     +'</div>'
     +'<div style="padding:16px 20px;">'+qHtml+'</div>'
     +'</div>';
@@ -12435,8 +12435,8 @@ function showExtendConfirm(months, amount, currentTill, newTill) {
       '<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#64748b;">New end date</span><span style="font-weight:700;color:#10b981;">' + newTill + '</span></div>' +
     '</div>' +
     '<div style="display:flex;gap:10px;">' +
-      '<button onclick="document.getElementById('extendConfirmOverlay').remove();" style="flex:1;padding:12px;border:2px solid #e2e8f0;background:#fff;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;color:#64748b;">Cancel</button>' +
-      '<button onclick="document.getElementById('extendConfirmOverlay').remove();initiatePayment(' + months + ',' + amount + ');" style="flex:2;padding:12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;color:#fff;">Confirm & Pay ₹' + amount + '</button>' +
+      '<button onclick="document.getElementById(\'extendConfirmOverlay\').remove();" style="flex:1;padding:12px;border:2px solid #e2e8f0;background:#fff;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;color:#64748b;">Cancel</button>' +
+      '<button onclick="document.getElementById(\'extendConfirmOverlay\').remove();initiatePayment(' + months + ',' + amount + ');" style="flex:2;padding:12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;color:#fff;">Confirm & Pay ₹' + amount + '</button>' +
     '</div>' +
   '</div>';
   // Close on outside click
