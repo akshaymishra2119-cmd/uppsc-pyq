@@ -1312,6 +1312,12 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 </style>
 </head>
 <body>
+<!-- ══ TRIAL BAR ══════════════════════════════════════════════ -->
+<div id="trialBar" style="display:none;position:sticky;top:0;z-index:10002;background:#fbbf24;color:#1a0f00;text-align:center;padding:7px 16px;font-size:12px;font-weight:700;letter-spacing:0.4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
+  <span id="trialBarText"></span>
+  &nbsp;·&nbsp;
+  <a href="#" onclick="openAuthModal('login');return false;" style="color:#1a0f00;text-decoration:underline;font-weight:800;">Subscribe ₹100/mo →</a>
+</div>
 
 <!-- hidden dummy for legacy refs -->
 <div id="onboard" style="display:none;"></div>
@@ -1521,7 +1527,9 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
     </div>
 
   </div>
+
 </div>
+
 
 <!-- ══ LEFT PANEL ══════════════════════════════════════════════ -->
 <!-- study panel removed — now a full nav tab -->
@@ -11729,12 +11737,45 @@ function _updateNavBtn(user) {
   }
 }
 
+function updateTrialBar(user) {
+  var bar = document.getElementById('trialBar');
+  var txt = document.getElementById('trialBarText');
+  if (!bar || !txt) return;
+  if (!user || user.status === 'active') { bar.style.display = 'none'; return; }
+  if (user.status === 'trial' && user.trialExpiresOn) {
+    var msLeft = new Date(user.trialExpiresOn) - new Date();
+    var daysLeft = Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
+    if (daysLeft <= 0) {
+      txt.textContent = '⚠️ Your free trial has expired';
+      bar.style.background = '#ef4444';
+      bar.style.color = '#fff';
+      bar.querySelector('a').style.color = '#fff';
+    } else {
+      txt.textContent = '⏳ ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' of free trial remaining';
+      bar.style.background = '#fbbf24';
+      bar.style.color = '#1a0f00';
+    }
+    bar.style.display = 'block';
+    return;
+  }
+  if (user.status === 'expired') {
+    txt.textContent = '⚠️ Your free trial has expired';
+    bar.style.background = '#ef4444';
+    bar.style.color = '#fff';
+    bar.querySelector('a').style.color = '#fff';
+    bar.style.display = 'block';
+    return;
+  }
+  bar.style.display = 'none';
+}
+
 function onAuthSuccess(user) {
   window._currentUser = user;
   currentUser = user;
   closeAuthModal();
   resetLockedCache();
   _updateNavBtn(user);
+  updateTrialBar(user);
   if (typeof renderQuestions === 'function') renderQuestions();
   _refreshAuthTabs();
   fetchAttemptCounts();
@@ -11750,6 +11791,7 @@ function onAuthSuccess(user) {
         currentUser = data.user;
         resetLockedCache();
         _updateNavBtn(data.user);
+        updateTrialBar(data.user);
         _refreshAuthTabs();
         // Seed attemptedQIds from server in background so PYQ filters are accurate
         fetch('/api/trackProgress', { credentials:'include' })
