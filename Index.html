@@ -8541,11 +8541,12 @@ function renderServerProgress(data) {
     var accBar = '<div style="font-weight:600;color:'+accColor+';">'+acc+'%</div>'
       +'<div style="background:var(--border);border-radius:3px;height:4px;margin-top:3px;overflow:hidden;">'
       +'<div style="height:100%;width:'+acc+'%;background:'+accColor+';border-radius:3px;"></div></div>';
+    var clickStyle = 'cursor:pointer;text-decoration:underline dotted;';
     return '<tr style="border-bottom:1px solid var(--border);'+rowBg+'">'
       +dateCell
-      +'<td style="text-align:right;padding:8px 10px;font-weight:500;">'+d.total+'</td>'
-      +'<td style="text-align:right;padding:8px 10px;color:#1D9E75;font-weight:600;">'+d.correct+'</td>'
-      +'<td style="text-align:right;padding:8px 10px;color:#E24B4A;font-weight:600;">'+d.wrong+'</td>'
+      +'<td style="text-align:right;padding:8px 10px;font-weight:500;'+clickStyle+'" onclick="showDayQuestions(\''+d.key+'\',\'all\')">'+d.total+'</td>'
+      +'<td style="text-align:right;padding:8px 10px;color:#1D9E75;font-weight:600;'+clickStyle+'" onclick="showDayQuestions(\''+d.key+'\',\'correct\')">'+d.correct+'</td>'
+      +'<td style="text-align:right;padding:8px 10px;color:#E24B4A;font-weight:600;'+clickStyle+'" onclick="showDayQuestions(\''+d.key+'\',\'wrong\')">'+d.wrong+'</td>'
       +'<td style="text-align:right;padding:8px 10px;min-width:80px;">'+accBar+'</td>'
       +'</tr>';
   }).join('');
@@ -9266,6 +9267,71 @@ function renderSpacedRepeatDue() {
 }
 
 // ── DAILY ACTIVITY LOG ─────────────────────────────────────────
+
+function showDayQuestions(dateKey, filter) {
+  var dh = (window._tpData && window._tpData.dailyHistory) || {};
+  var day = dh[dateKey] || {};
+  var qs  = day.questions || [];
+
+  if (filter === 'correct') qs = qs.filter(function(q){ return q.result === 'correct'; });
+  else if (filter === 'wrong') qs = qs.filter(function(q){ return q.result !== 'correct'; });
+
+  var dateLbl = new Date(dateKey + 'T00:00:00').toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+  var filterLabel = filter === 'correct' ? '✅ Correct' : filter === 'wrong' ? '❌ Wrong' : '📋 All Attempted';
+
+  var existing = document.getElementById('dayQModal');
+  if (existing) existing.remove();
+
+  var qHtml = qs.length === 0
+    ? '<div style="padding:24px;text-align:center;color:#64748b;font-size:13px;">No question details available for this session.<br><span style="font-size:11px;">(Questions attempted before the diary feature was added won't appear here)</span></div>'
+    : qs.map(function(q, i) {
+        var isRight = q.result === 'correct';
+        var opts = [['A', q.optA||q.opt_a], ['B', q.optB||q.opt_b], ['C', q.optC||q.opt_c], ['D', q.optD||q.opt_d]];
+        var correctLtr = (q.answer||q.correct||'').toUpperCase().replace(/^OPT_?/i,'');
+        var chosenLtr  = (q.chosen||'').toUpperCase().replace(/^OPT_?/i,'');
+        var optsHtml = opts.map(function(oa) {
+          var ltr = oa[0], txt = oa[1];
+          if (!txt) return '';
+          var isC = ltr === correctLtr;
+          var isCh = ltr === chosenLtr;
+          var bg='#f8fafc', border='#e2e8f0', color='#334155', weight='400', icon='';
+          if (isC)            { bg='#dcfce7'; border='#22c55e'; color='#15803d'; weight='600'; icon='✓ '; }
+          if (isCh && !isC)  { bg='#fee2e2'; border='#f87171'; color='#b91c1c'; weight='600'; icon='✗ '; }
+          return '<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;margin-bottom:5px;border-radius:8px;border:1.5px solid '+border+';background:'+bg+';color:'+color+';font-weight:'+weight+';font-size:13px;">'
+            +'<span style="flex-shrink:0;font-weight:700;min-width:18px;">'+icon+ltr+'.</span>'
+            +'<span style="flex:1;">'+txt+'</span>'
+            +'</div>';
+        }).join('');
+        var badge = isRight
+          ? '<span style="background:#dcfce7;color:#15803d;border:1px solid #22c55e;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;">✓ Correct</span>'
+          : '<span style="background:#fee2e2;color:#b91c1c;border:1px solid #f87171;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;">✗ Wrong</span>';
+        var expl = (q.explanation||q.exp) ? '<div style="margin-top:8px;padding:8px 10px;background:#fefce8;border-left:3px solid #eab308;border-radius:0 6px 6px 0;font-size:12px;color:#713f12;"><strong>Explanation:</strong> '+(q.explanation||q.exp)+'</div>' : '';
+        return '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:10px;background:#fff;">'
+          +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">'
+          +'<span style="font-size:11px;color:#94a3b8;">'+(q.subject||'')+(q.year?' · '+q.year:'')+' · Q'+(i+1)+'</span>'
+          +badge+'</div>'
+          +'<div style="font-size:13px;font-weight:500;color:#1e293b;margin-bottom:10px;line-height:1.6;">'+(q.question||q.q||'')+'</div>'
+          +optsHtml+expl
+          +'</div>';
+      }).join('');
+
+  var modal = document.createElement('div');
+  modal.id = 'dayQModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;';
+  modal.innerHTML = '<div style="background:#f8fafc;border-radius:16px;width:100%;max-width:680px;margin:auto;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.3);">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#fff;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:1;">'
+    +'<div>'
+    +'<div style="font-size:15px;font-weight:700;color:#1e293b;">'+filterLabel+' — '+dateLbl+'</div>'
+    +'<div style="font-size:12px;color:#64748b;margin-top:2px;">'+qs.length+' question'+(qs.length===1?'':'s')+'</div>'
+    +'</div>'
+    +'<button onclick="document.getElementById('dayQModal').remove();" style="background:#f1f5f9;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:18px;color:#64748b;line-height:1;">✕</button>'
+    +'</div>'
+    +'<div style="padding:16px 20px;">'+qHtml+'</div>'
+    +'</div>';
+  modal.addEventListener('click', function(e){ if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
 function renderDailyActivityLog() {
   const el = document.getElementById("progressContent");
   if (!el) return;
@@ -12059,15 +12125,15 @@ function toggleProfileDropdown(user) {
     subBtn.textContent = '🔄 Renew / Upgrade';
   } else if (u.status === 'trial' && u.trialExpiresOn) {
     box.classList.add('trial');
-    label.textContent = '⏳ Free Trial';
+    label.textContent = '🎓 Trial';
     var msLeft = new Date(u.trialExpiresOn) - new Date();
     var daysLeft = Math.max(0, Math.ceil(msLeft / 86400000));
     detail.textContent = daysLeft + ' day' + (daysLeft===1?'':'s') + ' remaining · Expires ' + new Date(u.trialExpiresOn).toLocaleDateString('en-IN');
     subBtn.textContent = '⚡ Subscribe Now';
   } else {
     box.classList.add('expired');
-    label.textContent = '🔒 Trial Expired';
-    detail.textContent = 'Subscribe to continue full access';
+    label.textContent = '⚠️ Trial';
+    detail.textContent = 'Trial ended · Subscribe to continue';
     subBtn.textContent = '⚡ Subscribe Now';
   }
   drop.classList.add('open');
@@ -12310,15 +12376,25 @@ function renderAccountTab() {
     label.style.color = '#10b981'; label.textContent = '\u2705 Subscribed';
     var till = new Date(u.subscriptionPaidTill);
     detail.textContent = 'Valid till ' + till.getDate() + ' ' + till.toLocaleString('en-IN',{month:'short'}) + ' ' + till.getFullYear();
+    // Change all Subscribe buttons to Extend for subscribed users
+    document.querySelectorAll('.sc-btn').forEach(function(btn) {
+      var card = btn.closest('.sub-card');
+      if (card) {
+        var onclick = card.getAttribute('onclick') || '';
+        var m = onclick.match(/acctInitiatePayment\((\d+)/);
+        var mo = m ? parseInt(m[1]) : 1;
+        btn.textContent = 'Extend by ' + mo + ' Month' + (mo > 1 ? 's' : '');
+      }
+    });
   } else if (u.status === 'trial' && u.trialExpiresOn) {
     card.style.borderColor = '#f59e0b'; card.style.background = '#fffbeb';
-    label.style.color = '#b45309'; label.textContent = '\u23f3 Free Trial';
+    label.style.color = '#b45309'; label.textContent = '\uD83C\uDFA7 Trial';
     var dLeft = Math.max(0, Math.ceil((new Date(u.trialExpiresOn)-new Date())/86400000));
     detail.textContent = dLeft + ' day' + (dLeft===1?'':'s') + ' left';
   } else {
     card.style.borderColor = '#ef4444'; card.style.background = '#fef2f2';
-    label.style.color = '#ef4444'; label.textContent = '\uD83D\uDD12 Trial Expired';
-    detail.textContent = 'Subscribe to restore access';
+    label.style.color = '#ef4444'; label.textContent = '\u26A0\uFE0F Trial';
+    detail.textContent = 'Trial ended · Subscribe to restore access';
   }
 }
 
@@ -12329,7 +12405,43 @@ function acctInitiatePayment(months, amount) {
     showToast('Please login or register first to subscribe');
     return;
   }
+  var u = window._currentUser;
+  if (u.status === 'active' && u.subscriptionPaidTill) {
+    // Show extension confirmation
+    var currentTill = new Date(u.subscriptionPaidTill);
+    var newTill = new Date(currentTill);
+    newTill.setMonth(newTill.getMonth() + parseInt(months));
+    var fmt = function(d) {
+      return d.getDate() + ' ' + d.toLocaleString('en-IN',{month:'short'}) + ' ' + d.getFullYear();
+    };
+    showExtendConfirm(months, amount, fmt(currentTill), fmt(newTill));
+    return;
+  }
   initiatePayment(months, amount);
+}
+
+function showExtendConfirm(months, amount, currentTill, newTill) {
+  var existing = document.getElementById('extendConfirmOverlay');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'extendConfirmOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = '<div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+    '<div style="font-size:32px;margin-bottom:12px;">📅</div>' +
+    '<div style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:8px;">Extend Subscription</div>' +
+    '<div style="font-size:14px;color:#64748b;margin-bottom:20px;">Adding <strong>' + months + ' month' + (months>1?'s':'') + '</strong> (₹' + amount + ') to your plan</div>' +
+    '<div style="background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:24px;text-align:left;">' +
+      '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;"><span style="color:#64748b;">Current end date</span><span style="font-weight:600;color:#ef4444;">' + currentTill + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#64748b;">New end date</span><span style="font-weight:700;color:#10b981;">' + newTill + '</span></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:10px;">' +
+      '<button onclick="document.getElementById('extendConfirmOverlay').remove();" style="flex:1;padding:12px;border:2px solid #e2e8f0;background:#fff;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;color:#64748b;">Cancel</button>' +
+      '<button onclick="document.getElementById('extendConfirmOverlay').remove();initiatePayment(' + months + ',' + amount + ');" style="flex:2;padding:12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;color:#fff;">Confirm & Pay ₹' + amount + '</button>' +
+    '</div>' +
+  '</div>';
+  // Close on outside click
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
 }
 
 function switchAcctTab(tab) {
