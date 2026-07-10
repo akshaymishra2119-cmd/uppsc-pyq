@@ -12312,17 +12312,29 @@ function doAcctLogin() {
   var pass  = document.getElementById('acctLoginPassword').value;
   var err   = document.getElementById('acctLoginErr');
   if (!email||!pass) { err.textContent='Enter email and password'; return; }
+  err.style.color='#6b7280'; err.textContent='Logging in…';
   fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({email,password:pass})})
-  .then(r=>r.json()).then(data=>{
-    if (data.token||data.success||data.user) {
+  .then(function(r){
+    return r.text().then(function(txt){
+      var data;
+      try { data = JSON.parse(txt); } catch(e){ throw new Error('Server error: '+txt.substring(0,80)); }
+      if (!r.ok) throw new Error(data.error || data.message || 'Login failed ('+r.status+')');
+      return data;
+    });
+  })
+  .then(function(data){
+    if (data.user) {
       window._currentUser = data.user; currentUser = data.user;
+      err.textContent='';
       updateAuthBtn(data.user); updateTrialBar(data.user);
       renderAccountTab();
     } else {
       var msg = data.error || 'Login failed';
-      err.innerHTML = msg + ' \u2014 <a href="#" onclick="switchAcctTab(\u0027forgot\u0027);return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>';
+      err.style.color='#ef4444';
+      err.innerHTML = msg + ' — <a href="#" onclick="switchAcctTab('forgot');return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>';
     }
-  }).catch(()=>{ err.textContent='Network error'; });
+  })
+  .catch(function(e){ err.style.color='#ef4444'; err.textContent = e.message || 'Network error — check your connection'; });
 }
 
 function doAcctRegister() {
