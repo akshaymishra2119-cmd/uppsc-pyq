@@ -11855,6 +11855,7 @@ function buildSydQBlock(q, i) {
 #tab-account input[type=password]{background:#f9fafb!important;color:#1a1a2e!important;-webkit-text-fill-color:#1a1a2e!important;}
 #tab-account input:-webkit-autofill{-webkit-box-shadow:0 0 0 30px #f9fafb inset!important;-webkit-text-fill-color:#1a1a2e!important;}
 .auth-field::placeholder{color:rgba(255,255,255,0.3);}
+.auth-field:-webkit-autofill,.auth-field:-webkit-autofill:hover,.auth-field:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 100px rgba(30,27,75,0.95) inset!important;-webkit-text-fill-color:#fff!important;caret-color:#fff;}
 .auth-field:-webkit-autofill,
 .auth-field:-webkit-autofill:hover,
 .auth-field:-webkit-autofill:focus{
@@ -11908,7 +11909,7 @@ function buildSydQBlock(q, i) {
       </div>
     </div>
     <div id="authRegisterForm" style="display:none;">
-      <input class="auth-field" id="regName" type="text" placeholder="Your full name" />
+      <input class="auth-field" id="regName" type="text" placeholder="Full name *" autocomplete="off" />
       <input class="auth-field" id="regEmail" type="email" placeholder="Email address" />
       <input class="auth-field" id="regPhone" type="tel" placeholder="Mobile number (required) *" />
       <input class="auth-field" id="regPassword" type="password" placeholder="Password (min 6 chars)" />
