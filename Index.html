@@ -6211,134 +6211,204 @@ function selectPyqYear(year) {
 // ── Year-wise Completion helpers (ns = 'yc' for My Progress, 'pc' for PYQ Practice) ──
 function ycToggle(yr, ns) {
   ns = ns || 'yc';
+  var row  = document.getElementById(ns+'_row_'+yr);
   var body = document.getElementById(ns+'_body_'+yr);
-  var chev = document.getElementById(ns+'_chev_'+yr);
   if (!body) return;
   var isOpen = body.style.display !== 'none';
-  body.style.display = isOpen ? 'none' : '';
-  if (chev) chev.style.transform = isOpen ? '' : 'rotate(90deg)';
-  if (!isOpen) ycShowType(yr, 'notdone', ns);
-}
-function ycShowType(yr, type, ns) {
-  ns = ns || 'yc';
-  ['notdone','attempted'].forEach(function(t) {
-    var el = document.getElementById(ns+'t_'+t+'_'+yr);
-    if (el) el.classList.remove('active-rem','active-done');
+  // Close all other open rows first
+  document.querySelectorAll('[id^="'+ns+'_body_"]').forEach(function(el){
+    el.style.display = 'none';
+    var yr2 = el.id.replace(ns+'_body_','');
+    var r2  = document.getElementById(ns+'_row_'+yr2);
+    if (r2) r2.classList.remove('yc-tr-open');
   });
-  var active = document.getElementById(ns+'t_'+type+'_'+yr);
-  if (active) active.classList.add(type==='notdone'?'active-rem':'active-done');
-  var subtabs = document.getElementById(ns+'_subtabs_'+yr);
-  if (subtabs) subtabs.style.display = type==='attempted' ? 'flex' : 'none';
-  if (type==='notdone') {
-    ycLoadList(yr, 'notdone', null, ns);
-  } else {
-    ['correct','wrong'].forEach(function(t) {
-      var el = document.getElementById(ns+'t_'+t+'_'+yr);
-      if (el) el.classList.remove('active-done','active-wrong');
-    });
-    var cEl = document.getElementById(ns+'t_correct_'+yr);
-    if (cEl) cEl.classList.add('active-done');
-    ycLoadList(yr, 'attempted', 'correct', ns);
+  if (!isOpen) {
+    body.style.display = '';
+    if (row) row.classList.add('yc-tr-open');
+    ycLoadList(yr, 'all', null, ns);
   }
 }
-function ycShowSubType(yr, sub, ns) {
+
+function ycShowType(yr, type, ns) {
   ns = ns || 'yc';
-  ['correct','wrong'].forEach(function(t) {
-    var el = document.getElementById(ns+'t_'+t+'_'+yr);
-    if (el) el.classList.remove('active-done','active-wrong');
-  });
-  var active = document.getElementById(ns+'t_'+sub+'_'+yr);
-  if (active) active.classList.add(sub==='correct'?'active-done':'active-wrong');
-  ycLoadList(yr, 'attempted', sub, ns);
+  var body = document.getElementById(ns+'_body_'+yr);
+  if (!body) return;
+  body.querySelectorAll('.yc-ftab').forEach(function(b){ b.classList.remove('active'); });
+  var ab = document.getElementById(ns+'_ftab_'+type+'_'+yr);
+  if (ab) ab.classList.add('active');
+  ycLoadList(yr, type, null, ns);
 }
+
+function ycShowSubType(yr, sub, ns) { ycShowType(yr, sub, ns); }
+
 function ycLoadList(yr, type, sub, ns) {
   ns = ns || 'yc';
   var listEl = document.getElementById(ns+'_list_'+yr);
   if (!listEl) return;
-  var qs = (typeof allQuestions!=='undefined'?allQuestions:[]).filter(function(q){ return String(q.year)===String(yr); });
+
+  var qs        = (typeof allQuestions!=='undefined'?allQuestions:[]).filter(function(q){ return String(q.year)===String(yr); });
   var resultMap = window._ycResultMap || {};
-  var filtered;
-  if (type==='notdone') {
-    filtered = qs.filter(function(q){ return !attemptedQIds.has(String(q.id)); });
-  } else if (sub==='correct') {
-    filtered = qs.filter(function(q){ return attemptedQIds.has(String(q.id)) && resultMap[String(q.id)]==='correct'; });
-  } else {
-    filtered = qs.filter(function(q){ return attemptedQIds.has(String(q.id)) && resultMap[String(q.id)]!=='correct'; });
+
+  // Build chosen-answer map from pyqDailyLog
+  var chosenMap = {};
+  if (typeof pyqDailyLog !== 'undefined') {
+    Object.values(pyqDailyLog).forEach(function(entries){
+      (entries||[]).forEach(function(e){ if (e.id) chosenMap[String(e.id)] = e.chosen; });
+    });
   }
+  // Also check server dailyHistory
+  if (window._tpData && window._tpData.dailyHistory) {
+    Object.values(window._tpData.dailyHistory).forEach(function(day){
+      (day.questions||[]).forEach(function(q){ if (q.q_id) chosenMap[String(q.q_id)] = q.chosen; });
+    });
+  }
+
+  var filtered;
+  if (type === 'correct') {
+    filtered = qs.filter(function(q){ return attemptedQIds.has(String(q.id)) && resultMap[String(q.id)]==='correct'; });
+  } else if (type === 'wrong') {
+    filtered = qs.filter(function(q){ return attemptedQIds.has(String(q.id)) && resultMap[String(q.id)]!=='correct'; });
+  } else if (type === 'notdone') {
+    filtered = qs.filter(function(q){ return !attemptedQIds.has(String(q.id)); });
+  } else {
+    filtered = qs; // all
+  }
+
   if (!filtered.length) {
-    var msgs = { notdone:'All done for this year! 🎉', correct:'No correct answers yet.', wrong:'No wrong answers — great!' };
-    listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0;">'+(msgs[sub||type]||'No questions found.')+'</div>';
+    listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:12px 0;text-align:center;">No questions in this category.</div>';
     return;
   }
-  var icon = type==='notdone'
-    ? '<i class="ti ti-circle-dashed" style="color:var(--text3);font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>'
-    : sub==='correct'
-      ? '<i class="ti ti-circle-check" style="color:#1D9E75;font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>'
-      : '<i class="ti ti-circle-x" style="color:#E24B4A;font-size:14px;flex-shrink:0;margin-top:2px;" aria-hidden="true"></i>';
-  var html = filtered.slice(0,60).map(function(q) {
-    return '<div class="yc-q-item">'+icon
-      +'<div><div style="color:var(--text);">'+(q.question||'Q#'+q.id)+'</div>'
-      +'<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+(q.subject||'')+' · Q#'+q.id+'</div></div>'
+
+  var html = filtered.map(function(q, i) {
+    var qid       = String(q.id);
+    var result    = resultMap[qid];
+    var isCorrect = result === 'correct';
+    var isWrong   = result && result !== 'correct';
+    var notDone   = !result && !attemptedQIds.has(qid);
+    var chosen    = (chosenMap[qid]||'').toUpperCase().replace(/^OPT_?/i,'');
+    var correct   = (q.answer||q.correct||'').toUpperCase().replace(/^OPT_?/i,'');
+
+    var icon = notDone
+      ? '<span style="color:#94a3b8;font-size:15px;flex-shrink:0;margin-top:1px;">○</span>'
+      : isCorrect
+        ? '<span style="color:#1D9E75;font-size:15px;flex-shrink:0;margin-top:1px;">✓</span>'
+        : '<span style="color:#E24B4A;font-size:15px;flex-shrink:0;margin-top:1px;">✗</span>';
+
+    var opts = [['A',q.optA],['B',q.optB],['C',q.optC],['D',q.optD]];
+    var optsHtml = opts.map(function(oa){
+      var ltr = oa[0], txt = oa[1]; if (!txt) return '';
+      var isC  = ltr === correct;
+      var isCh = ltr === chosen && chosen;
+      var bg='var(--bg2)', border='var(--border)', col='var(--text)', wt='400', badge='';
+      if (isC)           { bg='#dcfce7'; border='#22c55e'; col='#15803d'; wt='600'; badge='<span style="margin-left:6px;font-size:10px;background:#22c55e;color:#fff;padding:1px 5px;border-radius:10px;">Correct</span>'; }
+      if (isCh && !isC) { bg='#fee2e2'; border='#f87171'; col='#b91c1c'; wt='600'; badge='<span style="margin-left:6px;font-size:10px;background:#f87171;color:#fff;padding:1px 5px;border-radius:10px;">Your answer</span>'; }
+      return '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 10px;margin-bottom:4px;border-radius:7px;border:1.5px solid '+border+';background:'+bg+';color:'+col+';font-weight:'+wt+';font-size:12px;">'
+        +'<span style="flex-shrink:0;font-weight:700;min-width:16px;">'+ltr+'.</span>'
+        +'<span style="flex:1;">'+txt+badge+'</span>'
+        +'</div>';
+    }).join('');
+
+    var expl = (q.explanation||q.exp) ? '<div style="margin-top:8px;padding:7px 10px;background:#fefce8;border-left:3px solid #eab308;border-radius:0 6px 6px 0;font-size:11px;color:#713f12;"><strong>Explanation:</strong> '+(q.explanation||q.exp)+'</div>' : '';
+
+    var cardBg    = notDone ? 'var(--bg)' : isCorrect ? '#f0fdf4' : '#fff5f5';
+    var cardBord  = notDone ? 'var(--border)' : isCorrect ? '#bbf7d0' : '#fecaca';
+
+    return '<div style="border:1px solid '+cardBord+';border-radius:10px;background:'+cardBg+';margin-bottom:8px;overflow:hidden;">'
+      +'<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'">'
+      +icon
+      +'<div style="flex:1;min-width:0;">'
+      +'<div style="font-size:13px;font-weight:500;color:var(--text);line-height:1.5;">'+(q.question||'Q#'+q.id)+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin-top:3px;">'+(q.subject||'')+' · Q#'+q.id+(q.subTopic?' · '+q.subTopic:'')+'</div>'
+      +'</div>'
+      +'<span style="flex-shrink:0;font-size:11px;color:var(--text3);margin-top:2px;">▾</span>'
+      +'</div>'
+      +'<div style="display:none;padding:0 14px 12px 14px;">'
+      +optsHtml+expl
+      +'</div>'
       +'</div>';
   }).join('');
-  if (filtered.length>60) html += '<div style="font-size:11px;color:var(--text3);text-align:center;padding:6px 0;">+'+(filtered.length-60)+' more</div>';
+
+  if (filtered.length > 80) {
+    html += '<div style="font-size:11px;color:var(--text3);text-align:center;padding:6px 0;">Showing first 80 of '+filtered.length+'</div>';
+  }
+
   listEl.innerHTML = html;
 }
 
 function patchYearCompletionSection(containerId, ns) {
   containerId = containerId || 'ycCardsContainer';
   ns = ns || 'yc';
-  // Called after allQuestions loads — fills in year completion if already rendered
-  if ((!window._tpData && !window._tpYm) || !allQuestions || !allQuestions.length) return;
+  if (!allQuestions || !allQuestions.length) return;
   var container = document.getElementById(containerId);
   if (!container) return;
-  if (container.querySelector('.yc-card')) return; // already done
+  if (container.querySelector('.yc-tbl-wrap')) return; // already done
+
   var ym = window._tpYmForPatch || (window._tpData && window._tpData.yearMap) || window._tpYm || {};
   var qByYear = {};
-  allQuestions.forEach(function(q) {
+  allQuestions.forEach(function(q){
     var yr = String(q.year||''); if (!yr) return;
     if (!qByYear[yr]) qByYear[yr] = [];
     qByYear[yr].push(q);
   });
-  var ycCards = Object.keys(qByYear).sort().map(function(yr) {
-    var total = qByYear[yr].length;
+
+  var rows = Object.keys(qByYear).sort().reverse().map(function(yr){
+    var total  = qByYear[yr].length;
     var ymData = ym[yr] || {};
-    // Use round-aware counting (never exceeds 100%)
-    var yrQIds = qByYear[yr].map(function(q){ return String(q.id); });
-    var ri = (typeof getRoundInfo === 'function') ? getRoundInfo(yrQIds, total) : { pct: Math.min(100, total>0?Math.round((ymData.done||0)/total*100):0), badge: 0 };
-    var pct = ri.pct;
-    var badge = ri.badge;
-    var done = ymData.done || 0;
-    var rem = Math.max(0, total - Math.round(pct/100*total));
-    var barCol = pct>=80?'#1D9E75':pct>=40?'#EF9F27':pct>0?'#E24B4A':'var(--border)';
-    var pctCol = pct>=80?'#1D9E75':pct>=40?'#BA7517':pct>0?'#E24B4A':'var(--text3)';
-    var badgeHtml = badge ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:'+(badge===2?'#7c3aed':'#1d4ed8')+';color:#fff;font-size:9px;font-weight:800;margin-left:6px;">'+badge+'</span>' : '';
-    var roundLabel = badge ? 'R'+(badge+1)+': '+pct+'%' : pct+'%';
-    var statTxt = pct===0 ? 'Not started' : '<span style="color:'+pctCol+';font-weight:600;">'+roundLabel+' done</span>'+badgeHtml;
-    return '<div class="yc-card" id="'+ns+'_'+yr+'">'
-      +'<div class="yc-row" data-yr="'+yr+'" data-ns="'+ns+'" onclick="ycToggle(this.dataset.yr,this.dataset.ns)">'
-      +'<div><div class="yc-yr">'+yr+'</div><div class="yc-total">'+total+' Qs</div></div>'
-      +'<div class="yc-bar-wrap">'
-      +'<div style="height:6px;border-radius:3px;background:var(--border);overflow:hidden;">'
-      +'<div style="height:100%;width:'+pct+'%;background:'+barCol+';border-radius:3px;"></div></div>'
-      +'<div class="yc-stats">'+statTxt+(rem>0?' &nbsp;<span style="color:var(--text3);">'+rem+' left</span>':'')+'</div>'
-      +'</div>'
-      +'<i class="ti ti-chevron-right" id="'+ns+'_chev_'+yr+'" style="font-size:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;"></i>'
-      +'</div>'
-      +'<div class="yc-body" id="'+ns+'_body_'+yr+'" style="display:none;border-top:1px solid var(--border);padding:12px 16px;">'
-      +'<div style="display:flex;gap:6px;margin-bottom:10px;">'
-      +'<button class="yc-tab active-rem" id="'+ns+'t_notdone_'+yr+'" data-yr="'+yr+'" data-tp="notdone" data-ns="'+ns+'" onclick="ycShowType(this.dataset.yr,this.dataset.tp,this.dataset.ns)">&#9744; Not Attempted ('+rem+')</button>'
-      +'<button class="yc-tab" id="'+ns+'t_attempted_'+yr+'" data-yr="'+yr+'" data-tp="attempted" data-ns="'+ns+'" onclick="ycShowType(this.dataset.yr,this.dataset.tp,this.dataset.ns)">&#128203; Attempted ('+done+')</button>'
-      +'</div>'
-      +'<div id="'+ns+'_subtabs_'+yr+'" style="display:none;flex-direction:row;gap:6px;margin-bottom:10px;">'
-      +'<button class="yc-tab active-done" id="'+ns+'t_correct_'+yr+'" data-yr="'+yr+'" data-stp="correct" data-ns="'+ns+'" onclick="ycShowSubType(this.dataset.yr,this.dataset.stp,this.dataset.ns)">&#10003; Correct ('+(ymData.correct||0)+')</button>'
-      +'<button class="yc-tab" id="'+ns+'t_wrong_'+yr+'" data-yr="'+yr+'" data-stp="wrong" data-ns="'+ns+'" onclick="ycShowSubType(this.dataset.yr,this.dataset.stp,this.dataset.ns)">&#10007; Wrong ('+(ymData.wrong||0)+')</button>'
-      +'</div>'
-      +'<div class="yc-list" id="'+ns+'_list_'+yr+'"></div>'
-      +'</div>'
-      +'</div>';
+    var done   = ymData.done    || 0;
+    var corr   = ymData.correct || 0;
+    var wrong  = ymData.wrong   || 0;
+    var acc    = done > 0 ? Math.round(corr / done * 100) : 0;
+    var accCol = acc >= 80 ? '#1D9E75' : acc >= 60 ? '#EF9F27' : acc > 0 ? '#E24B4A' : '#94a3b8';
+    var accPill= done > 0
+      ? '<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;background:'+(acc>=80?'#dcfce7':acc>=60?'#fef9c3':'#fee2e2')+';color:'+accCol+';">'+acc+'%</span>'
+      : '<span style="color:#94a3b8;font-size:12px;">—</span>';
+
+    return '<tr class="yc-tr" id="'+ns+'_row_'+yr+'" onclick="ycToggle(\''+yr+'\',\''+ns+'\')" style="border-bottom:1px solid var(--border);cursor:pointer;">'
+      +'<td style="padding:10px 12px;font-weight:600;color:var(--text);white-space:nowrap;">'+yr+'<div style="font-size:10px;color:var(--text3);font-weight:400;">'+total+' Qs</div></td>'
+      +'<td style="text-align:center;padding:10px 8px;font-weight:500;color:var(--text);">'+done+'</td>'
+      +'<td style="text-align:center;padding:10px 8px;font-weight:600;color:#1D9E75;">'+corr+'</td>'
+      +'<td style="text-align:center;padding:10px 8px;font-weight:600;color:#E24B4A;">'+wrong+'</td>'
+      +'<td style="text-align:center;padding:10px 8px;">'+accPill+'</td>'
+      +'<td style="text-align:right;padding:10px 12px;font-size:11px;color:var(--text3);">▾ view</td>'
+      +'</tr>'
+      +'<tr id="'+ns+'_body_'+yr+'" style="display:none;">'
+      +'<td colspan="6" style="padding:0;border-bottom:1px solid var(--border);">'
+        +'<div style="padding:12px 14px;background:var(--bg2);">'
+          +'<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">'
+            +'<button class="yc-ftab active" id="'+ns+'_ftab_all_'+yr+'" onclick="ycShowType(\''+yr+'\',\'all\',\''+ns+'\')" style="font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-weight:600;">📋 All ('+total+')</button>'
+            +'<button class="yc-ftab" id="'+ns+'_ftab_correct_'+yr+'" onclick="ycShowType(\''+yr+'\',\'correct\',\''+ns+'\')" style="font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-weight:600;">✓ Correct ('+corr+')</button>'
+            +'<button class="yc-ftab" id="'+ns+'_ftab_wrong_'+yr+'" onclick="ycShowType(\''+yr+'\',\'wrong\',\''+ns+'\')" style="font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-weight:600;">✗ Wrong ('+wrong+')</button>'
+            +'<button class="yc-ftab" id="'+ns+'_ftab_notdone_'+yr+'" onclick="ycShowType(\''+yr+'\',\'notdone\',\''+ns+'\')" style="font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-weight:600;">○ Not Done ('+(total-done)+')</button>'
+          +'</div>'
+          +'<div id="'+ns+'_list_'+yr+'"><div style="font-size:12px;color:var(--text3);">Loading…</div></div>'
+        +'</div>'
+      +'</td>'
+      +'</tr>';
   }).join('');
-  container.innerHTML = ycCards;
+
+  var css = '<style>'
+    +'.yc-tbl-wrap{overflow-x:auto;}'
+    +'.yc-tbl{width:100%;border-collapse:collapse;}'
+    +'.yc-tr:hover{background:var(--bg2)!important;}'
+    +'.yc-tr.yc-tr-open{background:var(--bg2)!important;}'
+    +'.yc-ftab{transition:all .15s;}'
+    +'.yc-ftab.active{background:#4f46e5!important;color:#fff!important;border-color:#4f46e5!important;}'
+    +'</style>';
+
+  container.innerHTML = css
+    +'<div class="yc-tbl-wrap">'
+    +'<table class="yc-tbl">'
+    +'<thead><tr style="border-bottom:2px solid var(--border);">'
+    +'<th style="text-align:left;padding:7px 12px;font-size:11px;color:var(--text3);font-weight:600;">Year</th>'
+    +'<th style="text-align:center;padding:7px 8px;font-size:11px;color:var(--text3);font-weight:600;">Done</th>'
+    +'<th style="text-align:center;padding:7px 8px;font-size:11px;color:#1D9E75;font-weight:600;">Correct</th>'
+    +'<th style="text-align:center;padding:7px 8px;font-size:11px;color:#E24B4A;font-weight:600;">Wrong</th>'
+    +'<th style="text-align:center;padding:7px 8px;font-size:11px;color:var(--text3);font-weight:600;">Accuracy</th>'
+    +'<th></th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'</table>'
+    +'</div>';
 }
 
 function renderYearProgressBadges() {
