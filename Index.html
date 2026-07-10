@@ -3121,151 +3121,154 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 
 <!-- ══ MY ACCOUNT TAB ══ -->
 <div class="tab" id="tab-account">
-<div style="max-width:520px;margin:0 auto;padding:28px 16px 40px;">
 
-  <!-- LOGGED OUT VIEW -->
-  <div id="acct-loggedout" style="display:none;">
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:36px;margin-bottom:8px;">👤</div>
-      <div style="font-size:20px;font-weight:800;color:var(--text1);">Create your free account</div>
-      <div style="font-size:13px;color:var(--text3);margin-top:4px;">30-day free trial · No credit card needed</div>
-    </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;">
-      <div style="display:flex;gap:0;margin-bottom:20px;background:#f3f4f6;border-radius:8px;padding:3px;">
-        <button id="acctTabLogin" onclick="switchAcctTab('login')" style="flex:1;padding:8px;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:#4f46e5;box-shadow:0 1px 3px rgba(0,0,0,0.1);">Login</button>
-        <button id="acctTabReg" onclick="switchAcctTab('register')" style="flex:1;padding:8px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#6b7280;">Register</button>
+  <!-- AUTH STRIP (shown when logged out) -->
+  <div id="acct-auth-strip" style="display:none;background:#1e1b4b;padding:18px 24px;">
+    <div style="max-width:860px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <div style="font-size:14px;font-weight:700;color:#fff;">👤 Login or Register to Subscribe</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">30-day free trial · No credit card needed</div>
       </div>
-      <!-- Login Form -->
-      <div id="acctLoginForm">
-        <input class="auth-field" id="acctLoginEmail" type="email" placeholder="Email address" />
-        <input class="auth-field" id="acctLoginPassword" type="password" placeholder="Password" />
-        <div class="auth-err" id="acctLoginErr"></div>
-        <button onclick="doAcctLogin()" style="width:100%;padding:12px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;">Login →</button>
-        <div style="text-align:center;margin-top:10px;"><a href="#" onclick="switchAcctTab('forgot');return false;" style="font-size:12px;color:#6366f1;">Forgot password?</a></div>
-      </div>
-      <!-- Register Form -->
-      <div id="acctRegForm" style="display:none;">
-        <input class="auth-field" id="acctRegName" type="text" placeholder="Full name *" />
-        <input class="auth-field" id="acctRegEmail" type="email" placeholder="Email address *" />
-        <input class="auth-field" id="acctRegPhone" type="tel" placeholder="Mobile number (optional)" />
-        <input class="auth-field" id="acctRegPassword" type="password" placeholder="Password (min 6 chars) *" />
-        <div style="font-size:11px;color:#6b7280;margin-bottom:10px;text-align:center;">✅ 30 days free full access · No credit card needed</div>
-        <div class="auth-err" id="acctRegErr"></div>
-        <button onclick="doAcctRegister()" style="width:100%;padding:12px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Create Free Account →</button>
-      </div>
-      <!-- Forgot Password -->
-      <div id="acctForgotForm" style="display:none;">
-        <div style="text-align:center;margin-bottom:14px;"><div style="font-size:24px;">🔐</div><div style="font-size:14px;font-weight:700;color:var(--text1);margin-top:4px;">Reset Password</div></div>
-        <input class="auth-field" id="acctFpEmail" type="email" placeholder="Your registered email" style="" />
-        <div id="acctFpOtpBox" style="display:none;">
-          <input class="auth-field" id="acctFpOtp" type="text" maxlength="6" placeholder="6-digit OTP" style="letter-spacing:6px;text-align:center;font-size:18px;font-weight:700;" />
-          <input class="auth-field" id="acctFpPass" type="password" placeholder="New password" style="" />
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="background:#fff;border-radius:10px;padding:14px 18px;min-width:220px;">
+          <div style="display:flex;gap:0;margin-bottom:12px;background:#f3f4f6;border-radius:6px;padding:2px;">
+            <button id="acctTabLogin" onclick="switchAcctTab('login')" style="flex:1;padding:7px;border:none;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:#4f46e5;">Login</button>
+            <button id="acctTabReg" onclick="switchAcctTab('register')" style="flex:1;padding:7px;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#6b7280;">Register</button>
+          </div>
+          <div id="acctLoginForm">
+            <input class="auth-field acct-light" id="acctLoginEmail" type="email" placeholder="Email address" />
+            <input class="auth-field acct-light" id="acctLoginPassword" type="password" placeholder="Password" />
+            <div class="auth-err" id="acctLoginErr" style="color:#ef4444;font-size:11px;margin-bottom:6px;"></div>
+            <button onclick="doAcctLogin()" style="width:100%;padding:9px;background:#4f46e5;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">Login →</button>
+            <div style="text-align:center;margin-top:8px;"><a href="#" onclick="switchAcctTab('forgot');return false;" style="font-size:11px;color:#6366f1;">Forgot password?</a></div>
+          </div>
+          <div id="acctRegForm" style="display:none;">
+            <input class="auth-field acct-light" id="acctRegName" type="text" placeholder="Full name *" />
+            <input class="auth-field acct-light" id="acctRegEmail" type="email" placeholder="Email address *" />
+            <input class="auth-field acct-light" id="acctRegPhone" type="tel" placeholder="Mobile number (optional)" />
+            <input class="auth-field acct-light" id="acctRegPassword" type="password" placeholder="Password (min 6 chars) *" />
+            <div class="auth-err" id="acctRegErr" style="color:#ef4444;font-size:11px;margin-bottom:6px;"></div>
+            <button onclick="doAcctRegister()" style="width:100%;padding:9px;background:#4f46e5;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">Create Free Account →</button>
+          </div>
+          <div id="acctForgotForm" style="display:none;">
+            <input class="auth-field acct-light" id="acctFpEmail" type="email" placeholder="Your registered email" />
+            <div id="acctFpOtpBox" style="display:none;">
+              <input class="auth-field acct-light" id="acctFpOtp" type="text" maxlength="6" placeholder="6-digit OTP" style="letter-spacing:6px;text-align:center;font-size:16px;font-weight:700;" />
+              <input class="auth-field acct-light" id="acctFpPass" type="password" placeholder="New password" />
+            </div>
+            <div class="auth-err" id="acctFpErr" style="font-size:11px;margin-bottom:6px;"></div>
+            <button id="acctFpBtn" onclick="doAcctForgot()" style="width:100%;padding:9px;background:#4f46e5;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">Send OTP →</button>
+            <div style="text-align:center;margin-top:6px;"><a href="#" onclick="switchAcctTab('login');return false;" style="font-size:11px;color:#6b7280;">← Back to Login</a></div>
+          </div>
         </div>
-        <div class="auth-err" id="acctFpErr"></div>
-        <button id="acctFpBtn" onclick="doAcctForgot()" style="width:100%;padding:12px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Send OTP →</button>
-        <div style="text-align:center;margin-top:8px;"><a href="#" onclick="switchAcctTab('login');return false;" style="font-size:12px;color:#6b7280;">← Back to Login</a></div>
-      </div>
-    </div>
-    <!-- Full subscription plans -->
-    <div style="margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
-      <div style="text-align:center;margin-bottom:6px;">
-        <div style="font-size:17px;font-weight:800;color:var(--text1);">Choose Your Plan</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Register first, then subscribe — or subscribe after login</div>
-      </div>
-      <div style="margin:16px 0 8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        <div style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px 8px;text-align:center;">
-          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">1 MONTH</div>
-          <div style="font-size:22px;font-weight:800;color:#1a1a2e;">₹100</div>
-          <div style="font-size:10px;color:#9ca3af;">₹100/mo</div>
-        </div>
-        <div style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px 8px;text-align:center;">
-          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">2 MONTHS</div>
-          <div style="font-size:22px;font-weight:800;color:#1a1a2e;">₹200</div>
-          <div style="font-size:10px;color:#9ca3af;">₹100/mo</div>
-        </div>
-        <div style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px 8px;text-align:center;">
-          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">3 MONTHS</div>
-          <div style="font-size:22px;font-weight:800;color:#1a1a2e;">₹300</div>
-          <div style="font-size:10px;color:#9ca3af;">₹100/mo</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        <div style="border:1.5px solid #e5e7eb;border-radius:12px;padding:14px 8px;text-align:center;">
-          <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px;">4 MONTHS</div>
-          <div style="font-size:22px;font-weight:800;color:#1a1a2e;">₹400</div>
-          <div style="font-size:10px;color:#9ca3af;">₹100/mo</div>
-        </div>
-        <div style="border:1.5px solid #10b981;border-radius:12px;padding:14px 8px;text-align:center;background:#f0fdf4;">
-          <div style="font-size:9px;color:#059669;font-weight:800;margin-bottom:2px;">SAVE ₹100</div>
-          <div style="font-size:11px;color:#065f46;font-weight:600;margin-bottom:4px;">6 MONTHS</div>
-          <div style="font-size:22px;font-weight:800;color:#065f46;">₹500</div>
-          <div style="font-size:10px;color:#059669;">₹83/mo</div>
-        </div>
-        <div style="border:2px solid #f59e0b;border-radius:12px;padding:14px 8px;text-align:center;background:#fffbeb;">
-          <div style="font-size:9px;color:#d97706;font-weight:800;margin-bottom:2px;">BEST VALUE ⭐</div>
-          <div style="font-size:11px;color:#92400e;font-weight:600;margin-bottom:4px;">12 MONTHS</div>
-          <div style="font-size:22px;font-weight:800;color:#92400e;">₹1000</div>
-          <div style="font-size:10px;color:#d97706;">₹83/mo</div>
-        </div>
-      </div>
-      <div style="margin-top:14px;padding:10px;background:#eff6ff;border-radius:8px;font-size:11px;color:#1e40af;text-align:center;">
-        🔐 Login or Register above to subscribe · UPI / Cards / Net Banking accepted
       </div>
     </div>
   </div>
 
-  <!-- LOGGED IN VIEW -->
-  <div id="acct-loggedin" style="display:none;">
-    <!-- Profile Card -->
-    <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:16px;padding:24px;margin-bottom:20px;color:#fff;">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;" id="acctAvatar">?</div>
+  <!-- LOGGED IN STRIP -->
+  <div id="acct-user-strip" style="display:none;background:#1e1b4b;padding:14px 24px;">
+    <div style="max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;" id="acctAvatar">?</div>
         <div>
-          <div style="font-size:18px;font-weight:800;" id="acctName">—</div>
-          <div style="font-size:12px;opacity:0.75;" id="acctEmail">—</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;" id="acctName">—</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);" id="acctEmail">—</div>
         </div>
       </div>
-    </div>
-
-    <!-- Subscription Status -->
-    <div id="acctSubCard" style="border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #10b981;background:#f0fdf4;">
-      <div style="font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:#065f46;margin-bottom:6px;" id="acctSubLabel">Subscription Status</div>
-      <div style="font-size:22px;font-weight:800;color:#065f46;margin-bottom:4px;" id="acctSubTitle">—</div>
-      <div style="font-size:13px;color:#047857;" id="acctSubDetail">—</div>
-    </div>
-
-    <!-- Subscription Plans -->
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
-      <div style="font-size:14px;font-weight:800;color:var(--text1);margin-bottom:14px;">Choose a Plan</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
-        <div onclick="initiatePayment(1,100)" style="cursor:pointer;border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:.15s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="font-size:15px;font-weight:800;color:var(--text1);">₹100</div><div style="font-size:10px;color:var(--text3);">1 Month</div>
-        </div>
-        <div onclick="initiatePayment(2,200)" style="cursor:pointer;border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:.15s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="font-size:15px;font-weight:800;color:var(--text1);">₹200</div><div style="font-size:10px;color:var(--text3);">2 Months</div>
-        </div>
-        <div onclick="initiatePayment(3,300)" style="cursor:pointer;border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:.15s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="font-size:15px;font-weight:800;color:var(--text1);">₹300</div><div style="font-size:10px;color:var(--text3);">3 Months</div>
-        </div>
+      <div id="acctSubCard" style="padding:8px 16px;border-radius:8px;border:1.5px solid #10b981;background:rgba(16,185,129,0.15);">
+        <span id="acctSubLabel" style="font-size:12px;font-weight:700;color:#10b981;">✅ Subscribed</span>
+        <span id="acctSubDetail" style="font-size:11px;color:rgba(255,255,255,0.6);margin-left:8px;"></span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-        <div onclick="initiatePayment(4,400)" style="cursor:pointer;border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:.15s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="font-size:15px;font-weight:800;color:var(--text1);">₹400</div><div style="font-size:10px;color:var(--text3);">4 Months</div>
-        </div>
-        <div onclick="initiatePayment(6,500)" style="cursor:pointer;border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:.15s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="font-size:15px;font-weight:800;color:#166534;">₹500</div><div style="font-size:10px;color:var(--text3);">6 Months</div><div style="font-size:9px;color:#16a34a;font-weight:700;">SAVE ₹100</div>
-        </div>
-        <div onclick="initiatePayment(12,1000)" style="cursor:pointer;border:2px solid #f59e0b;border-radius:10px;padding:12px 8px;text-align:center;background:#fffbeb;transition:.15s;">
-          <div style="font-size:15px;font-weight:800;color:#92400e;">₹1000</div><div style="font-size:10px;color:var(--text3);">12 Months</div><div style="font-size:9px;color:#d97706;font-weight:700;">BEST VALUE ⭐</div>
-        </div>
-      </div>
+      <button onclick="doLogout()" style="padding:7px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);border-radius:8px;font-size:12px;cursor:pointer;">Logout</button>
     </div>
-
-    <!-- Logout -->
-    <button onclick="doLogout()" style="width:100%;padding:11px;background:transparent;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;">Logout</button>
   </div>
 
-</div>
+  <!-- FULL SUBSCRIPTION PAGE (reuses sub-page styles) -->
+  <div class="sub-page" style="padding-top:0;">
+    <!-- Hero -->
+    <div class="sub-hero">
+      <div class="sub-eyebrow">SimplerSense · UPPSC PCS</div>
+      <h2>The smartest way to<br><em>crack UPPSC PCS</em></h2>
+      <p>10,000+ previous year questions, daily current affairs &amp; intelligent analytics — always updated.</p>
+      <div class="sub-stats">
+        <div class="sub-stat"><strong>10,000+</strong><span>PYQ Questions</span></div>
+        <div class="sub-stat"><strong>Daily</strong><span>Current Affairs</span></div>
+        <div class="sub-stat"><strong>2005–2025</strong><span>Years Covered</span></div>
+        <div class="sub-stat"><strong>₹83/mo</strong><span>Best Rate</span></div>
+      </div>
+    </div>
+    <!-- Plans -->
+    <div class="sub-plans">
+      <div class="sub-section-lbl">Choose your plan</div>
+      <div class="sub-grid">
+        <div class="sub-card" onclick="acctInitiatePayment(1,100)">
+          <div class="sc-months">1 Month</div>
+          <div class="sc-price"><sup>₹</sup>100</div>
+          <div class="sc-per">₹100 / month</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card" onclick="acctInitiatePayment(2,200)">
+          <div class="sc-months">2 Months</div>
+          <div class="sc-price"><sup>₹</sup>200</div>
+          <div class="sc-per">₹100 / month</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card" onclick="acctInitiatePayment(3,300)">
+          <div class="sc-months">3 Months</div>
+          <div class="sc-price"><sup>₹</sup>300</div>
+          <div class="sc-per">₹100 / month</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card" onclick="acctInitiatePayment(4,400)">
+          <div class="sc-months">4 Months</div>
+          <div class="sc-price"><sup>₹</sup>400</div>
+          <div class="sc-per">₹100 / month</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card" onclick="acctInitiatePayment(6,500)">
+          <div class="sc-badge save">SAVE ₹100</div>
+          <div class="sc-months">6 Months</div>
+          <div class="sc-price"><sup>₹</sup>500</div>
+          <div class="sc-per">₹83 / month</div>
+          <div class="sc-saving">Save ₹100 vs monthly</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card sc-best" onclick="acctInitiatePayment(12,1000)">
+          <div class="sc-badge best">⭐ BEST VALUE</div>
+          <div class="sc-months">12 Months</div>
+          <div class="sc-price"><sup>₹</sup>1000</div>
+          <div class="sc-per">₹83 / month</div>
+          <div class="sc-saving">Save ₹200 · Best Value</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+      </div>
+    </div>
+    <!-- Compare -->
+    <div class="sub-compare">
+      <div class="sub-compare-title">Why not just buy a physical book?</div>
+      <table class="sub-table">
+        <thead>
+          <tr><th>📖 Physical Book</th><th>Feature</th><th>⚡ SimplerSense</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>❌</td><td>Updated with new questions</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Daily current affairs</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Instant search</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Repeating questions highlighted</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Year &amp; subject analytics</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Progress tracking &amp; streaks</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Works on phone &amp; laptop</td><td>✅</td></tr>
+          <tr><td>₹2000/yr new edition</td><td>Annual cost</td><td>₹1000 all-in</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Trust -->
+    <div class="sub-trust">
+      <p><strong>Secure payment via Razorpay</strong> · UPI · Cards · Net Banking · EMI<br>
+      Instant access after payment · No hidden charges · Cancel anytime</p>
+    </div>
+  </div>
+
 </div>
 
 <div class="tab" id="tab-admin">
@@ -11790,6 +11793,10 @@ function buildSydQBlock(q, i) {
 .auth-field:focus{border-color:#6366f1;}
 #tab-account .auth-field{background:#f9fafb;color:#1a1a2e;border:1.5px solid #e5e7eb;}
 #tab-account .auth-field::placeholder{color:#9ca3af;}
+.acct-light{background:#f9fafb!important;color:#1a1a2e!important;border-color:#e5e7eb!important;}
+.acct-light::placeholder{color:#9ca3af!important;}
+.acct-light:focus{border-color:#4f46e5!important;background:#fff!important;}
+.acct-light[type=password]{-webkit-text-fill-color:#1a1a2e!important;}
 #tab-account .auth-field:focus{border-color:#4f46e5;background:#fff;}
 #tab-account input[type=password]{background:#f9fafb!important;color:#1a1a2e!important;-webkit-text-fill-color:#1a1a2e!important;}
 #tab-account input:-webkit-autofill{-webkit-box-shadow:0 0 0 30px #f9fafb inset!important;-webkit-text-fill-color:#1a1a2e!important;}
@@ -12227,43 +12234,47 @@ function isTrialExpired() {
 // ── MY ACCOUNT TAB ───────────────────────────────────────────
 function renderAccountTab() {
   var u = window._currentUser;
-  var loggedout = document.getElementById('acct-loggedout');
-  var loggedin  = document.getElementById('acct-loggedin');
-  if (!loggedout || !loggedin) return;
+  var authStrip = document.getElementById('acct-auth-strip');
+  var userStrip = document.getElementById('acct-user-strip');
+  if (!authStrip || !userStrip) return;
   if (!u) {
-    loggedout.style.display = 'block';
-    loggedin.style.display  = 'none';
+    authStrip.style.display = 'block';
+    userStrip.style.display = 'none';
     return;
   }
-  loggedout.style.display = 'none';
-  loggedin.style.display  = 'block';
+  authStrip.style.display = 'none';
+  userStrip.style.display = 'block';
   document.getElementById('acctAvatar').textContent = (u.name||'S').substring(0,2).toUpperCase();
   document.getElementById('acctName').textContent   = u.name || 'Student';
   document.getElementById('acctEmail').textContent  = u.email || '';
-  var card  = document.getElementById('acctSubCard');
-  var label = document.getElementById('acctSubLabel');
-  var title = document.getElementById('acctSubTitle');
-  var detail= document.getElementById('acctSubDetail');
+  var label  = document.getElementById('acctSubLabel');
+  var detail = document.getElementById('acctSubDetail');
+  var card   = document.getElementById('acctSubCard');
   if (u.status === 'active' && u.subscriptionPaidTill) {
-    card.style.border='2px solid #10b981'; card.style.background='#f0fdf4';
-    label.style.color='#065f46'; label.textContent='✅ Subscribed';
-    title.style.color='#065f46'; title.textContent='Full Access Active';
+    card.style.borderColor = '#10b981'; card.style.background = 'rgba(16,185,129,0.15)';
+    label.style.color = '#10b981'; label.textContent = '\u2705 Subscribed';
     var till = new Date(u.subscriptionPaidTill);
-    detail.style.color='#047857';
-    detail.textContent = 'Valid till ' + till.getDate() + ' ' + till.toLocaleString('en-IN',{month:'long'}) + ' ' + till.getFullYear();
+    detail.textContent = 'Valid till ' + till.getDate() + ' ' + till.toLocaleString('en-IN',{month:'short'}) + ' ' + till.getFullYear();
   } else if (u.status === 'trial' && u.trialExpiresOn) {
-    card.style.border='2px solid #f59e0b'; card.style.background='#fffbeb';
-    label.style.color='#92400e'; label.textContent='⏳ Free Trial';
-    var msLeft = new Date(u.trialExpiresOn) - new Date();
-    var dLeft = Math.max(0, Math.ceil(msLeft/86400000));
-    title.style.color='#92400e'; title.textContent = dLeft + ' day' + (dLeft===1?'':'s') + ' remaining';
-    detail.style.color='#b45309'; detail.textContent='Subscribe to get uninterrupted access';
+    card.style.borderColor = '#f59e0b'; card.style.background = 'rgba(251,191,36,0.15)';
+    label.style.color = '#fbbf24'; label.textContent = '\u23f3 Free Trial';
+    var dLeft = Math.max(0, Math.ceil((new Date(u.trialExpiresOn)-new Date())/86400000));
+    detail.textContent = dLeft + ' day' + (dLeft===1?'':'s') + ' left';
   } else {
-    card.style.border='2px solid #ef4444'; card.style.background='#fef2f2';
-    label.style.color='#991b1b'; label.textContent='🔒 Trial Expired';
-    title.style.color='#991b1b'; title.textContent='Access Locked';
-    detail.style.color='#dc2626'; detail.textContent='Subscribe below to unlock all features';
+    card.style.borderColor = '#ef4444'; card.style.background = 'rgba(239,68,68,0.15)';
+    label.style.color = '#ef4444'; label.textContent = '\uD83D\uDD12 Trial Expired';
+    detail.textContent = 'Subscribe to restore access';
   }
+}
+
+function acctInitiatePayment(months, amount) {
+  if (!window._currentUser) {
+    var strip = document.getElementById('acct-auth-strip');
+    if (strip) { strip.style.display='block'; strip.scrollIntoView({behavior:'smooth'}); }
+    showToast('Please login or register first to subscribe');
+    return;
+  }
+  initiatePayment(months, amount);
 }
 
 function switchAcctTab(tab) {
