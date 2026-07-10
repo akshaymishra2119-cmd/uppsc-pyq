@@ -214,14 +214,35 @@ app.post('/api/register', async (req, res) => {
   const { name, email, password, phone } = req.body || {};
   if (!name || !email || !password) return res.status(400).json({ error: 'All fields required' });
   if (password.length < 6) return res.status(400).json({ error: 'Password min 6 characters' });
+
+  // Gmail only
+  const cleanEmail = email.toLowerCase().trim();
+  if (!cleanEmail.endsWith('@gmail.com')) {
+    return res.status(400).json({ error: 'Only Gmail accounts (@gmail.com) are allowed' });
+  }
+
+  // Phone required + format check (10 digits)
+  const cleanPhone = (phone || '').replace(/\D/g, '');
+  if (!cleanPhone || cleanPhone.length < 10) {
+    return res.status(400).json({ error: 'Valid 10-digit mobile number is required' });
+  }
+
   try {
-    const exists = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+    // Email uniqueness
+    const exists = await pool.query('SELECT id FROM users WHERE email = $1', [cleanEmail]);
     if (exists.rows.length) return res.status(400).json({ error: 'Email already registered' });
+
+    // Phone uniqueness — prevent multiple trial accounts on same phone
+    const phoneExists = await pool.query('SELECT id, name FROM users WHERE phone = $1', [cleanPhone]);
+    if (phoneExists.rows.length) {
+      return res.status(400).json({ error: 'This mobile number is already linked to another account. Each phone number can only have one account.' });
+    }
+
     const hash = await bcrypt.hash(password, 10);
     const result = await pool.query(
       `INSERT INTO users (name, email, password_hash, phone)
        VALUES ($1, $2, $3, $4) RETURNING id, name, email, trial_expires_on, status`,
-      [name.trim(), email.toLowerCase().trim(), hash, phone || null]
+      [name.trim(), cleanEmail, hash, cleanPhone]
     );
     const user = result.rows[0];
     const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: '30d' });

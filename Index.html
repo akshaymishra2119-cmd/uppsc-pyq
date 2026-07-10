@@ -3169,8 +3169,8 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
         <!-- Register form -->
         <div id="acctRegForm" style="display:none;">
           <input class="auth-field acct-light" id="acctRegName" type="text" placeholder="Full name *" style="margin-bottom:10px;" />
-          <input class="auth-field acct-light" id="acctRegEmail" type="email" placeholder="Email address *" style="margin-bottom:10px;" />
-          <input class="auth-field acct-light" id="acctRegPhone" type="tel" placeholder="Mobile number (optional)" style="margin-bottom:10px;" />
+          <input class="auth-field acct-light" id="acctRegEmail" type="email" placeholder="Gmail only (xyz@gmail.com) *" style="margin-bottom:10px;" />
+          <input class="auth-field acct-light" id="acctRegPhone" type="tel" placeholder="Mobile number (required) *" style="margin-bottom:10px;" />
           <input class="auth-field acct-light" id="acctRegPassword" type="password" placeholder="Password (min 6 chars) *" style="margin-bottom:6px;" />
           <div class="auth-err" id="acctRegErr" style="color:#ef4444;font-size:11px;min-height:16px;margin-bottom:6px;"></div>
           <button onclick="doAcctRegister()" style="width:100%;padding:11px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Create Free Account →</button>
@@ -12373,23 +12373,32 @@ function doAcctLogin() {
 
 function doAcctRegister() {
   var name  = document.getElementById('acctRegName').value.trim();
-  var email = document.getElementById('acctRegEmail').value.trim();
+  var email = document.getElementById('acctRegEmail').value.trim().toLowerCase();
+  var phone = document.getElementById('acctRegPhone').value.trim().replace(/\D/g,'');
   var pass  = document.getElementById('acctRegPassword').value;
   var err   = document.getElementById('acctRegErr');
+  err.style.color='#ef4444';
   if (!name||!email||!pass) { err.textContent='All fields required'; return; }
+  if (!email.endsWith('@gmail.com')) { err.textContent='Only Gmail accounts are allowed (@gmail.com)'; return; }
+  if (!phone||phone.length<10) { err.textContent='Valid 10-digit mobile number is required'; return; }
   if (pass.length<6) { err.textContent='Password min 6 characters'; return; }
-  fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({name,email,password:pass})})
-  .then(r=>r.json()).then(data=>{
-    if (data.user||data.success) {
-      window._currentUser = data.user; currentUser = data.user;
-      _updateNavBtn(data.user); updateTrialBar(data.user);
+  err.style.color='#6b7280'; err.textContent='Creating account…';
+  fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
+    body:JSON.stringify({name,email,phone,password:pass})})
+  .then(function(r){ return r.json().then(function(d){ return {ok:r.ok,d:d}; }); })
+  .then(function(res){
+    if (res.ok && (res.d.user||res.d.success)) {
+      window._currentUser = res.d.user; currentUser = res.d.user;
+      err.textContent='';
+      _updateNavBtn(res.d.user); updateTrialBar(res.d.user);
       renderAccountTab();
     } else {
-      var msg = data.error || 'Registration failed';
-      var isExists = msg.toLowerCase().includes('exist') || msg.toLowerCase().includes('registered') || msg.toLowerCase().includes('already') || msg.toLowerCase().includes('duplicate');
+      var msg = res.d.error || 'Registration failed';
+      err.style.color='#ef4444';
+      var isExists = msg.toLowerCase().includes('exist') || msg.toLowerCase().includes('registered') || msg.toLowerCase().includes('already');
       err.innerHTML = msg + (isExists ? ' \u2014 <a href="#" onclick="switchAcctTab(\u0027forgot\u0027);return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>' : '');
     }
-  }).catch(()=>{ err.textContent='Network error'; });
+  }).catch(function(){ err.style.color='#ef4444'; err.textContent='Network error'; });
 }
 
 function doAcctForgot() {
@@ -12557,10 +12566,13 @@ async function doLogin() {
 }
 async function doRegister() {
   const name     = document.getElementById("regName").value.trim();
-  const email    = document.getElementById("regEmail").value.trim();
-  const phone    = document.getElementById("regPhone").value.trim();
+  const email    = document.getElementById("regEmail").value.trim().toLowerCase();
+  const phone    = (document.getElementById("regPhone").value||'').trim().replace(/\D/g,'');
   const password = document.getElementById("regPassword").value;
   if (!name || !email || !password) return showAuthError("regErr", "All fields required");
+  if (!email.endsWith('@gmail.com')) return showAuthError("regErr", "Only Gmail accounts are allowed (@gmail.com)");
+  if (!phone || phone.length < 10) return showAuthError("regErr", "Valid 10-digit mobile number is required");
+  if (password.length < 6) return showAuthError("regErr", "Password min 6 characters");
   try {
     const res  = await fetch("/api/register", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name,email,phone,password}) });
     const data = await res.json();
