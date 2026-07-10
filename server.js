@@ -1592,8 +1592,9 @@ app.post('/api/createOrder', authMiddleware, async (req, res) => {
       receipt:  'sub_' + req.user.id + '_' + months + 'm_' + Date.now(),
     });
     if (!order.id) {
-      console.error('[Razorpay] Order creation failed:', order);
-      return res.status(500).json({ error: 'Razorpay order creation failed', detail: order });
+      const rzpMsg = (order.error && order.error.description) || JSON.stringify(order);
+      console.error('[Razorpay] Order creation failed:', rzpMsg);
+      return res.status(500).json({ error: 'Razorpay: ' + rzpMsg });
     }
     res.json({ orderId: order.id, amount: order.amount, currency: order.currency, keyId: RAZORPAY_KEY_ID });
   } catch (e) {
