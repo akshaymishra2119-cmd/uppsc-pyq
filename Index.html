@@ -12079,7 +12079,7 @@ function initiatePayment(months, amount) {
     });
     rzp.open();
   })
-  .catch(function(e) { showToast('Error: ' + e.message); });
+  .catch(function(e) { alert('Payment error: ' + e.message); });
 }
 
 function checkTabLock(id) {
