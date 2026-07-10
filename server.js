@@ -1551,8 +1551,8 @@ setTimeout(() => {
 
 
 // ── RAZORPAY PAYMENT GATEWAY ─────────────────────────────────
-const RAZORPAY_KEY_ID     = process.env.RAZORPAY_KEY_ID     || 'rzp_test_TBhwW6oSPVKMVi';
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'c8cfeMudibCJASu6tap5eJwv';
+const RAZORPAY_KEY_ID     = process.env.RAZORPAY_KEY_ID || 'rzp_live_TBiDr3hehn4u2e';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '6fslKiuAOZ1Ti0LgkHx6Pok7';
 
 function razorpayRequest(method, path, body) {
   return new Promise((resolve, reject) => {
