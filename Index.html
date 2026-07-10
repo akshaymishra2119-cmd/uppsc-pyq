@@ -1599,6 +1599,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
 <!-- NAV -->
 <div class="nav">
+  <button id="sbToggleBtn" onclick="toggleSidebar()" title="Menu">&#9776;</button>
   <button class="nav-btn active" onclick="showTab('home',this)">
     <i class="ti ti-home" aria-hidden="true"></i> Home
   </button>
@@ -2286,6 +2287,33 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   .nav-btn{padding:8px 8px;font-size:11px;}
   .metric-val{font-size:18px;}
   .q-text{font-size:12px;}
+}
+
+/* ── MOBILE SIDEBAR OVERLAY ────────────────────── */
+#sbOverlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.55);z-index:998;
+}
+#sbOverlay.active{display:block;}
+#sbToggleBtn{
+  display:none;
+  background:none;border:none;cursor:pointer;
+  color:#fff;font-size:20px;padding:4px 8px;
+  margin-right:6px;line-height:1;
+}
+@media(max-width:700px){
+  #sbToggleBtn{display:inline-flex;align-items:center;}
+  .exam-sidebar{
+    position:fixed !important;
+    left:-270px;top:0;height:100vh !important;
+    min-height:100vh;width:260px !important;
+    z-index:999;transition:left .25s ease;
+    overflow-y:auto;padding-bottom:40px;
+  }
+  .exam-sidebar.sb-open{left:0;}
+  .exam-sidebar .sb-eb{width:220px !important;}
+  .exam-sidebar .sb-lw{width:220px !important;}
+  .portal-layout{display:block;}
 }
 </style>
 
@@ -12993,8 +13021,20 @@ async function doResetPassword() {
   <button class="pd-btn pd-btn-logout" onclick="doLogout()">Logout</button>
 </div>
 
+<!-- Sidebar mobile overlay backdrop -->
+<div id="sbOverlay" onclick="toggleSidebar()"></div>
+
 </div><!-- /.portal-layout -->
 <script>
+/* ── Sidebar toggle (mobile) ─────────────────── */
+function toggleSidebar(){
+  var sb = document.getElementById('examSidebar');
+  var ov = document.getElementById('sbOverlay');
+  if(!sb) return;
+  var isOpen = sb.classList.toggle('sb-open');
+  if(ov) ov.classList.toggle('active', isOpen);
+}
+
 /* ── Sidebar sync ────────────────────────────── */
 (function(){
   var _origSwitchExam = window.switchExam;
