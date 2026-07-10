@@ -541,51 +541,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .card-dl-btn:disabled{opacity:.5;cursor:not-allowed;}
 
 /* ── MAIN CONTENT ─────────────────────────────── */
-.main{max-width:none;margin:0;padding:16px;flex:1;min-width:0;}
-/* ── EXAM SIDEBAR ────────────────────────────── */
-.portal-layout{display:flex;align-items:stretch;}
-.exam-sidebar{
-  width:200px;flex-shrink:0;
-  background:#0f1f4a;
-  display:flex;flex-direction:column;align-items:center;
-  padding:10px 0 16px;gap:4px;
-  position:sticky;top:0;
-  min-height:100vh;
-  overflow:visible;
-  border-right:1px solid rgba(255,255,255,.07);
-  z-index:10;
-}
-.exam-sidebar .sb-label{
-  font-size:9px;font-weight:800;
-  color:rgba(251,191,36,.7);letter-spacing:2px;
-  text-transform:uppercase;
-  width:100%;text-align:center;
-  padding:6px 0 4px;
-  border-bottom:1px solid rgba(251,191,36,.15);
-  margin-bottom:4px;
-}
-.exam-sidebar .sb-div{width:28px;height:1px;background:rgba(255,255,255,.07);margin:5px 0;}
-.exam-sidebar .sb-eb{
-  width:175px;padding:8px 6px;border-radius:7px;
-  font-size:10px;font-weight:800;text-align:center;
-  cursor:pointer;letter-spacing:.2px;
-  border:1.5px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.04);
-  color:rgba(255,255,255,.35);
-  transition:all .15s;
-}
-.exam-sidebar .sb-eb:hover{border-color:rgba(251,191,36,.4);color:#fbbf24;}
-.exam-sidebar .sb-eb.sb-active{background:#fbbf24;color:#1a1a1a;border-color:#fbbf24;}
-.exam-sidebar .sb-eb.sb-soon{border-style:dashed;opacity:.3;cursor:default;font-size:7px;line-height:1.2;}
-.exam-sidebar .sb-lw{
-  width:175px;padding:6px 3px;border-radius:5px;
-  font-size:8px;font-weight:700;text-align:center;
-  color:rgba(255,255,255,.3);cursor:pointer;
-  border:1px solid transparent;transition:all .15s;
-}
-.exam-sidebar .sb-lw.sb-active{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.15);}
-/* .main full-width override already applied above */
-
+.main{max-width:1100px;margin:0 auto;padding:16px;}
 .tab{display:none;}
 .tab.active{display:block;}
 
@@ -1602,7 +1558,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn active" onclick="showTab('home',this)">
     <i class="ti ti-home" aria-hidden="true"></i> Home
   </button>
-  <button class="nav-btn nav-account" id="accountNavBtn" onclick="showTab('account',this)" style="display:none;">
+  <button class="nav-btn nav-account" id="accountNavBtn" onclick="showTab('account',this)">
     <i class="ti ti-user-circle" aria-hidden="true"></i> My Account
   </button>
   <button class="nav-btn nav-pyq" onclick="showTab('pyq',this)">
@@ -1644,7 +1600,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 </div>
 
 <!-- ── EXAM SWITCHER ──────────────────────────────────────── -->
-<div id="examSwitcherBar" style="display:none;">
+<div id="examSwitcherBar" style="background:var(--bg1);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
   <span style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">Exam</span>
   <button class="exam-sw-btn" data-exam="uppsc" onclick="switchExam('uppsc')" style="padding:4px 14px;border-radius:20px;border:1.5px solid var(--amber);background:var(--amber-light);color:var(--amber);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;">UPPSC</button>
   <button class="exam-sw-btn" data-exam="bpsc"  onclick="switchExam('bpsc')"  style="padding:4px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;">BPSC</button>
@@ -1655,34 +1611,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   </div>
 </div>
 
-
-<!-- ══ PORTAL LAYOUT (sidebar + main) ══════════════════════════ -->
-<div class="portal-layout">
-
-<!-- ── EXAM SIDEBAR ────────────────────────── -->
-<div class="exam-sidebar" id="examSidebar">
-
-  <div class="sb-label">Exam</div>
-  <div class="sb-eb sb-active" id="sb-uppsc" onclick="switchExam('uppsc')">UPPSC</div>
-  <div class="sb-eb" id="sb-bpsc" onclick="switchExam('bpsc')">BPSC</div>
-  <div class="sb-eb sb-soon" title="Coming soon">MPPSC</div>
-  <div class="sb-eb sb-soon" title="Coming soon">UPSC</div>
-
-  <div class="sb-div" style="margin:12px 0;"></div>
-
-  <div class="sb-label">Language</div>
-  <div class="sb-lw sb-active" id="sb-en" onclick="switchLang('en')">English</div>
-  <div class="sb-lw" id="sb-hi" onclick="switchLang('hi')">हिंदी</div>
-
-  <div class="sb-div" style="margin:12px 0;"></div>
-
-  <div class="sb-eb" onclick="showTab('account', document.getElementById('accountNavBtn'))" style="background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.3);color:#a5b4fc;">My Account</div>
-  <div class="sb-eb" onclick="showTab('account', document.getElementById('accountNavBtn'))" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;">Subscribe</div>
-  <div class="sb-eb" onclick="showTab('account', document.getElementById('accountNavBtn'))" style="background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:#fde68a;">Login</div>
-  <div class="sb-eb" onclick="showTab('account', document.getElementById('accountNavBtn'))" style="background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:#fde68a;">Register</div>
-
-</div>
-
+<!-- MAIN -->
 <div class="main">
 
 <!-- ══ HOME TAB ══════════════════════════════════════════════ -->
@@ -12993,27 +12922,5 @@ async function doResetPassword() {
   <button class="pd-btn pd-btn-logout" onclick="doLogout()">Logout</button>
 </div>
 
-</div><!-- /.portal-layout -->
-<script>
-/* ── Sidebar sync ────────────────────────────── */
-(function(){
-  var _origSwitchExam = window.switchExam;
-  window.switchExam = function(exam){
-    if(_origSwitchExam) _origSwitchExam(exam);
-    ['uppsc','bpsc'].forEach(function(e){
-      var el = document.getElementById('sb-'+e);
-      if(el) el.classList.toggle('sb-active', e===exam);
-    });
-  };
-  var _origSwitchLang = window.switchLang;
-  window.switchLang = function(lang){
-    if(_origSwitchLang) _origSwitchLang(lang);
-    ['en','hi'].forEach(function(l){
-      var el = document.getElementById('sb-'+l);
-      if(el) el.classList.toggle('sb-active', l===lang);
-    });
-  };
-})();
-</script>
 </body>
 </html>

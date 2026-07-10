@@ -33,6 +33,11 @@ const CACHE_TTL = 5 * 60 * 1000;    // 5 minutes
 let _sheetsCache     = null;
 let _sheetsCacheTime = 0;
 
+// ── BPSC SHEET CONFIG ─────────────────────────────────────────
+const BPSC_SHEET_ID = '15xXnY1NE1CIYGXVOMNa_RXcZ8WOIS5HwUzq-xwKjNbo';
+let _bpscCacheEn = null, _bpscCacheEnTime = 0;
+let _bpscCacheHi = null, _bpscCacheHiTime = 0;
+
 // Fetch and parse Google Sheets public gviz endpoint (no API key needed)
 // Tries multiple tab name variants in case of casing mismatch
 const SHEET_TAB_VARIANTS = ['QUESTION_BANK', 'Question_Bank', 'question_bank', 'Sheet1'];
@@ -381,9 +386,11 @@ app.post('/api/saveAttempt', authMiddleware, async (req, res) => {
 // ── MY STATS (PostgreSQL) ─────────────────────────────────────
 app.get('/api/myStats', authMiddleware, async (req, res) => {
   try {
+    const exam = req.query.exam || 'uppsc';
+    const examCond = exam === 'bpsc' ? "AND q_id LIKE 'BPSC_%'" : "AND q_id NOT LIKE 'BPSC_%'";
     const { rows } = await pool.query(
       `SELECT q_id, subject, year, result, time_taken, attempted_at
-       FROM progress WHERE user_id = $1 ORDER BY attempted_at ASC`,
+       FROM progress WHERE user_id = $1 ${examCond} ORDER BY attempted_at ASC`,
       [req.user.id]
     );
 
@@ -426,7 +433,7 @@ app.get('/api/myStats', authMiddleware, async (req, res) => {
     // Daily history (all rows, not deduplicated — for heatmap + question list)
     let qMap = {};
     try {
-      const qs = await loadQuestions();
+      const qs = exam === 'bpsc' ? await loadBpscQuestions('en') : await loadQuestions();
       qs.forEach(q => { qMap[String(q.id)] = { question: q.question, subject: q.subject, year: q.year }; });
     } catch(_) {}
     const dailyMap = {};
@@ -514,10 +521,12 @@ app.get('/api/mockHistory', authMiddleware, async (req, res) => {
 // ── ATTEMPT COUNTS PER QUESTION ───────────────────────────────
 app.get('/api/attemptCounts', authMiddleware, async (req, res) => {
   try {
+    const exam = req.query.exam || 'uppsc';
+    const examCond = exam === 'bpsc' ? "AND q_id LIKE 'BPSC_%'" : "AND q_id NOT LIKE 'BPSC_%'";
     const { rows } = await pool.query(
       `SELECT q_id, COUNT(*) AS attempts
        FROM progress
-       WHERE user_id = $1 AND (mode IS NULL OR mode != 'mock')
+       WHERE user_id = $1 AND (mode IS NULL OR mode != 'mock') ${examCond}
        GROUP BY q_id`,
       [req.user.id]
     );
@@ -534,12 +543,14 @@ app.get('/api/attemptCounts', authMiddleware, async (req, res) => {
 app.get('/api/trackProgress', authMiddleware, async (req, res) => {
   try {
     const uid = req.user.id;
+    const exam = req.query.exam || 'uppsc';
+    const examCond = exam === 'bpsc' ? "AND q_id LIKE 'BPSC_%'" : "AND q_id NOT LIKE 'BPSC_%'";
 
     // All raw attempts + user info
     const [progRows, userRow, mockRows] = await Promise.all([
       pool.query(
         `SELECT q_id, subject, year, result, time_taken, mode, quiz_id, attempted_at
-         FROM progress WHERE user_id = $1 ORDER BY attempted_at ASC`, [uid]),
+         FROM progress WHERE user_id = $1 ${examCond} ORDER BY attempted_at ASC`, [uid]),
       pool.query(`SELECT exam_date, name FROM users WHERE id = $1`, [uid]),
       pool.query(
         `SELECT id, score, total, time_taken, subject_breakdown, settings, questions, taken_at
@@ -873,11 +884,106 @@ app.get('/google-mock.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'google-script-mock.js'));
 });
 
+// ── Generic sheet fetcher (BPSC + future exams) ──────────────
+function fetchTabFromSheet(sheetId, tabName) {
+  return new Promise((resolve, reject) => {
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
+    console.log('Fetching tab:', tabName);
+    https.get(url, res => {
+      let raw = '';
+      res.on('data', chunk => raw += chunk);
+      res.on('end', () => {
+        try {
+          const jsonStr = raw.replace(/^[^{(]*\(/, '').replace(/\)[\s;]*$/, '').replace(/^[^{]*/, '');
+          const parsed  = JSON.parse(jsonStr);
+          const v = (row, i) => { const cell = row.c[i]; return cell && cell.v !== null && cell.v !== undefined ? String(cell.v) : ''; };
+          const vYear = (row, i) => { const r = v(row,i); const dm = r.match(/^Date\((\d{4})/); return dm ? dm[1] : r.replace(/\.0$/, ''); };
+          const rows = parsed.table.rows.filter(row => v(row, 0).trim());
+          const questions = rows.map(row => ({
+            id: v(row,0), year: vYear(row,1), subject: v(row,2),
+            subTopic: v(row,3), topic: v(row,3), question: v(row,4),
+            optA: v(row,5), optB: v(row,6), optC: v(row,7), optD: v(row,8),
+            answer: v(row,9), answerText: v(row,10), explanation: v(row,11),
+            difficulty: v(row,12)||'Medium', qType: v(row,13),
+            repeatsIn: v(row,14), zone: v(row,15),
+          }));
+          console.log(tabName + ': ' + questions.length + ' questions loaded');
+          resolve(questions);
+        } catch(err) { reject(new Error('Parse error for ' + tabName + ': ' + err.message)); }
+      });
+    }).on('error', e => reject(new Error('Network error: ' + e.message)));
+  });
+}
+
+function computeRepeatsIn(questions) {
+  const GENERIC = new Set(['general','other','unknown','','miscellaneous','mixed','general studies']);
+  const topicYears = {};
+  questions.forEach(q => {
+    // Use subTopic/topic if available, fall back to subject for coarse-grained repeats
+    let t = ((q.topic && !GENERIC.has(q.topic.toLowerCase())) ? q.topic : q.subTopic || '').trim();
+    if (!t || GENERIC.has(t.toLowerCase())) {
+      t = (q.subject || '').trim(); // fallback to subject
+    }
+    if (!t || GENERIC.has(t.toLowerCase())) return;
+    if (!topicYears[t]) topicYears[t] = new Set();
+    topicYears[t].add(String(q.year));
+  });
+  questions.forEach(q => {
+    let t = ((q.topic && !GENERIC.has(q.topic.toLowerCase())) ? q.topic : q.subTopic || '').trim();
+    if (!t || GENERIC.has(t.toLowerCase())) t = (q.subject || '').trim();
+    q.repeatsIn = (t && topicYears[t] && topicYears[t].size > 1)
+      ? [...topicYears[t]].sort().join(',')
+      : '';
+  });
+  const cnt = questions.filter(q => q.repeatsIn.includes(',')).length;
+  console.log('🔁 Repeating topics computed: ' + cnt + ' questions flagged');
+  return questions;
+}
+
+async function loadBpscQuestions(lang) {
+  const tab = lang === 'hi' ? 'BPSC_HI' : 'BPSC_EN';
+  if (lang === 'hi') {
+    if (_bpscCacheHi && (Date.now() - _bpscCacheHiTime) < CACHE_TTL) return _bpscCacheHi;
+    const qs = computeRepeatsIn(await fetchTabFromSheet(BPSC_SHEET_ID, tab));
+    _bpscCacheHi = qs; _bpscCacheHiTime = Date.now(); return qs;
+  } else {
+    if (_bpscCacheEn && (Date.now() - _bpscCacheEnTime) < CACHE_TTL) return _bpscCacheEn;
+    const qs = computeRepeatsIn(await fetchTabFromSheet(BPSC_SHEET_ID, tab));
+    _bpscCacheEn = qs; _bpscCacheEnTime = Date.now(); return qs;
+  }
+}
+
+// ── API: analytics ───────────────────────────────────────────
+app.get('/api/analytics', async (req, res) => {
+  try {
+    const exam = req.query.exam || 'uppsc';
+    const lang = req.query.lang || 'en';
+    const questions = exam === 'bpsc' ? await loadBpscQuestions(lang) : await loadQuestions();
+
+    const yearSubject = {}, subjectCounts = {}, yearCounts = {};
+    questions.forEach(q => {
+      const y   = String(q.year || '');
+      const sub = q.subject || 'Unknown';
+      if (!y) return;
+      if (!yearSubject[y]) yearSubject[y] = {};
+      yearSubject[y][sub] = (yearSubject[y][sub] || 0) + 1;
+      subjectCounts[sub]  = (subjectCounts[sub]  || 0) + 1;
+      yearCounts[y]       = (yearCounts[y]        || 0) + 1;
+    });
+    const repeatingCount = questions.filter(q => String(q.repeatsIn || '').includes(',')).length;
+    res.json({ yearSubject, subjectCounts, yearCounts, repeatingCount, total: questions.length });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── API: getQuestions ─────────────────────────────────────────
 app.post('/api/getQuestions', async (req, res) => {
   try {
     const filters = req.body || {};
-    let rows = await loadQuestions();
+    const exam = filters.exam || 'uppsc';
+    const lang = filters.lang || 'en';
+    let rows = exam === 'bpsc' ? await loadBpscQuestions(lang) : await loadQuestions();
 
     if (filters.subject    && filters.subject    !== 'all') rows = rows.filter(r => r.subject    === filters.subject);
     if (filters.year       && filters.year       !== 'all') rows = rows.filter(r => String(r.year) === String(filters.year));
