@@ -8012,7 +8012,6 @@ function renderCAPanel() {
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
             <span style="background:${color};color:#fff;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;">${item.category||''}</span>
             ${item.relevance ? `<span style="font-size:11px;color:var(--text3);">${rel} ${item.relevance} relevance</span>` : ''}
-            ${item.source ? `<span style="font-size:11px;color:var(--text3);margin-left:auto;">📰 ${item.source}</span>` : ''}
           </div>
           <div style="font-weight:600;font-size:16px;color:var(--text);margin-bottom:8px;line-height:1.5;">${_hl}</div>
           <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:8px;">${item.detail||item.summary||''}</div>
