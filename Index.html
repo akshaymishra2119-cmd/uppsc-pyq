@@ -12331,7 +12331,7 @@ function doAcctLogin() {
     } else {
       var msg = data.error || 'Login failed';
       err.style.color='#ef4444';
-      err.innerHTML = msg + ' — <a href="#" onclick="switchAcctTab('forgot');return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>';
+      err.innerHTML = msg + ' — <a href="#" onclick="switchAcctTab(\u0027forgot\u0027);return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>';
     }
   })
   .catch(function(e){ err.style.color='#ef4444'; err.textContent = e.message || 'Network error — check your connection'; });
