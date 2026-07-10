@@ -1316,7 +1316,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 <div id="trialBar" style="display:none;position:sticky;top:0;z-index:10002;background:#fbbf24;color:#1a0f00;text-align:center;padding:7px 16px;font-size:12px;font-weight:700;letter-spacing:0.4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
   <span id="trialBarText"></span>
   &nbsp;·&nbsp;
-  <a href="#" onclick="openAuthModal('login');return false;" style="color:#1a0f00;text-decoration:underline;font-weight:800;">Subscribe ₹100/mo →</a>
+  <a href="#" onclick="openSubModal();return false;" style="color:#1a0f00;text-decoration:underline;font-weight:800;">Subscribe ₹100/mo →</a>
 </div>
 
 <!-- hidden dummy for legacy refs -->
@@ -1504,7 +1504,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
         <span class="gc-ss-text">SimplerSense</span>
       </div>
       <div class="gc-stats-row">
-        <div class="gc-stat-pill gold"><strong id="pill-total-q">974</strong><span>Questions</span></div>
+        <div class="gc-stat-pill gold"><strong id="pill-total-q">10,000+</strong><span>Questions</span></div>
         <div class="gc-stat-pill"><strong id="pill-total-yr">8</strong><span>Years</span></div>
         <div class="gc-stat-pill"><strong id="pill-total-subj">9</strong><span>Subjects</span></div>
         <div class="gc-stat-pill gold"><strong id="pill-repeating">28</strong><span>Repeating</span></div>
@@ -1673,7 +1673,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       <div class="srch-widget">
         <div class="srch-widget-ico">🔍</div>
         <div class="srch-widget-title">Find Any Question</div>
-        <div class="srch-widget-sub">Search 974 PYQ questions instantly — type a topic, keyword, or concept.</div>
+        <div class="srch-widget-sub">Search 10,000+ PYQ questions instantly — type a topic, keyword, or concept.</div>
         <div class="srch-wrap">
           <input class="srch-inp" id="homeSearchInp" type="text"
             placeholder="president, parliament, river…"
@@ -1789,7 +1789,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
   <!-- ── 4 STAT CARDS ───────────────────────────────────────── -->
   <div class="gc-stat-grid" id="gcStatGrid">
-    <div class="gc-stat"><div class="gc-stat-val" id="hm-attempted">—</div><div class="gc-stat-lbl">Questions attempted</div><div class="gc-stat-sub">of 974 total</div></div>
+    <div class="gc-stat"><div class="gc-stat-val" id="hm-attempted">—</div><div class="gc-stat-lbl">Questions attempted</div><div class="gc-stat-sub">of 10,000+ total</div></div>
     <div class="gc-stat"><div class="gc-stat-val" style="color:var(--teal);" id="hm-accuracy">—</div><div class="gc-stat-lbl">Accuracy</div><div class="gc-stat-sub">target: 88%</div></div>
     <div class="gc-stat"><div class="gc-stat-val" style="color:var(--coral);" id="hm-projected">—</div><div class="gc-stat-lbl">Projected score</div><div class="gc-stat-sub">need: 110/150</div></div>
     <div class="gc-stat"><div class="gc-stat-val" style="color:var(--pink);" id="hm-ca">0</div><div class="gc-stat-lbl">Today's CA</div><div class="gc-stat-sub">items added</div></div>
@@ -1797,7 +1797,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
   <!-- ── PYQ ANALYTICS HEADER STATS ────────────────────────── -->
   <div class="gc-analysis-stats" id="gcAnalysisStats">
-    <div class="gc-astat"><div class="gc-astat-val" id="gcTotalQ">974</div><div class="gc-astat-lbl">Total questions analysed</div><div class="gc-astat-sub" id="gcTotalQSub">2018–2025 (8 years)</div></div>
+    <div class="gc-astat"><div class="gc-astat-val" id="gcTotalQ">10,000+</div><div class="gc-astat-lbl">Total questions analysed</div><div class="gc-astat-sub" id="gcTotalQSub">2018–2025 (8 years)</div></div>
     <div class="gc-astat"><div class="gc-astat-val" id="gcRepeating">—</div><div class="gc-astat-lbl">Repeating themes found</div><div class="gc-astat-sub">topics/concepts repeated 2+ yrs</div></div>
     <div class="gc-astat"><div class="gc-astat-val" id="gcTopSubject">—</div><div class="gc-astat-lbl">Highest weight subject</div><div class="gc-astat-sub" id="gcTopSubjectSub">~22–25 Qs per paper</div></div>
     <div class="gc-astat"><div class="gc-astat-val" id="gcUpSpecific">15–18</div><div class="gc-astat-lbl">UP-specific questions</div><div class="gc-astat-sub" id="gcUpSpecificSub">per paper (~11%)</div></div>
@@ -1835,7 +1835,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
       <div class="card-title">
         <i class="ti ti-circle-letter-a" style="color:var(--blue);"></i>
         Correct answer key distribution — A / B / C / D
-        <span id="gcAnsDistQ" style="font-size:11px;color:var(--text3);margin-left:auto;">all 974 questions</span>
+        <span id="gcAnsDistQ" style="font-size:11px;color:var(--text3);margin-left:auto;">all questions</span>
       </div>
       <div class="ans-letter-grid" id="ansLetterGrid"></div>
       <div id="ansLetterYearTable" style="margin-top:14px;overflow-x:auto;"></div>
@@ -3732,6 +3732,7 @@ function showTab(id, btn) {
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("tab-" + id).classList.add("active");
   if (btn) btn.classList.add("active");
+  checkTabLock(id);
 
   if (id === "ca")            loadCA();
   if (id === "uppsc-news")    loadUPPSCNews();
@@ -11530,6 +11531,69 @@ function buildSydQBlock(q, i) {
 #authNavBtn.signed-in{background:rgba(251,191,36,0.2);border:1px solid rgba(251,191,36,0.5);color:#fbbf24;}
 
 /* Modal backdrop */
+
+/* ── SUBSCRIPTION MODAL ───────────────────────────────────── */
+#subModal{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:none;align-items:flex-start;justify-content:center;backdrop-filter:blur(6px);overflow-y:auto;padding:0;}
+#subModal.open{display:flex;}
+.sub-page{width:100%;max-width:860px;margin:0 auto;padding-bottom:40px;}
+.sub-lock-bar{background:#ef4444;color:#fff;text-align:center;padding:11px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;}
+.sub-lock-bar button{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;}
+.sub-hero{background:linear-gradient(135deg,#050d1f 0%,#0a1628 40%,#0f2460 75%,#1a3a8f 100%);padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden;}
+.sub-hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(99,155,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(99,155,255,0.05) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.sub-eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;color:rgba(251,191,36,0.7);text-transform:uppercase;margin-bottom:10px;}
+.sub-hero h2{font-size:26px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:8px;}
+.sub-hero h2 em{color:#fbbf24;font-style:normal;}
+.sub-hero p{font-size:13px;color:rgba(255,255,255,0.65);max-width:440px;margin:0 auto 22px;line-height:1.6;}
+.sub-stats{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;}
+.sub-stat strong{display:block;font-size:20px;font-weight:900;color:#fbbf24;}
+.sub-stat span{font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;}
+.sub-plans{padding:32px 20px;background:#f0f4ff;}
+.sub-section-lbl{text-align:center;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:2px;margin-bottom:18px;}
+.sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:780px;margin:0 auto;}
+.sub-card{background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:20px 14px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+.sub-card:hover{border-color:#3b82f6;transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,130,246,.15);}
+.sub-card.sc-best{border-color:#fbbf24;background:linear-gradient(160deg,#0a1628,#1a3a8f);}
+.sub-card.sc-best:hover{box-shadow:0 8px 28px rgba(251,191,36,.25);}
+.sc-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;padding:3px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.5px;}
+.sc-badge.save{background:#dcfce7;color:#15803d;}
+.sc-badge.best{background:#fbbf24;color:#1a0f00;}
+.sc-months{font-size:11px;font-weight:600;color:#9ca3af;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
+.sub-card.sc-best .sc-months{color:rgba(251,191,36,.6);}
+.sc-price{font-size:32px;font-weight:900;color:#0f2460;line-height:1;}
+.sub-card.sc-best .sc-price{color:#fbbf24;}
+.sc-price sup{font-size:15px;font-weight:700;}
+.sc-per{font-size:11px;color:#9ca3af;margin-top:4px;}
+.sub-card.sc-best .sc-per{color:rgba(255,255,255,.4);}
+.sc-saving{margin-top:7px;font-size:11px;font-weight:700;color:#16a34a;background:#f0fdf4;padding:2px 10px;border-radius:20px;display:inline-block;}
+.sub-card.sc-best .sc-saving{color:#fbbf24;background:rgba(251,191,36,.15);}
+.sc-btn{margin-top:14px;width:100%;padding:9px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#0f2460;color:#fff;transition:background .2s;}
+.sc-btn:hover{background:#1a3a8f;}
+.sub-card.sc-best .sc-btn{background:#fbbf24;color:#1a0f00;}
+.sub-card.sc-best .sc-btn:hover{background:#f59e0b;}
+.sub-compare{background:#fff;padding:28px 20px;border-top:1px solid #e5e7eb;}
+.sub-compare-title{text-align:center;font-size:15px;font-weight:800;color:#0f2460;margin-bottom:16px;}
+.sub-table{width:100%;border-collapse:collapse;font-size:12px;max-width:700px;margin:0 auto;}
+.sub-table th{padding:9px 14px;text-align:center;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.sub-table th:nth-child(1){color:#92400e;background:#fef3c7;}
+.sub-table th:nth-child(2){color:#6b7280;}
+.sub-table th:nth-child(3){color:#fff;background:#0f2460;}
+.sub-table td{padding:8px 14px;border-bottom:1px solid #f3f4f6;text-align:center;}
+.sub-table td:nth-child(2){text-align:left;font-weight:500;color:#374151;}
+.sub-table tr:nth-child(even) td{background:#f9fafb;}
+.sub-table tr:last-child td{border-bottom:none;}
+.sub-trust{background:linear-gradient(135deg,#050d1f,#0f2460);padding:22px 20px;text-align:center;}
+.sub-trust p{color:rgba(255,255,255,.55);font-size:11px;line-height:1.9;}
+.sub-trust p strong{color:#fbbf24;}
+/* Tab lock overlay */
+.tab-lock-wrap{position:relative;}
+.tab-lock-overlay{position:absolute;inset:0;z-index:100;background:rgba(5,13,31,0.82);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;border-radius:12px;min-height:300px;}
+.tab-lock-box{text-align:center;color:#fff;padding:32px 24px;}
+.tab-lock-box .lock-icon{font-size:40px;margin-bottom:12px;}
+.tab-lock-box h3{font-size:18px;font-weight:800;color:#fbbf24;margin-bottom:8px;}
+.tab-lock-box p{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:20px;line-height:1.5;}
+.tab-lock-box button{background:#fbbf24;color:#1a0f00;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;}
+.tab-lock-box button:hover{background:#f59e0b;}
+
 #authModal{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 #authModal.open{display:flex;}
 
@@ -11792,6 +11856,10 @@ function onAuthSuccess(user) {
         _updateNavBtn(data.user);
         updateTrialBar(data.user);
         _refreshAuthTabs();
+        if (data.user.status === 'expired' ||
+            (data.user.status === 'trial' && data.user.trialExpiresOn && new Date(data.user.trialExpiresOn) < new Date())) {
+          setTimeout(openSubModal, 1200);
+        }
         // Seed attemptedQIds from server in background so PYQ filters are accurate
         fetch('/api/trackProgress', { credentials:'include' })
           .then(function(r){ return r.ok ? r.json() : null; })
@@ -11811,6 +11879,160 @@ function onAuthSuccess(user) {
     })
     .catch(function(){});
 })();
+
+
+<!-- ══ SUBSCRIPTION MODAL ════════════════════════════════════ -->
+<div id="subModal">
+  <div class="sub-page">
+    <!-- Lock bar -->
+    <div class="sub-lock-bar">
+      🔒 Your free trial has ended
+      <button onclick="closeSubModal()">✕ Close</button>
+    </div>
+    <!-- Hero -->
+    <div class="sub-hero">
+      <div class="sub-eyebrow">SimplerSense · UPPSC PCS</div>
+      <h2>The smartest way to<br><em>crack UPPSC PCS</em></h2>
+      <p>10,000+ previous year questions, daily current affairs &amp; intelligent analytics — always updated.</p>
+      <div class="sub-stats">
+        <div class="sub-stat"><strong>10,000+</strong><span>PYQ Questions</span></div>
+        <div class="sub-stat"><strong>Daily</strong><span>Current Affairs</span></div>
+        <div class="sub-stat"><strong>2005–2025</strong><span>Years Covered</span></div>
+        <div class="sub-stat"><strong>₹83/mo</strong><span>Best Rate</span></div>
+      </div>
+    </div>
+    <!-- Plans -->
+    <div class="sub-plans">
+      <div class="sub-section-lbl">Choose your plan</div>
+      <div class="sub-grid">
+        <div class="sub-card" onclick="initiatePayment(1,100)">
+          <div class="sc-months">1 Month</div>
+          <div class="sc-price"><sup>₹</sup>100</div>
+          <div class="sc-per">₹100 / month</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card" onclick="initiatePayment(2,200)">
+          <div class="sc-months">2 Months</div>
+          <div class="sc-price"><sup>₹</sup>200</div>
+          <div class="sc-per">₹100 / month</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card" onclick="initiatePayment(3,300)">
+          <div class="sc-months">3 Months</div>
+          <div class="sc-price"><sup>₹</sup>300</div>
+          <div class="sc-per">₹100 / month</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card" onclick="initiatePayment(4,400)">
+          <div class="sc-months">4 Months</div>
+          <div class="sc-price"><sup>₹</sup>400</div>
+          <div class="sc-per">₹100 / month</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card" onclick="initiatePayment(6,500)">
+          <div class="sc-badge save">SAVE ₹100</div>
+          <div class="sc-months">6 Months</div>
+          <div class="sc-price"><sup>₹</sup>500</div>
+          <div class="sc-per">₹83 / month</div>
+          <div class="sc-saving">Save ₹100 vs monthly</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+        <div class="sub-card sc-best" onclick="initiatePayment(12,1000)">
+          <div class="sc-badge best">⭐ BEST VALUE</div>
+          <div class="sc-months">12 Months</div>
+          <div class="sc-price"><sup>₹</sup>1000</div>
+          <div class="sc-per">₹83 / month</div>
+          <div class="sc-saving">Save ₹200 · Best Value</div>
+          <button class="sc-btn">Subscribe</button>
+        </div>
+      </div>
+    </div>
+    <!-- Compare -->
+    <div class="sub-compare">
+      <div class="sub-compare-title">Why not just buy a physical book?</div>
+      <table class="sub-table">
+        <thead>
+          <tr>
+            <th>📖 Physical Book</th>
+            <th>Feature</th>
+            <th>⚡ SimplerSense</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>❌</td><td>Updated with new questions</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Daily current affairs</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Instant search</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Repeating questions highlighted</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Year & subject analytics</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Progress tracking & streaks</td><td>✅</td></tr>
+          <tr><td>❌</td><td>Works on phone & laptop</td><td>✅</td></tr>
+          <tr><td>₹600/yr new edition</td><td>Annual cost</td><td>₹1000 all-in</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Trust -->
+    <div class="sub-trust">
+      <p><strong>Secure payment via Razorpay</strong> · UPI · Cards · Net Banking · EMI<br>
+      Instant access after payment · No hidden charges · Cancel anytime</p>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// ── SUBSCRIPTION MODAL ───────────────────────────────────────
+var LOCKED_TABS = ['pyq','pyq-analytics','mock','study','daily-quiz'];
+
+function isTrialExpired() {
+  var u = window._currentUser;
+  if (!u) return false;
+  if (u.status === 'active') return false;
+  if (u.status === 'expired') return true;
+  if (u.status === 'trial' && u.trialExpiresOn) {
+    return new Date(u.trialExpiresOn) < new Date();
+  }
+  return false;
+}
+
+function openSubModal() {
+  document.getElementById('subModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSubModal() {
+  document.getElementById('subModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function initiatePayment(months, amount) {
+  if (!window._currentUser) { openAuthModal('login'); return; }
+  // Razorpay integration placeholder — wire up after Razorpay Key ID is added
+  showToast('Payment gateway coming soon! Contact us to subscribe.');
+}
+
+function checkTabLock(id) {
+  // Remove any existing lock overlay
+  var existing = document.getElementById('tabLockOverlay');
+  if (existing) existing.remove();
+  if (!isTrialExpired()) return;
+  if (!LOCKED_TABS.includes(id)) return;
+  // Add lock overlay over the tab
+  var tab = document.getElementById('tab-' + id);
+  if (!tab) return;
+  tab.style.position = 'relative';
+  var overlay = document.createElement('div');
+  overlay.id = 'tabLockOverlay';
+  overlay.className = 'tab-lock-overlay';
+  overlay.innerHTML =
+    '<div class="tab-lock-box">' +
+      '<div class="lock-icon">🔒</div>' +
+      '<h3>This feature is locked</h3>' +
+      '<p>Your 30-day free trial has ended.<br>Subscribe to unlock all questions, analytics & more.</p>' +
+      '<button onclick="openSubModal()">View Plans — from ₹100/month</button>' +
+    '</div>';
+  tab.appendChild(overlay);
+}
+
 
 function openAuthModal(tab) {
   document.getElementById("authModal").classList.add("open");
