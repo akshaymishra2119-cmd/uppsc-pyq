@@ -12248,7 +12248,10 @@ function doAcctLogin() {
       window._currentUser = data.user; currentUser = data.user;
       updateAuthBtn(data.user); updateTrialBar(data.user);
       renderAccountTab();
-    } else { err.textContent = data.error||'Login failed'; }
+    } else {
+      var msg = data.error || 'Login failed';
+      err.innerHTML = msg + ' — <a href="#" onclick="switchAcctTab('forgot');return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>';
+    }
   }).catch(()=>{ err.textContent='Network error'; });
 }
 
@@ -12265,7 +12268,11 @@ function doAcctRegister() {
       window._currentUser = data.user; currentUser = data.user;
       updateAuthBtn(data.user); updateTrialBar(data.user);
       renderAccountTab();
-    } else { err.textContent = data.error||'Registration failed'; }
+    } else {
+      var msg = data.error || 'Registration failed';
+      var isExists = msg.toLowerCase().includes('exist') || msg.toLowerCase().includes('registered') || msg.toLowerCase().includes('already') || msg.toLowerCase().includes('duplicate');
+      err.innerHTML = msg + (isExists ? ' — <a href="#" onclick="switchAcctTab('forgot');return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>' : '');
+    }
   }).catch(()=>{ err.textContent='Network error'; });
 }
 
