@@ -1657,6 +1657,15 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 </div>
 
 
+<!-- Mobile hint bar — tap to open sidebar -->
+<div id="sbHintBar" onclick="toggleSidebar()">
+  <div class="sbh-left">
+    <span id="sbhExam" class="sbh-pill">UPPSC</span>
+    <span id="sbhLang" class="sbh-pill lang">English</span>
+  </div>
+  <div class="sbh-hint"><i class="ti ti-adjustments-horizontal"></i> Change Exam / Language</div>
+</div>
+
 <!-- ══ PORTAL LAYOUT (sidebar + main) ══════════════════════════ -->
 <div class="portal-layout">
 
@@ -2301,8 +2310,30 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   color:#fff;font-size:20px;padding:4px 8px;
   margin-right:6px;line-height:1;
 }
+/* Mobile hint bar */
+#sbHintBar{
+  display:none;
+  align-items:center;justify-content:space-between;
+  background:#0f1f4a;padding:7px 14px;
+  cursor:pointer;border-bottom:1px solid rgba(255,255,255,.08);
+}
+#sbHintBar .sbh-left{display:flex;align-items:center;gap:8px;}
+#sbHintBar .sbh-pill{
+  background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.35);
+  color:#fbbf24;font-size:11px;font-weight:700;
+  padding:3px 10px;border-radius:99px;letter-spacing:.3px;
+}
+#sbHintBar .sbh-pill.lang{
+  background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);
+  color:rgba(255,255,255,.7);
+}
+#sbHintBar .sbh-hint{
+  font-size:10px;color:rgba(255,255,255,.4);
+  display:flex;align-items:center;gap:4px;
+}
 @media(max-width:700px){
   #sbToggleBtn{display:inline-flex;align-items:center;}
+  #sbHintBar{display:flex;}
   .exam-sidebar{
     position:fixed !important;
     left:-270px;top:0;height:100vh !important;
@@ -13037,6 +13068,12 @@ function toggleSidebar(){
 
 /* ── Sidebar sync ────────────────────────────── */
 (function(){
+  function updateHintBar(exam, lang){
+    var eEl = document.getElementById('sbhExam');
+    var lEl = document.getElementById('sbhLang');
+    if(eEl) eEl.textContent = (exam||'UPPSC').toUpperCase();
+    if(lEl) lEl.textContent = (lang==='hi') ? 'हिंदी' : 'English';
+  }
   var _origSwitchExam = window.switchExam;
   window.switchExam = function(exam){
     if(_origSwitchExam) _origSwitchExam(exam);
@@ -13044,6 +13081,7 @@ function toggleSidebar(){
       var el = document.getElementById('sb-'+e);
       if(el) el.classList.toggle('sb-active', e===exam);
     });
+    updateHintBar(exam, window._currentLang);
   };
   var _origSwitchLang = window.switchLang;
   window.switchLang = function(lang){
@@ -13052,6 +13090,7 @@ function toggleSidebar(){
       var el = document.getElementById('sb-'+l);
       if(el) el.classList.toggle('sb-active', l===lang);
     });
+    updateHintBar(window._currentExam, lang);
   };
 })();
 </script>
