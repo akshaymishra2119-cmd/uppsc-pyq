@@ -55,9 +55,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .nav{background:#fff;border-bottom:1px solid #e8eaf0;
   padding:0 20px;display:flex;gap:0;overflow-x:auto;
   box-shadow:0 1px 4px rgba(0,0,0,0.04);}
-.nav-btn{padding:12px 16px;font-size:13px;border:none;background:transparent;
-  cursor:pointer;color:#6B7280;border-bottom:2.5px solid transparent;
-  white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all 0.15s;font-weight:500;}
+.nav-btn{padding:12px 20px;font-size:13px;border:none;background:transparent;
+  cursor:pointer;color:#6B7280;border-bottom:3px solid transparent;
+  white-space:nowrap;display:flex;align-items:center;gap:7px;transition:all 0.15s;font-weight:500;}
 .nav-btn:hover{color:#1a1a2e;background:#F9FAFB;}
 .nav-btn.active{color:#2563EB;border-bottom-color:#2563EB;font-weight:700;background:#EFF6FF;}
 .nav-btn.nav-teal.active{color:#1D9E75;border-bottom-color:#1D9E75;background:#E1F5EE;}
@@ -66,9 +66,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .nav-btn.nav-coral.active{color:#C2410C;border-bottom-color:#EA580C;background:#FFF7ED;}
 .nav-btn.admin-btn{margin-left:auto;color:#9CA3AF;}
 .nav-btn.admin-btn.active{color:#EF4444;border-bottom-color:#EF4444;}
-.nav-btn.nav-account{color:#4f46e5;background:#eef2ff;}
-.nav-btn.nav-account:hover{color:#3730a3;background:#e0e7ff;}
-.nav-btn.nav-account.active{color:#4f46e5;border-bottom-color:#4f46e5;background:#e0e7ff;font-weight:700;}
+.nav-btn.nav-account{color:#fff;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:8px;margin:6px 4px;padding:8px 18px;font-weight:700;font-size:13px;border-bottom:none!important;box-shadow:0 2px 8px rgba(79,70,229,0.35);}
+.nav-btn.nav-account:hover{background:linear-gradient(135deg,#4338ca,#6d28d9);box-shadow:0 4px 14px rgba(79,70,229,0.5);transform:translateY(-1px);}
+.nav-btn.nav-account.active{background:linear-gradient(135deg,#3730a3,#5b21b6);color:#fff;border-bottom:none!important;box-shadow:0 4px 14px rgba(79,70,229,0.5);}
 .nav-btn.nav-pyq{color:#92400e;background:#FAEEDA;}
 .nav-btn.nav-pyq:hover{color:#78350f;background:#FEF3C7;}
 .nav-btn.nav-pyq.active{color:#92400e;border-bottom-color:#EF9F27;background:#FEF3C7;font-weight:700;}
@@ -1558,6 +1558,9 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn active" onclick="showTab('home',this)">
     <i class="ti ti-home" aria-hidden="true"></i> Home
   </button>
+  <button class="nav-btn nav-account" id="accountNavBtn" onclick="showTab('account',this)">
+    <i class="ti ti-user-circle" aria-hidden="true"></i> My Account
+  </button>
   <button class="nav-btn nav-pyq" onclick="showTab('pyq',this)">
     <i class="ti ti-books" aria-hidden="true"></i> PYQ Practice
     <span class="nav-pyq-badge">TOP</span>
@@ -1589,9 +1592,6 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   </button>
   <button class="nav-btn nav-coral" onclick="showTab('leaderboard',this)">
     <i class="ti ti-trophy" aria-hidden="true"></i> Leaderboard
-  </button>
-  <button class="nav-btn nav-account" id="accountNavBtn" onclick="showTab('account',this)">
-    <i class="ti ti-user-circle" aria-hidden="true"></i> My Account
   </button>
   <button class="nav-btn admin-btn" id="adminNavBtn" style="display:none;" onclick="showTab('admin',this)">
     <i class="ti ti-settings" aria-hidden="true"></i> Admin
