@@ -3137,17 +3137,18 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
       </div>
       <!-- Login Form -->
       <div id="acctLoginForm">
-        <input class="auth-field" id="acctLoginEmail" type="email" placeholder="Email address" style="background:#f9fafb;color:#1a1a2e;border-color:#e5e7eb;" />
-        <input class="auth-field" id="acctLoginPassword" type="password" placeholder="Password" style="background:#f9fafb;color:#1a1a2e;border-color:#e5e7eb;" />
+        <input class="auth-field" id="acctLoginEmail" type="email" placeholder="Email address" />
+        <input class="auth-field" id="acctLoginPassword" type="password" placeholder="Password" />
         <div class="auth-err" id="acctLoginErr"></div>
         <button onclick="doAcctLogin()" style="width:100%;padding:12px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;">Login →</button>
         <div style="text-align:center;margin-top:10px;"><a href="#" onclick="switchAcctTab('forgot');return false;" style="font-size:12px;color:#6366f1;">Forgot password?</a></div>
       </div>
       <!-- Register Form -->
       <div id="acctRegForm" style="display:none;">
-        <input class="auth-field" id="acctRegName" type="text" placeholder="Full name" style="background:#f9fafb;color:#1a1a2e;border-color:#e5e7eb;" />
-        <input class="auth-field" id="acctRegEmail" type="email" placeholder="Email address" style="background:#f9fafb;color:#1a1a2e;border-color:#e5e7eb;" />
-        <input class="auth-field" id="acctRegPassword" type="password" placeholder="Password (min 6 chars)" style="background:#f9fafb;color:#1a1a2e;border-color:#e5e7eb;" />
+        <input class="auth-field" id="acctRegName" type="text" placeholder="Full name *" />
+        <input class="auth-field" id="acctRegEmail" type="email" placeholder="Email address *" />
+        <input class="auth-field" id="acctRegPhone" type="tel" placeholder="Mobile number (optional)" />
+        <input class="auth-field" id="acctRegPassword" type="password" placeholder="Password (min 6 chars) *" />
         <div style="font-size:11px;color:#6b7280;margin-bottom:10px;text-align:center;">✅ 30 days free full access · No credit card needed</div>
         <div class="auth-err" id="acctRegErr"></div>
         <button onclick="doAcctRegister()" style="width:100%;padding:12px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Create Free Account →</button>
@@ -3155,10 +3156,10 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
       <!-- Forgot Password -->
       <div id="acctForgotForm" style="display:none;">
         <div style="text-align:center;margin-bottom:14px;"><div style="font-size:24px;">🔐</div><div style="font-size:14px;font-weight:700;color:var(--text1);margin-top:4px;">Reset Password</div></div>
-        <input class="auth-field" id="acctFpEmail" type="email" placeholder="Your registered email" style="background:#f9fafb;color:#1a1a2e;border-color:#e5e7eb;" />
+        <input class="auth-field" id="acctFpEmail" type="email" placeholder="Your registered email" style="" />
         <div id="acctFpOtpBox" style="display:none;">
-          <input class="auth-field" id="acctFpOtp" type="text" maxlength="6" placeholder="6-digit OTP" style="background:#f9fafb;color:#1a1a2e;border-color:#e5e7eb;letter-spacing:6px;text-align:center;font-size:18px;font-weight:700;" />
-          <input class="auth-field" id="acctFpPass" type="password" placeholder="New password" style="background:#f9fafb;color:#1a1a2e;border-color:#e5e7eb;" />
+          <input class="auth-field" id="acctFpOtp" type="text" maxlength="6" placeholder="6-digit OTP" style="letter-spacing:6px;text-align:center;font-size:18px;font-weight:700;" />
+          <input class="auth-field" id="acctFpPass" type="password" placeholder="New password" style="" />
         </div>
         <div class="auth-err" id="acctFpErr"></div>
         <button id="acctFpBtn" onclick="doAcctForgot()" style="width:100%;padding:12px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Send OTP →</button>
@@ -11750,6 +11751,9 @@ function buildSydQBlock(q, i) {
 .auth-tab-btn.active{color:#fff;border-bottom-color:#6366f1;}
 .auth-field{width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:9px;padding:11px 13px;color:#fff;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none;transition:.15s;}
 .auth-field:focus{border-color:#6366f1;}
+#tab-account .auth-field{background:#f9fafb;color:#1a1a2e;border:1.5px solid #e5e7eb;}
+#tab-account .auth-field::placeholder{color:#9ca3af;}
+#tab-account .auth-field:focus{border-color:#4f46e5;background:#fff;}
 .auth-field::placeholder{color:rgba(255,255,255,0.3);}
 .auth-field:-webkit-autofill,
 .auth-field:-webkit-autofill:hover,
