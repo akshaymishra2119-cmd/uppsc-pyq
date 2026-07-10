@@ -983,7 +983,7 @@ app.get('/api/leaderboard', async (req, res) => {
     const { rows } = await pool.query(`
       SELECT u.id, u.name,
              p.year::text AS year,
-             COUNT(DISTINCT p.q_id) AS practiced
+             COUNT(*) AS practiced
       FROM progress p
       JOIN users u ON p.user_id = u.id
       WHERE p.year IS NOT NULL AND p.year::text ~ '^[0-9]{4}$'
