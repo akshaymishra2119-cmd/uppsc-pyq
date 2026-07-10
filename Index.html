@@ -1428,7 +1428,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 .gc-pyq-prefix{font-size:clamp(12px,1.5vw,16px);font-weight:800;
   color:rgba(255,255,255,0.45);letter-spacing:3px;text-transform:uppercase;align-self:flex-end;margin-bottom:5px;}
 .gc-title{
-  font-size:clamp(26px,3.8vw,48px);font-weight:900;letter-spacing:-1px;line-height:1;
+  font-size:clamp(34px,5vw,64px);font-weight:900;letter-spacing:-1px;line-height:1;
   background:linear-gradient(135deg,#ffffff 0%,#bfdbfe 50%,#93c5fd 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
@@ -1440,10 +1440,10 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 .gc-tagline{font-size:11px;color:rgba(255,255,255,0.38);margin-bottom:4px;letter-spacing:0.3px;}
 .gc-powered{font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:0.8px;margin-bottom:16px;}
 .gc-powered span{color:rgba(251,191,36,0.65);font-weight:700;letter-spacing:2px;}
-.gc-simplersense-logo{display:inline-flex;align-items:center;gap:7px;
+.gc-simplersense-logo{display:inline-flex;align-items:center;gap:10px;
   background:rgba(15,23,42,0.55);border:1px solid rgba(255,255,255,0.1);
-  border-radius:8px;padding:5px 12px 5px 8px;margin-bottom:14px;}
-.gc-ss-text{font-size:13px;font-weight:700;color:#fff;letter-spacing:0.3px;}
+  border-radius:10px;padding:8px 18px 8px 12px;margin-bottom:14px;}
+.gc-ss-text{font-size:clamp(42px,6vw,80px);font-weight:900;color:#fff;letter-spacing:-0.5px;line-height:1;}
 /* Stats pills */
 .gc-stats-row{display:flex;gap:8px;flex-wrap:wrap;}
 .gc-stat-pill{
@@ -1544,7 +1544,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
         <span class="gc-edition">2005 – 2025</span>
       </div>
       <div class="gc-simplersense-logo">
-        <svg width="22" height="18" viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="32" height="26" viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="0" y="9" width="5" height="9" rx="1.5" fill="#14b8a6"/>
           <rect x="8" y="4" width="5" height="14" rx="1.5" fill="#f59e0b"/>
           <rect x="16" y="0" width="5" height="18" rx="1.5" fill="#14b8a6" opacity="0.7"/>
@@ -1555,16 +1555,10 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 
     <!-- Right Block -->
     <div class="gc-right-block">
-      <span class="gc-badge-uppsc">UPPSC PCS</span>
       <span id="streakBadge" class="gc-streak-badge">
         <i class="ti ti-flame" style="color:#92400e;"></i>
         <span id="streakNum">0</span> day streak
       </span>
-      <button id="syncSheetBtn" onclick="syncFromSheet()" title="Sync from Google Sheet"
-        style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px;
-               font-size:11px;color:rgba(255,255,255,0.55);cursor:pointer;display:flex;align-items:center;gap:4px;">
-        <i class="ti ti-refresh" style="font-size:13px;"></i> Sync Sheet
-      </button>
     </div>
 
   </div>
