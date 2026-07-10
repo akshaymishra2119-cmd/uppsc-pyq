@@ -8,6 +8,7 @@ const express      = require('express');
 const fs           = require('fs');
 const path         = require('path');
 const https        = require('https');
+const crypto       = require('crypto');
 const bcrypt       = require('bcryptjs');
 const { Resend }   = require('resend');
 const resend       = new Resend(process.env.RESEND_API_KEY || 're_placeholder_local_dev');
@@ -1547,6 +1548,104 @@ setTimeout(() => {
   autoIngestNews();
   setInterval(autoIngestNews, 6 * 60 * 60 * 1000);
 }, 30000);
+
+
+// ── RAZORPAY PAYMENT GATEWAY ─────────────────────────────────
+const RAZORPAY_KEY_ID     = process.env.RAZORPAY_KEY_ID     || 'rzp_test_TBhMVywIVF8dWq';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '1Jw4biVm8n7hQkW6dv5tq6cn';
+
+function razorpayRequest(method, path, body) {
+  return new Promise((resolve, reject) => {
+    const auth = Buffer.from(RAZORPAY_KEY_ID + ':' + RAZORPAY_KEY_SECRET).toString('base64');
+    const data = body ? JSON.stringify(body) : null;
+    const options = {
+      hostname: 'api.razorpay.com',
+      path: '/v1' + path,
+      method,
+      headers: {
+        'Authorization': 'Basic ' + auth,
+        'Content-Type': 'application/json',
+        ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {}),
+      },
+    };
+    const req = https.request(options, res => {
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => {
+        try { resolve(JSON.parse(raw)); } catch { resolve({ _raw: raw }); }
+      });
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+
+// POST /api/createOrder — creates a Razorpay order (requires login)
+app.post('/api/createOrder', authMiddleware, async (req, res) => {
+  const { months, amount } = req.body || {};
+  if (!months || !amount) return res.status(400).json({ error: 'months and amount required' });
+  try {
+    const order = await razorpayRequest('POST', '/orders', {
+      amount:   Math.round(amount * 100),  // paise
+      currency: 'INR',
+      receipt:  'sub_' + req.user.id + '_' + months + 'm_' + Date.now(),
+    });
+    if (!order.id) {
+      console.error('[Razorpay] Order creation failed:', order);
+      return res.status(500).json({ error: 'Razorpay order creation failed', detail: order });
+    }
+    res.json({ orderId: order.id, amount: order.amount, currency: order.currency, keyId: RAZORPAY_KEY_ID });
+  } catch (e) {
+    console.error('[Razorpay] createOrder error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/verifyPayment — verifies signature and activates subscription
+app.post('/api/verifyPayment', authMiddleware, async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, months } = req.body || {};
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !months) {
+    return res.status(400).json({ error: 'Missing payment fields' });
+  }
+  // Verify HMAC-SHA256 signature
+  const expected = crypto
+    .createHmac('sha256', RAZORPAY_KEY_SECRET)
+    .update(razorpay_order_id + '|' + razorpay_payment_id)
+    .digest('hex');
+  if (expected !== razorpay_signature) {
+    console.warn('[Razorpay] Signature mismatch for payment:', razorpay_payment_id);
+    return res.status(400).json({ error: 'Payment signature invalid' });
+  }
+  try {
+    // Extend subscription: start from today or from existing paid_till (whichever is later)
+    await pool.query(
+      `UPDATE users
+       SET subscription_paid_till = GREATEST(COALESCE(subscription_paid_till, NOW()), NOW())
+                                    + ($1 || ' months')::interval,
+           status = 'active'
+       WHERE id = $2`,
+      [months, req.user.id]
+    );
+    // Return updated user
+    const result = await pool.query(
+      `SELECT id, name, email, trial_expires_on, subscription_paid_till, status FROM users WHERE id = $1`,
+      [req.user.id]
+    );
+    const u = result.rows[0];
+    const now = new Date();
+    let status = 'trial';
+    if (u.trial_expires_on && now > new Date(u.trial_expires_on)) status = 'expired';
+    if (u.subscription_paid_till && now <= new Date(u.subscription_paid_till)) status = 'active';
+    const user = { id: u.id, name: u.name, email: u.email, status,
+                   trialExpiresOn: u.trial_expires_on, subscriptionPaidTill: u.subscription_paid_till };
+    console.log('[Razorpay] Payment verified — user', u.id, 'subscribed', months, 'months. Paid till:', u.subscription_paid_till);
+    res.json({ success: true, user });
+  } catch (e) {
+    console.error('[Razorpay] verifyPayment DB error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // -- START
 app.listen(PORT, '0.0.0.0', () => {

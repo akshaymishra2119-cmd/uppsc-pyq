@@ -16,6 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
 /* ── RESET & BASE ─────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -12008,8 +12009,61 @@ function closeSubModal() {
 
 function initiatePayment(months, amount) {
   if (!window._currentUser) { openAuthModal('login'); return; }
-  // Razorpay integration placeholder — wire up after Razorpay Key ID is added
-  showToast('Payment gateway coming soon! Contact us to subscribe.');
+  fetch('/api/createOrder', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ months: months, amount: amount })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(order) {
+    if (!order.orderId) { showToast('Could not start payment. Try again.'); return; }
+    var rzp = new Razorpay({
+      key:         order.keyId,
+      amount:      order.amount,
+      currency:    order.currency,
+      name:        'SimplerSense',
+      description: months + ' month' + (months > 1 ? 's' : '') + ' subscription',
+      order_id:    order.orderId,
+      prefill: {
+        name:  (window._currentUser && window._currentUser.name)  || '',
+        email: (window._currentUser && window._currentUser.email) || ''
+      },
+      theme: { color: '#f59e0b' },
+      handler: function(response) {
+        fetch('/api/verifyPayment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            razorpay_order_id:   response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature:  response.razorpay_signature,
+            months:              months
+          })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            window._currentUser = data.user;
+            updateTrialBar(data.user);
+            closeSubModal();
+            var lock = document.getElementById('tabLockOverlay');
+            if (lock) lock.remove();
+            showToast('🎉 Subscribed for ' + months + ' month' + (months > 1 ? 's' : '') + '! Enjoy full access.');
+          } else {
+            showToast('Payment verification failed. Contact support.');
+          }
+        })
+        .catch(function() { showToast('Network error during verification. Contact support.'); });
+      }
+    });
+    rzp.on('payment.failed', function(r) {
+      showToast('Payment failed: ' + ((r.error && r.error.description) || 'Unknown error'));
+    });
+    rzp.open();
+  })
+  .catch(function(e) { showToast('Error: ' + e.message); });
 }
 
 function checkTabLock(id) {
