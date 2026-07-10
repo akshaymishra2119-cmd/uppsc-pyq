@@ -3118,7 +3118,7 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
       <div>
         <div style="font-size:20px;font-weight:900;color:#1a1a2e;">🏆 PYQ Practice Leaderboard</div>
-        <div style="font-size:12px;color:#6b7280;margin-top:3px;">Total practice attempts per exam year (repeats counted)</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:3px;">Full year completions per candidate (attempts ÷ total questions in year)</div>
       </div>
       <button onclick="loadLeaderboard()" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">↻ Refresh</button>
     </div>
@@ -9506,53 +9506,61 @@ function renderLeaderboard(data) {
   }
   var years = data.years;
   var users = data.users;
+  var yearTotals = data.yearTotals || {};
   var myName = window._currentUser ? window._currentUser.name : '';
   var medals = ['🥇','🥈','🥉'];
-
-  // Build bar scale (max total)
-  var maxTotal = Math.max.apply(null, users.map(function(u){ return u.total; }));
+  var maxComp = Math.max.apply(null, users.map(function(u){ return u.totalCompletions||0; })) || 1;
 
   var rows = users.map(function(u, i) {
     var isMe = myName && u.name === myName;
     var yearCells = years.map(function(y) {
-      var val = u.years[y] || 0;
-      var pct = maxTotal > 0 ? Math.round(val/maxTotal*100) : 0;
-      return '<td style="text-align:center;padding:10px 8px;">'
-        + (val > 0
-          ? '<div style="font-size:15px;font-weight:700;color:'+(isMe?'#4f46e5':'#1a1a2e')+';">'+val+'</div>'
-            + '<div style="margin-top:4px;height:4px;border-radius:2px;background:#e5e7eb;">'
-            + '<div style="height:4px;border-radius:2px;background:'+(isMe?'#4f46e5':'#10b981')+';width:'+pct+'%;"></div></div>'
-          : '<span style="color:#d1d5db;font-size:13px;">—</span>')
+      var cell = u.years[y] || {};
+      var comp = cell.completions || 0;
+      var att  = cell.attempts  || 0;
+      if (!att) return '<td style="text-align:center;padding:10px 8px;"><span style="color:#d1d5db;font-size:13px;">—</span></td>';
+      // Completion dots: filled circles for each completed pass
+      var dots = '';
+      for (var d=0; d<Math.min(comp,5); d++) dots += '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+(isMe?'#4f46e5':'#10b981')+';margin:0 1px;"></span>';
+      if (comp>5) dots += '<span style="font-size:10px;color:#6b7280;">+'+( comp-5)+'</span>';
+      return '<td style="text-align:center;padding:8px 6px;">'
+        + '<div style="font-size:18px;font-weight:900;color:'+(isMe?'#4f46e5':'#1a1a2e')+';">'+(comp>0?comp:'<1')+'</div>'
+        + (comp>0 ? '<div style="margin-top:3px;">'+dots+'</div>' : '')
+        + '<div style="font-size:10px;color:#9ca3af;margin-top:2px;">'+att+' att</div>'
         + '</td>';
     }).join('');
 
-    return '<tr style="background:'+(isMe?'#f5f3ff':'')+(i%2&&!isMe?'#f9fafb':'')+';border-bottom:1px solid #f3f4f6;">'
-      + '<td style="padding:12px 14px;font-weight:700;font-size:14px;color:#6b7280;text-align:center;">'+(medals[i]||i+1)+'</td>'
-      + '<td style="padding:12px 14px;font-weight:700;color:#1a1a2e;white-space:nowrap;">'
-        + u.name + (isMe ? ' <span style="font-size:10px;background:#4f46e5;color:#fff;padding:1px 6px;border-radius:10px;vertical-align:middle;">you</span>' : '')
+    return '<tr style="background:'+(isMe?'#f5f3ff':i%2?'#fafafa':'#fff')+';border-bottom:1px solid #f0f0f0;">'
+      + '<td style="padding:14px;font-size:15px;text-align:center;font-weight:700;color:#9ca3af;">'+(medals[i]||i+1)+'</td>'
+      + '<td style="padding:14px;font-weight:700;color:#1a1a2e;white-space:nowrap;font-size:14px;">'
+        + u.name + (isMe ? ' <span style="font-size:10px;background:#4f46e5;color:#fff;padding:2px 7px;border-radius:10px;vertical-align:middle;margin-left:4px;">you</span>' : '')
       + '</td>'
       + yearCells
-      + '<td style="text-align:center;padding:10px 14px;font-weight:900;font-size:16px;color:'+(isMe?'#4f46e5':'#1a1a2e')+';">'+u.total+'</td>'
+      + '<td style="text-align:center;padding:14px;font-weight:900;font-size:20px;color:'+(isMe?'#4f46e5':'#1a1a2e')+';border-left:2px solid #e5e7eb;">'+(u.totalCompletions||0)+'</td>'
       + '</tr>';
   }).join('');
 
+  // Year headers with total Qs count
   var yearHeaders = years.map(function(y){
-    return '<th style="padding:12px 8px;text-align:center;font-size:12px;font-weight:700;color:#4f46e5;letter-spacing:0.5px;">'+y+'</th>';
+    var total = yearTotals[y] || '?';
+    return '<th style="padding:10px 6px;text-align:center;min-width:64px;">'
+      + '<div style="font-size:15px;font-weight:900;color:#fff;letter-spacing:0.5px;">'+y+'</div>'
+      + '<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;">'+total+' Qs</div>'
+      + '</th>';
   }).join('');
 
   el.innerHTML =
-    '<div style="overflow-x:auto;border-radius:12px;border:1.5px solid #e5e7eb;">'
-    + '<table style="width:100%;border-collapse:collapse;min-width:600px;">'
-    + '<thead style="background:#1a1a2e;">'
+    '<div style="overflow-x:auto;border-radius:14px;border:1.5px solid #e5e7eb;box-shadow:0 2px 12px rgba(0,0,0,0.06);">'
+    + '<table style="width:100%;border-collapse:collapse;min-width:640px;">'
+    + '<thead style="background:linear-gradient(135deg,#1a1a2e,#2d1b69);">'
     + '<tr>'
-    + '<th style="padding:14px;text-align:center;font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);">RANK</th>'
-    + '<th style="padding:14px;text-align:left;font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);">CANDIDATE</th>'
+    + '<th style="padding:14px;text-align:center;font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1px;">RANK</th>'
+    + '<th style="padding:14px;text-align:left;font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1px;">CANDIDATE</th>'
     + yearHeaders
-    + '<th style="padding:14px;text-align:center;font-size:12px;font-weight:700;color:#fbbf24;">TOTAL</th>'
+    + '<th style="padding:14px;text-align:center;font-size:11px;font-weight:700;color:#fbbf24;letter-spacing:1px;border-left:2px solid rgba(255,255,255,0.1);">TOTAL<br><span style="font-size:9px;font-weight:400;color:rgba(251,191,36,0.6);">completions</span></th>'
     + '</tr></thead>'
     + '<tbody>'+rows+'</tbody>'
     + '</table></div>'
-    + '<div style="margin-top:10px;font-size:11px;color:#9ca3af;text-align:right;">Counts = total practice attempts per exam year (repeats included)</div>';
+    + '<div style="margin-top:8px;font-size:11px;color:#9ca3af;text-align:right;">Number = full passes completed (attempts ÷ total Qs in that year)</div>';
 }
 
 // ══════════════════════════════════════════════════════════════

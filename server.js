@@ -981,29 +981,44 @@ app.post('/api/getLeaderboard', (req, res) => {
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const { rows } = await pool.query(`
-      SELECT u.id, u.name,
-             p.year::text AS year,
-             COUNT(*) AS practiced
-      FROM progress p
-      JOIN users u ON p.user_id = u.id
-      WHERE p.year IS NOT NULL AND p.year::text ~ '^[0-9]{4}$'
-      GROUP BY u.id, u.name, p.year
-      ORDER BY u.name, p.year
+      WITH year_totals AS (
+        SELECT year::text AS year, COUNT(DISTINCT q_id) AS total_qs
+        FROM progress
+        WHERE year IS NOT NULL AND year::text ~ '^[0-9]{4}$'
+        GROUP BY year
+      ),
+      user_attempts AS (
+        SELECT u.id, u.name, p.year::text AS year, COUNT(*) AS attempts
+        FROM progress p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.year IS NOT NULL AND p.year::text ~ '^[0-9]{4}$'
+        GROUP BY u.id, u.name, p.year
+      )
+      SELECT ua.id, ua.name, ua.year,
+             ua.attempts,
+             yt.total_qs,
+             FLOOR(ua.attempts::float / NULLIF(yt.total_qs,0)) AS completions
+      FROM user_attempts ua
+      JOIN year_totals yt ON ua.year = yt.year
+      ORDER BY ua.name, ua.year
     `);
 
-    // Pivot: { userId: { name, years: { '2014': 5, '2015': 3, ... }, total } }
+    // Pivot
     const map = {};
     const yearSet = new Set();
+    const yearTotals = {};
     rows.forEach(r => {
       yearSet.add(r.year);
-      if (!map[r.id]) map[r.id] = { name: r.name, years: {}, total: 0 };
-      map[r.id].years[r.year] = parseInt(r.practiced);
-      map[r.id].total += parseInt(r.practiced);
+      yearTotals[r.year] = parseInt(r.total_qs);
+      if (!map[r.id]) map[r.id] = { name: r.name, years: {}, totalCompletions: 0 };
+      const comp = parseInt(r.completions) || 0;
+      map[r.id].years[r.year] = { attempts: parseInt(r.attempts), completions: comp };
+      map[r.id].totalCompletions += comp;
     });
 
     const years = Array.from(yearSet).sort();
-    const users = Object.values(map).sort((a, b) => b.total - a.total);
-    res.json({ years, users });
+    const users = Object.values(map).sort((a, b) => b.totalCompletions - a.totalCompletions);
+    res.json({ years, yearTotals, users });
   } catch (e) {
     console.error('leaderboard error:', e);
     res.status(500).json({ error: e.message });
