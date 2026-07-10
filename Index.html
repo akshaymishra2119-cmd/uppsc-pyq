@@ -12250,7 +12250,7 @@ function doAcctLogin() {
       renderAccountTab();
     } else {
       var msg = data.error || 'Login failed';
-      err.innerHTML = msg + ' — <a href="#" onclick="switchAcctTab('forgot');return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>';
+      err.innerHTML = msg + ' \u2014 <a href="#" onclick="switchAcctTab(\u0027forgot\u0027);return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>';
     }
   }).catch(()=>{ err.textContent='Network error'; });
 }
@@ -12271,7 +12271,7 @@ function doAcctRegister() {
     } else {
       var msg = data.error || 'Registration failed';
       var isExists = msg.toLowerCase().includes('exist') || msg.toLowerCase().includes('registered') || msg.toLowerCase().includes('already') || msg.toLowerCase().includes('duplicate');
-      err.innerHTML = msg + (isExists ? ' — <a href="#" onclick="switchAcctTab('forgot');return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>' : '');
+      err.innerHTML = msg + (isExists ? ' \u2014 <a href="#" onclick="switchAcctTab(\u0027forgot\u0027);return false;" style="color:#4f46e5;font-weight:700;">Forgot Password?</a>' : '');
     }
   }).catch(()=>{ err.textContent='Network error'; });
 }
