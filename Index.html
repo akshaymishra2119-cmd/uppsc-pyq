@@ -12009,15 +12009,23 @@ function closeSubModal() {
 
 function initiatePayment(months, amount) {
   if (!window._currentUser) { openAuthModal('login'); return; }
+  if (typeof Razorpay === 'undefined') {
+    alert('Razorpay SDK not loaded. Please refresh the page (Ctrl+Shift+R) and try again.');
+    return;
+  }
   fetch('/api/createOrder', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({ months: months, amount: amount })
   })
-  .then(function(r) { return r.json(); })
+  .then(function(r) {
+    if (!r.ok) { return r.json().then(function(e) { throw new Error(e.error || 'Server error ' + r.status); }); }
+    return r.json();
+  })
   .then(function(order) {
-    if (!order.orderId) { showToast('Could not start payment. Try again.'); return; }
+    if (!order.orderId) { alert('Order creation failed: ' + JSON.stringify(order)); return; }
+    closeSubModal();
     var rzp = new Razorpay({
       key:         order.keyId,
       amount:      order.amount,
