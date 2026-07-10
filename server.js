@@ -1492,6 +1492,14 @@ app.post('/api/clearAllNews', async (req, res) => {
   }
 });
 
+// ── API: triggerScrape (manual trigger) ──────────────────────
+app.post('/api/triggerScrape', async (req, res) => {
+  const { secret } = req.body || {};
+  if (secret !== 'clear-news-2026') return res.status(403).json({ error: 'Forbidden' });
+  res.json({ success: true, message: 'Scrape started in background' });
+  autoIngestNews().catch(e => console.error('[TriggerScrape] Error:', e.message));
+});
+
 // ── DAILY AUTO-SCRAPE (runs every 6 hours on Railway) ────────
 const { scrapeAll } = require('./scraper');
 

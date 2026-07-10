@@ -38,7 +38,9 @@ echo.
 echo ========================================
 echo  Step 4: Triggering fresh news scrape
 echo ========================================
-curl -s -X POST "https://uppsc-pyq-production.up.railway.app/api/triggerScrape"
+curl -s -X POST "https://uppsc-pyq-production.up.railway.app/api/triggerScrape" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"secret\":\"clear-news-2026\"}"
 echo.
 
 echo.
