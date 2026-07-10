@@ -12029,6 +12029,14 @@ function initiatePayment(months, amount) {
         name:  (window._currentUser && window._currentUser.name)  || '',
         email: (window._currentUser && window._currentUser.email) || ''
       },
+      method: { upi: true, card: true, netbanking: true, wallet: true, emi: false },
+      config: {
+        display: {
+          blocks: { upi: { name: 'Pay via UPI / QR', instruments: [{ method: 'upi', flows: ['qr','intent','collect'] }] } },
+          sequence: ['block.upi'],
+          preferences: { show_default_blocks: true }
+        }
+      },
       theme: { color: '#f59e0b' },
       handler: function(response) {
         fetch('/api/verifyPayment', {
