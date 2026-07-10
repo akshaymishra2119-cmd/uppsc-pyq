@@ -977,6 +977,39 @@ app.post('/api/getLeaderboard', (req, res) => {
   res.json(db.leaderboard.sort((a, b) => b.score - a.score).slice(0, 20));
 });
 
+// ── API: leaderboard (PYQ practice per user per year) ─────────
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT u.id, u.name,
+             p.year::text AS year,
+             COUNT(DISTINCT p.q_id) AS practiced
+      FROM progress p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.year IS NOT NULL AND p.year::text ~ '^[0-9]{4}$'
+      GROUP BY u.id, u.name, p.year
+      ORDER BY u.name, p.year
+    `);
+
+    // Pivot: { userId: { name, years: { '2014': 5, '2015': 3, ... }, total } }
+    const map = {};
+    const yearSet = new Set();
+    rows.forEach(r => {
+      yearSet.add(r.year);
+      if (!map[r.id]) map[r.id] = { name: r.name, years: {}, total: 0 };
+      map[r.id].years[r.year] = parseInt(r.practiced);
+      map[r.id].total += parseInt(r.practiced);
+    });
+
+    const years = Array.from(yearSet).sort();
+    const users = Object.values(map).sort((a, b) => b.total - a.total);
+    res.json({ years, users });
+  } catch (e) {
+    console.error('leaderboard error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── API: getStats ─────────────────────────────────────────────
 app.post('/api/getStats', (req, res) => {
   const db = loadDB();

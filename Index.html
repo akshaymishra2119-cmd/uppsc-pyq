@@ -3114,7 +3114,16 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 
 <!-- ══ LEADERBOARD TAB ═══════════════════════════════════════ -->
 <div class="tab" id="tab-leaderboard">
-  <div id="lbContent"><div class="loading"><i class="ti ti-loader"></i>Loading leaderboard...</div></div>
+  <div style="max-width:1100px;margin:0 auto;padding:24px 16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-size:20px;font-weight:900;color:#1a1a2e;">🏆 PYQ Practice Leaderboard</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:3px;">Number of unique questions practiced per exam year</div>
+      </div>
+      <button onclick="loadLeaderboard()" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">↻ Refresh</button>
+    </div>
+    <div id="lbContent"><div class="loading"><i class="ti ti-loader"></i>Loading...</div></div>
+  </div>
 </div>
 
 <!-- ══ ADMIN TAB ══════════════════════════════════════════════ -->
@@ -9481,52 +9490,69 @@ function launchRevisionSession() {
 // LEADERBOARD
 // ══════════════════════════════════════════════════════════════
 function loadLeaderboard() {
-  document.getElementById("lbContent").innerHTML =
-    `<div class="loading"><i class="ti ti-loader"></i>Loading leaderboard...</div>`;
-
-  google.script.run
-    .withSuccessHandler(lb => renderLeaderboard(lb))
-    .withFailureHandler(showError)
-    .getLeaderboard();
+  var el = document.getElementById('lbContent');
+  el.innerHTML = '<div class="loading"><i class="ti ti-loader"></i>Loading...</div>';
+  fetch('/api/leaderboard', {credentials:'include'})
+    .then(function(r){ return r.json(); })
+    .then(function(data){ renderLeaderboard(data); })
+    .catch(function(e){ el.innerHTML = '<div style="color:#ef4444;padding:20px;">Failed to load: '+e.message+'</div>'; });
 }
 
-function renderLeaderboard(lb) {
-  const el = document.getElementById("lbContent");
-  const myRank = lb.findIndex(u => u.name === userName) + 1;
-  const medals = ["🥇","🥈","🥉"];
+function renderLeaderboard(data) {
+  var el = document.getElementById('lbContent');
+  if (!data || !data.users || !data.users.length) {
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:#6b7280;">No practice data yet. Start practising PYQ questions!</div>';
+    return;
+  }
+  var years = data.years;
+  var users = data.users;
+  var myName = window._currentUser ? window._currentUser.name : '';
+  var medals = ['🥇','🥈','🥉'];
 
-  el.innerHTML = `
-    <div class="three-col">
-      <div class="metric"><div class="metric-lbl">Your rank</div>
-        <div class="metric-val">#${myRank || "—"}</div>
-        <div class="metric-sub">of ${lb.length} users</div></div>
-      <div class="metric"><div class="metric-lbl">Your best score</div>
-        <div class="metric-val" style="color:var(--teal);">${(lb.find(u=>u.name===userName)||{}).score||"—"}/150</div>
-        <div class="metric-sub">projected</div></div>
-      <div class="metric"><div class="metric-lbl">Total users</div>
-        <div class="metric-val">${lb.length}</div>
-        <div class="metric-sub">on the portal</div></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="ti ti-trophy" aria-hidden="true" style="color:var(--amber);"></i> Leaderboard</div>
-      <table class="lb-table">
-        <thead><tr>
-          <th>Rank</th><th>Name</th>
-          <th>Score</th><th>Accuracy</th><th>Qs done</th><th>Last active</th>
-        </tr></thead>
-        <tbody>${lb.map((u,i) => {
-          const isMe = u.name === userName;
-          return `<tr class="${isMe?"me":""}">
-            <td class="lb-rank">${medals[i]||i+1}</td>
-            <td class="lb-name">${u.name}${isMe?" <span style='font-size:10px;color:var(--teal-dark);'>(you)</span>":""}</td>
-            <td style="font-weight:500;color:var(--teal-dark);">${u.score||0}/150</td>
-            <td>${u.accuracy||0}%</td>
-            <td>${u.attempted||0}</td>
-            <td style="font-size:11px;color:var(--text3);">${u.lastActive||""}</td>
-          </tr>`;
-        }).join("")}</tbody>
-      </table>
-    </div>`;
+  // Build bar scale (max total)
+  var maxTotal = Math.max.apply(null, users.map(function(u){ return u.total; }));
+
+  var rows = users.map(function(u, i) {
+    var isMe = myName && u.name === myName;
+    var yearCells = years.map(function(y) {
+      var val = u.years[y] || 0;
+      var pct = maxTotal > 0 ? Math.round(val/maxTotal*100) : 0;
+      return '<td style="text-align:center;padding:10px 8px;">'
+        + (val > 0
+          ? '<div style="font-size:15px;font-weight:700;color:'+(isMe?'#4f46e5':'#1a1a2e')+';">'+val+'</div>'
+            + '<div style="margin-top:4px;height:4px;border-radius:2px;background:#e5e7eb;">'
+            + '<div style="height:4px;border-radius:2px;background:'+(isMe?'#4f46e5':'#10b981')+';width:'+pct+'%;"></div></div>'
+          : '<span style="color:#d1d5db;font-size:13px;">—</span>')
+        + '</td>';
+    }).join('');
+
+    return '<tr style="background:'+(isMe?'#f5f3ff':'')+(i%2&&!isMe?'#f9fafb':'')+';border-bottom:1px solid #f3f4f6;">'
+      + '<td style="padding:12px 14px;font-weight:700;font-size:14px;color:#6b7280;text-align:center;">'+(medals[i]||i+1)+'</td>'
+      + '<td style="padding:12px 14px;font-weight:700;color:#1a1a2e;white-space:nowrap;">'
+        + u.name + (isMe ? ' <span style="font-size:10px;background:#4f46e5;color:#fff;padding:1px 6px;border-radius:10px;vertical-align:middle;">you</span>' : '')
+      + '</td>'
+      + yearCells
+      + '<td style="text-align:center;padding:10px 14px;font-weight:900;font-size:16px;color:'+(isMe?'#4f46e5':'#1a1a2e')+';">'+u.total+'</td>'
+      + '</tr>';
+  }).join('');
+
+  var yearHeaders = years.map(function(y){
+    return '<th style="padding:12px 8px;text-align:center;font-size:12px;font-weight:700;color:#4f46e5;letter-spacing:0.5px;">'+y+'</th>';
+  }).join('');
+
+  el.innerHTML =
+    '<div style="overflow-x:auto;border-radius:12px;border:1.5px solid #e5e7eb;">'
+    + '<table style="width:100%;border-collapse:collapse;min-width:600px;">'
+    + '<thead style="background:#1a1a2e;">'
+    + '<tr>'
+    + '<th style="padding:14px;text-align:center;font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);">RANK</th>'
+    + '<th style="padding:14px;text-align:left;font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);">CANDIDATE</th>'
+    + yearHeaders
+    + '<th style="padding:14px;text-align:center;font-size:12px;font-weight:700;color:#fbbf24;">TOTAL</th>'
+    + '</tr></thead>'
+    + '<tbody>'+rows+'</tbody>'
+    + '</table></div>'
+    + '<div style="margin-top:10px;font-size:11px;color:#9ca3af;text-align:right;">Counts = unique questions practiced per exam year</div>';
 }
 
 // ══════════════════════════════════════════════════════════════
