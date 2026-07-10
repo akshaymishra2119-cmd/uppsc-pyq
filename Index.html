@@ -3123,11 +3123,11 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 <div class="tab" id="tab-account">
 
   <!-- AUTH STRIP (shown when logged out) -->
-  <div id="acct-auth-strip" style="display:none;background:#1e1b4b;padding:18px 24px;">
+  <div id="acct-auth-strip" style="display:none;background:#f8f7ff;border-bottom:1px solid #e5e7eb;padding:18px 24px;">
     <div style="max-width:860px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
       <div style="flex:1;min-width:200px;">
-        <div style="font-size:14px;font-weight:700;color:#fff;">👤 Login or Register to Subscribe</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">30-day free trial · No credit card needed</div>
+        <div style="font-size:14px;font-weight:700;color:#1a1a2e;">👤 Login or Register to Subscribe</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:2px;">30-day free trial · No credit card needed</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <div style="background:#fff;border-radius:10px;padding:14px 18px;min-width:220px;">
@@ -3166,20 +3166,24 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
   </div>
 
   <!-- LOGGED IN STRIP -->
-  <div id="acct-user-strip" style="display:none;background:#1e1b4b;padding:14px 24px;">
-    <div style="max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+  <div id="acct-user-strip" style="display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 24px;">
+    <div style="max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <!-- Avatar + name -->
       <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;" id="acctAvatar">?</div>
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;letter-spacing:1px;flex-shrink:0;" id="acctAvatar">?</div>
         <div>
-          <div style="font-size:14px;font-weight:700;color:#fff;" id="acctName">—</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);" id="acctEmail">—</div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a2e;line-height:1.2;" id="acctName">—</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:1px;" id="acctEmail">—</div>
         </div>
       </div>
-      <div id="acctSubCard" style="padding:8px 16px;border-radius:8px;border:1.5px solid #10b981;background:rgba(16,185,129,0.15);">
-        <span id="acctSubLabel" style="font-size:12px;font-weight:700;color:#10b981;">✅ Subscribed</span>
-        <span id="acctSubDetail" style="font-size:11px;color:rgba(255,255,255,0.6);margin-left:8px;"></span>
+      <!-- Subscription badge -->
+      <div id="acctSubCard" style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-radius:10px;border:1.5px solid #10b981;background:#f0fdf4;">
+        <span id="acctSubLabel" style="font-size:13px;font-weight:700;color:#065f46;">✅ Subscribed</span>
+        <span style="width:1px;height:16px;background:#d1fae5;display:inline-block;"></span>
+        <span id="acctSubDetail" style="font-size:11px;color:#047857;font-weight:500;"></span>
       </div>
-      <button onclick="doLogout()" style="padding:7px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);border-radius:8px;font-size:12px;cursor:pointer;">Logout</button>
+      <!-- Logout -->
+      <button onclick="doLogout()" style="padding:8px 18px;background:#fff;border:1.5px solid #e5e7eb;color:#6b7280;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#6b7280'">Logout</button>
     </div>
   </div>
 
@@ -12251,17 +12255,17 @@ function renderAccountTab() {
   var detail = document.getElementById('acctSubDetail');
   var card   = document.getElementById('acctSubCard');
   if (u.status === 'active' && u.subscriptionPaidTill) {
-    card.style.borderColor = '#10b981'; card.style.background = 'rgba(16,185,129,0.15)';
+    card.style.borderColor = '#10b981'; card.style.background = '#f0fdf4';
     label.style.color = '#10b981'; label.textContent = '\u2705 Subscribed';
     var till = new Date(u.subscriptionPaidTill);
     detail.textContent = 'Valid till ' + till.getDate() + ' ' + till.toLocaleString('en-IN',{month:'short'}) + ' ' + till.getFullYear();
   } else if (u.status === 'trial' && u.trialExpiresOn) {
-    card.style.borderColor = '#f59e0b'; card.style.background = 'rgba(251,191,36,0.15)';
-    label.style.color = '#fbbf24'; label.textContent = '\u23f3 Free Trial';
+    card.style.borderColor = '#f59e0b'; card.style.background = '#fffbeb';
+    label.style.color = '#b45309'; label.textContent = '\u23f3 Free Trial';
     var dLeft = Math.max(0, Math.ceil((new Date(u.trialExpiresOn)-new Date())/86400000));
     detail.textContent = dLeft + ' day' + (dLeft===1?'':'s') + ' left';
   } else {
-    card.style.borderColor = '#ef4444'; card.style.background = 'rgba(239,68,68,0.15)';
+    card.style.borderColor = '#ef4444'; card.style.background = '#fef2f2';
     label.style.color = '#ef4444'; label.textContent = '\uD83D\uDD12 Trial Expired';
     detail.textContent = 'Subscribe to restore access';
   }
