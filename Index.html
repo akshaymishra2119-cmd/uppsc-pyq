@@ -12326,7 +12326,7 @@ function doAcctLogin() {
     if (data.user) {
       window._currentUser = data.user; currentUser = data.user;
       err.textContent='';
-      updateAuthBtn(data.user); updateTrialBar(data.user);
+      _updateNavBtn(data.user); updateTrialBar(data.user);
       renderAccountTab();
     } else {
       var msg = data.error || 'Login failed';
@@ -12348,7 +12348,7 @@ function doAcctRegister() {
   .then(r=>r.json()).then(data=>{
     if (data.user||data.success) {
       window._currentUser = data.user; currentUser = data.user;
-      updateAuthBtn(data.user); updateTrialBar(data.user);
+      _updateNavBtn(data.user); updateTrialBar(data.user);
       renderAccountTab();
     } else {
       var msg = data.error || 'Registration failed';
