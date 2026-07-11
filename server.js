@@ -38,6 +38,9 @@ const BPSC_SHEET_ID = '15xXnY1NE1CIYGXVOMNa_RXcZ8WOIS5HwUzq-xwKjNbo';
 let _bpscCacheEn = null, _bpscCacheEnTime = 0;
 let _bpscCacheHi = null, _bpscCacheHiTime = 0;
 
+// ── UPPSC HINDI CACHE ─────────────────────────────────────────
+let _uppscCacheHi = null, _uppscCacheHiTime = 0;
+
 // Fetch and parse Google Sheets public gviz endpoint (no API key needed)
 // Tries multiple tab name variants in case of casing mismatch
 const SHEET_TAB_VARIANTS = ['QUESTION_BANK', 'Question_Bank', 'question_bank', 'Sheet1'];
@@ -940,6 +943,15 @@ function computeRepeatsIn(questions) {
   return questions;
 }
 
+async function loadUPPSCQuestions(lang) {
+  if (lang === 'hi') {
+    if (_uppscCacheHi && (Date.now() - _uppscCacheHiTime) < CACHE_TTL) return _uppscCacheHi;
+    const qs = computeRepeatsIn(await fetchTabFromSheet(SHEET_ID, 'UPPSC_HI'));
+    _uppscCacheHi = qs; _uppscCacheHiTime = Date.now(); return qs;
+  }
+  return loadQuestions(); // English — use existing cache
+}
+
 async function loadBpscQuestions(lang) {
   const tab = lang === 'hi' ? 'BPSC_HI' : 'BPSC_EN';
   if (lang === 'hi') {
@@ -958,7 +970,7 @@ app.get('/api/analytics', async (req, res) => {
   try {
     const exam = req.query.exam || 'uppsc';
     const lang = req.query.lang || 'en';
-    const questions = exam === 'bpsc' ? await loadBpscQuestions(lang) : await loadQuestions();
+    const questions = exam === 'bpsc' ? await loadBpscQuestions(lang) : await loadUPPSCQuestions(lang);
 
     const yearSubject = {}, subjectCounts = {}, yearCounts = {};
     questions.forEach(q => {
@@ -983,7 +995,7 @@ app.post('/api/getQuestions', async (req, res) => {
     const filters = req.body || {};
     const exam = filters.exam || 'uppsc';
     const lang = filters.lang || 'en';
-    let rows = exam === 'bpsc' ? await loadBpscQuestions(lang) : await loadQuestions();
+    let rows = exam === 'bpsc' ? await loadBpscQuestions(lang) : await loadUPPSCQuestions(lang);
 
     if (filters.subject    && filters.subject    !== 'all') rows = rows.filter(r => r.subject    === filters.subject);
     if (filters.year       && filters.year       !== 'all') rows = rows.filter(r => String(r.year) === String(filters.year));
