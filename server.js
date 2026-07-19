@@ -731,7 +731,9 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
     // ── SECTION 9: Daily history with question details ─────────
     let qMapTP = {};
     try {
-      const qs = await loadQuestions();
+      const qs = exam === 'bpsc' ? await loadBpscQuestions('en')
+                : exam === 'upsc' ? await loadUpscQuestions('en').catch(() => [])
+                : await loadQuestions();
       qs.forEach(q => { qMapTP[String(q.id)] = { question: q.question, subject: q.subject, year: q.year,
         optA: q.optA, optB: q.optB, optC: q.optC, optD: q.optD, answer: q.answer, answerText: q.answerText, explanation: q.explanation }; });
     } catch(_) {}

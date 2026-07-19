@@ -13297,11 +13297,11 @@ function toggleSidebar(){
 })();
 </script>
 
+
 <script>
 (function(){
 /* ══ Exam Navigation + Dynamic Subject Tabs ════════════════════ */
 
-// ── setActiveExam: clears all sidebar exam highlights, sets one ──
 function setActiveExam(exam) {
   ['uppsc','bpsc','upsc'].forEach(function(e) {
     var el = document.getElementById('sb-' + e);
@@ -13311,11 +13311,10 @@ function setActiveExam(exam) {
   if (hint) hint.textContent = exam.toUpperCase();
 }
 
-// ── rebuildSubjectTabs: builds tabs from actual loaded questions ──
 var _lastTabExam = null;
 function rebuildSubjectTabs(qs, exam) {
   if (!qs || !qs.length) return;
-  if (exam === _lastTabExam) return; // already built for this exam
+  if (exam === _lastTabExam) return;
   _lastTabExam = exam;
 
   var tabsEl = document.getElementById('pyqSubjTabs');
@@ -13329,32 +13328,30 @@ function rebuildSubjectTabs(qs, exam) {
   subjects.sort();
 
   tabsEl.innerHTML =
-    '<button class="pyq-subj-btn active" id="pyq-subj-all" onclick="selectPyqSubject('all',this)">' +
+    '<button class="pyq-subj-btn active" id="pyq-subj-all" onclick="selectPyqSubject(\'all\',this)">' +
       'All <span class="pyq-subj-count" id="pyq-cnt-all">' + qs.length + '</span>' +
     '</button>' +
     subjects.map(function(s) {
       var cnt = qs.filter(function(q){ return q.subject === s; }).length;
-      return '<button class="pyq-subj-btn" id="pyq-subj-' + s + '" onclick="selectPyqSubject('' +
-        s.replace(/\/g,'\\').replace(/'/g,"\'") + '',this)">' +
+      var safe = s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      return '<button class="pyq-subj-btn" onclick="selectPyqSubject(\'' + safe + '\',this)">' +
         s + ' <span class="pyq-subj-count">' + cnt + '</span>' +
       '</button>';
     }).join('');
 
-  // sync hidden <select> used by some JS paths
   var fSubj = document.getElementById('f-subject');
   if (fSubj) {
     fSubj.innerHTML = '<option value="all">All subjects</option>' +
       subjects.map(function(s){ return '<option>' + s + '</option>'; }).join('');
   }
 
-  // Paper filter for UPSC only
   var old = document.getElementById('upscPaperFilter');
   if (old) old.remove();
   if (exam === 'upsc') {
     var papers = [];
     var pSeen = {};
     qs.forEach(function(q){
-      var p = (q.zone || q.paper || '').trim(); // zone col = paper for UPSC
+      var p = (q.zone || q.paper || '').trim();
       if (p && !pSeen[p]) { pSeen[p] = true; papers.push(p); }
     });
     papers.sort();
@@ -13363,17 +13360,16 @@ function rebuildSubjectTabs(qs, exam) {
       wrap.id = 'upscPaperFilter';
       wrap.style.cssText = 'margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;';
       wrap.innerHTML =
-        '<button class="pyq-subj-btn active" data-paper="all" onclick="upscSetPaper('all',this)">All Papers</button>' +
+        '<button class="pyq-subj-btn active" data-paper="all" onclick="upscSetPaper(\'all\',this)">All Papers</button>' +
         papers.map(function(p){
-          return '<button class="pyq-subj-btn" data-paper="' + p + '" onclick="upscSetPaper('' +
-            p.replace(/'/g,"\'") + '',this)">' + p + '</button>';
+          var safe = p.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          return '<button class="pyq-subj-btn" data-paper="' + p + '" onclick="upscSetPaper(\'' + safe + '\',this)">' + p + '</button>';
         }).join('');
       tabsEl.parentNode.insertBefore(wrap, tabsEl);
     }
   }
 }
 
-// Paper filter for UPSC
 var _upscPaper = 'all';
 window.upscSetPaper = function(paper, btn) {
   _upscPaper = paper;
@@ -13383,7 +13379,6 @@ window.upscSetPaper = function(paper, btn) {
   if (typeof applyFilters === 'function') applyFilters();
 };
 
-// ── Hook renderQuestions to rebuild tabs after each exam load ──
 var _origRender = window.renderQuestions;
 window.renderQuestions = function() {
   if (_origRender) _origRender();
@@ -13393,23 +13388,15 @@ window.renderQuestions = function() {
   }
 };
 
-// ── Wrap switchExam: auto-navigate to PYQ + set active state ──
 var _baseSwitchExam = window.switchExam;
 window.switchExam = function(exam) {
-  // Reset paper filter when changing exam
   _upscPaper = 'all';
-  _lastTabExam = null; // force tab rebuild for new exam
-
+  _lastTabExam = null;
   setActiveExam(exam);
-
-  // Navigate to PYQ tab (pass null for btn — avoids highlighting wrong nav btn)
   if (typeof showTab === 'function') showTab('pyq', null);
-
-  // Run original switchExam (loads questions, analytics)
   if (_baseSwitchExam) _baseSwitchExam(exam);
 };
 
-// Set correct active state on page load
 document.addEventListener('DOMContentLoaded', function() {
   setActiveExam(window._currentExam || 'uppsc');
 });
