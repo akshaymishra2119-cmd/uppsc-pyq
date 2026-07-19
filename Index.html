@@ -1656,10 +1656,10 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
 <div class="exam-sidebar" id="examSidebar">
 
   <div class="sb-label">Exam</div>
-  <div class="sb-eb sb-active" id="sb-uppsc" onclick="switchExam('uppsc')">UPPSC</div>
-  <div class="sb-eb" id="sb-bpsc" onclick="switchExam('bpsc')">BPSC</div>
+  <div class="sb-eb sb-active" id="sb-uppsc" onclick="switchExamNav('uppsc')">UPPSC</div>
+  <div class="sb-eb" id="sb-bpsc" onclick="switchExamNav('bpsc')">BPSC</div>
   <div class="sb-eb sb-soon" title="Coming soon">MPPSC</div>
-  <div class="sb-eb" id="sb-upsc" onclick="switchExam('upsc')">UPSC</div>
+  <div class="sb-eb" id="sb-upsc" onclick="switchExamNav('upsc')">UPSC</div>
 
   <div class="sb-div" style="margin:12px 0;"></div>
 
@@ -13429,8 +13429,16 @@ window.switchExam = function(exam) {
   _upscPaper = 'all';
   _lastTabExam = null;
   setActiveExam(exam);
-  if (typeof showTab === 'function') showTab('pyq', null);
   if (_baseSwitchExam) _baseSwitchExam(exam);
+};
+
+// Smart nav: stay on Home if already there (home analytics update),
+// go to PYQ from any other tab.
+window.switchExamNav = function(exam) {
+  var active = document.querySelector('.tab.active');
+  var onHome = active && active.id === 'tab-home';
+  if (!onHome && typeof showTab === 'function') showTab('pyq', null);
+  window.switchExam(exam);
 };
 
 document.addEventListener('DOMContentLoaded', function() {
