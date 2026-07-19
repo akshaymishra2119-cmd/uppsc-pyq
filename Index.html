@@ -13240,12 +13240,20 @@ function toggleSidebar(){
   };
 
   function positionPanel(){
-    var nav = document.querySelector('.nav');
-    var p   = document.getElementById('recruitPanel');
-    if(nav && p){
-      var rect = nav.getBoundingClientRect();
-      p.style.top = (rect.bottom) + 'px';
+    var nav    = document.querySelector('.nav');
+    var topbar = document.querySelector('.topbar');
+    var p      = document.getElementById('recruitPanel');
+    if(!p) return;
+    var top = 52; // fallback
+    if(nav){
+      var nr = nav.getBoundingClientRect();
+      if(nr.bottom > 10){
+        top = nr.bottom; // nav still visible
+      } else if(topbar){
+        top = topbar.getBoundingClientRect().bottom; // nav scrolled away, use sticky topbar
+      }
     }
+    p.style.top = top + 'px';
   }
 
   document.addEventListener('DOMContentLoaded',function(){
@@ -13254,10 +13262,10 @@ function toggleSidebar(){
     if(p && home && home.classList.contains('active')) p.classList.remove('rp-hidden');
     fetchAndLoad();
     setInterval(fetchAndLoad, 30*60*1000);
-    // Position after fonts/layout settle
     positionPanel();
     setTimeout(positionPanel, 300);
     window.addEventListener('resize', positionPanel);
+    window.addEventListener('scroll', positionPanel, {passive:true});
   });
 })();
 </script>
