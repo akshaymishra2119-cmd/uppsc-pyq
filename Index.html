@@ -4365,12 +4365,14 @@ let YEARS = ['2014','2018','2019','2020','2021','2022','2023','2024','2025']; //
 const YR_COLORS = ['#085041','#1D9E75','#378ADD','#7F77DD','#D4537E','#EF9F27','#D85A30','#E24B4A'];
 
 function loadAnalytics() {
-  if (_analyticsLoaded) return;
   var exam = window._currentExam || 'uppsc';
   var lang = window._currentLang || 'en';
+  var aKey = 'a-' + exam + '-' + lang;
+  if (!window._aCache) window._aCache = {};
+  if (window._aCache[aKey]) { renderAnalytics(window._aCache[aKey]); return; }
   fetch('/api/analytics?exam=' + exam + '&lang=' + lang)
     .then(function(r) { return r.json(); })
-    .then(renderAnalytics)
+    .then(function(data) { window._aCache[aKey] = data; renderAnalytics(data); })
     .catch(function(e) { console.error('Analytics fetch error:', e); });
 }
 
@@ -6176,6 +6178,39 @@ function toggleAnsPanel() {
 function loadQuestions() {
   var _exam = window._currentExam || 'uppsc';
   var _lang = window._currentLang || 'en';
+  var _cKey = _exam + '-' + _lang;
+  if (!window._qCache) window._qCache = {};
+  var _hit = window._qCache[_cKey];
+  if (_hit && (Date.now() - _hit.t) < 600000) {
+    // Cache hit — skip network, run render pipeline with cached data
+    (function(data){
+      allQuestions = data;
+      filteredQ    = [...data];
+      resetLockedCache();
+      YEARS = [...new Set(data.map(function(q){ return String(q.year); }).filter(Boolean))].sort();
+      var yrSel = document.getElementById('f-year');
+      if (yrSel) {
+        yrSel.innerHTML = '<option value="all">All years</option>' +
+          YEARS.map(function(y){ return '<option>'+y+'</option>'; }).join('');
+      }
+      var gcTQ = document.getElementById('gcTotalQ');
+      if (gcTQ) gcTQ.textContent = data.length;
+      var gcTQSub = document.getElementById('gcTotalQSub');
+      if (gcTQSub) gcTQSub.textContent = YEARS[0]+'–'+YEARS[YEARS.length-1]+' ('+YEARS.length+' years)';
+      renderQuestions();
+      updatePyqSidebarCounts();
+      renderAnswerDistHome(allQuestions);
+      renderQTAnalytics(allQuestions);
+      initSmartGuess(allQuestions);
+      renderStatementAnalysis(allQuestions);
+      renderWeightTrend(allQuestions);
+      renderSubjectBreakdown(allQuestions);
+      renderYearProgressBadges();
+      patchYearCompletionSection('ycCardsContainer', 'yc');
+      patchYearCompletionSection('pcCardsContainer', 'pc');
+    })(_hit.d);
+    return;
+  }
   fetch('/api/getQuestions', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -6185,6 +6220,7 @@ function loadQuestions() {
   .then(function(data) {
     if (!Array.isArray(data)) { console.warn('loadQuestions: bad response', data); return; }
     allQuestions = data;
+    window._qCache[_cKey] = { d: data, t: Date.now() };
     filteredQ    = [...data];
     resetLockedCache();
     YEARS = [...new Set(data.map(function(q){ return String(q.year); }).filter(Boolean))].sort();
