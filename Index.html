@@ -13142,6 +13142,10 @@ function toggleSidebar(){
 .rp-deadline.govt { background:rgba(249,115,22,0.15); color:#f97316; }
 .rp-deadline.priv { background:rgba(96,165,250,0.15); color:#60a5fa; }
 .rp-empty { font-size:11px; color:var(--text3,#64748b); padding:16px 10px; text-align:center; }
+
+.rp-badges{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.rp-exam-st{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;text-transform:capitalize;}
+
 @media(max-width:900px){ #recruitPanel{ display:none !important; } }
 </style>
 
@@ -13189,35 +13193,67 @@ function toggleSidebar(){
     }).filter(function(r){ return (r.status||'').toLowerCase()==='active'; });
   }
 
-  function startTicker(wrapId, tickId, rows, type){
-    var ticker=document.getElementById(tickId);
-    var wrap=document.getElementById(wrapId);
-    if(!ticker||!wrap) return;
+  var STATUS_COLORS = {
+    'upcoming'  : {bg:'rgba(59,130,246,0.15)',  color:'#60a5fa'},
+    'live'      : {bg:'rgba(34,197,94,0.15)',   color:'#4ade80'},
+    'result out': {bg:'rgba(168,85,247,0.15)',  color:'#c084fc'},
+    'cancelled' : {bg:'rgba(239,68,68,0.15)',   color:'#f87171'},
+    'postponed' : {bg:'rgba(234,179,8,0.15)',   color:'#fbbf24'},
+  };
+
+  function makeItems(rows, type){
     var nameKey = type==='govt' ? 'exam' : 'company';
     var subKey  = type==='govt' ? 'org'  : 'role';
-    var single = rows.map(function(r){
-      var name = r[nameKey]||r['exam']||r['company']||'--';
-      var sub  = r[subKey] ||r['org'] ||r['role'] ||'';
-      var dl   = r['deadline']||'';
-      var link = r['link']||'#';
-      return '<div class="rp-item" onclick="window.open(\''+link.replace(/'/g,"\\'")+'\'\',\'_blank\'\')">'+
-        '<div class="rp-item-name">'+name+'</div>'+
-        (sub ? '<div class="rp-item-sub">'+sub+'</div>' : '')+
-        (dl  ? '<div class="rp-deadline '+type+'">'+dl+'</div>' : '')+
-        '</div>';
-    }).join('');
-    if(!single){ ticker.innerHTML='<div class="rp-empty">No active listings</div>'; return; }
-    ticker.innerHTML = single;
+    var frag = document.createDocumentFragment();
+    rows.forEach(function(r){
+      var name    = r[nameKey]||r['exam']||r['company']||'--';
+      var sub     = r[subKey] ||r['org'] ||r['role'] ||'';
+      var dl      = r['deadline']||'';
+      var link    = r['link']||'';
+      var exSt    = (r['exam_status']||'').toLowerCase();
+      var stCfg   = STATUS_COLORS[exSt] || null;
+
+      var div = document.createElement('div');
+      div.className = 'rp-item';
+      if(link){
+        div.style.cursor = 'pointer';
+        div.addEventListener('click', (function(url){ return function(){ window.open(url,'_blank'); }; })(link));
+      }
+
+      var html = '<div class="rp-item-name">'+name+'</div>';
+      if(sub)  html += '<div class="rp-item-sub">'+sub+'</div>';
+
+      var badges = '';
+      if(dl)   badges += '<span class="rp-deadline '+type+'">'+dl+'</span>';
+      if(stCfg) badges += '<span class="rp-exam-st" style="background:'+stCfg.bg+';color:'+stCfg.color+'">'+r['exam_status']+'</span>';
+      if(badges) html += '<div class="rp-badges">'+badges+'</div>';
+
+      div.innerHTML = html;
+      frag.appendChild(div);
+    });
+    return frag;
+  }
+
+  function startTicker(wrapId, tickId, rows, type){
+    var ticker = document.getElementById(tickId);
+    var wrap   = document.getElementById(wrapId);
+    if(!ticker||!wrap) return;
+    ticker.innerHTML = '';
     ticker.style.animation = 'none';
+    if(!rows.length){
+      ticker.innerHTML = '<div class="rp-empty">No active listings</div>';
+      return;
+    }
+    ticker.appendChild(makeItems(rows, type));
     setTimeout(function(){
       var contentH = ticker.scrollHeight;
       var wrapH    = wrap.clientHeight;
       if(contentH > wrapH && rows.length > 1){
-        ticker.innerHTML = single + single;
+        ticker.appendChild(makeItems(rows, type)); // duplicate for loop
         var dur = Math.max(8, contentH / 40);
         ticker.style.animation = 'rpScroll '+dur+'s linear infinite';
       }
-    }, 100);
+    }, 120);
   }
 
   function fetchAndLoad(){
