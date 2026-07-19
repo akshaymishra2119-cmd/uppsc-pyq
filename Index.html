@@ -13236,6 +13236,10 @@ function toggleSidebar(){
   window.showTab = function(id,btn){
     if(_origShowTab) _origShowTab(id,btn);
     var p=document.getElementById('recruitPanel');
+      var _origShowTab = window.showTab;
+  window.showTab = function(id,btn){
+    if(_origShowTab) _origShowTab(id,btn);
+    var p=document.getElementById('recruitPanel');
     if(p) p.classList.toggle('rp-hidden', id!=='home');
   };
 
@@ -13244,13 +13248,13 @@ function toggleSidebar(){
     var topbar = document.querySelector('.topbar');
     var p      = document.getElementById('recruitPanel');
     if(!p) return;
-    var top = 52; // fallback
+    var top = 52;
     if(nav){
       var nr = nav.getBoundingClientRect();
       if(nr.bottom > 10){
-        top = nr.bottom; // nav still visible
+        top = nr.bottom;
       } else if(topbar){
-        top = topbar.getBoundingClientRect().bottom; // nav scrolled away, use sticky topbar
+        top = topbar.getBoundingClientRect().bottom;
       }
     }
     p.style.top = top + 'px';
@@ -13270,40 +13274,3 @@ function toggleSidebar(){
 })();
 </script>
 </body>
--empty">Unavailable</div>'; });
-
-    // Private
-    fetch(csvUrl(PRIV_GID))
-      .then(function(r){ return r.text(); })
-      .then(function(t){ startTicker('rpPrivWrap','rpPrivTicker', parseCSV(t), 'priv'); })
-      .catch(function(){ document.getElementById('rpPrivTicker').innerHTML = '<div class="rp-empty">Unavailable</div>'; });
-  }
-
-  // Show/hide panel based on active tab
-  var _origShowTab = window.showTab;
-  window.showTab = function(id, btn) {
-    if (_origShowTab) _origShowTab(id, btn);
-    var panel = document.getElementById('recruitPanel');
-    if (!panel) return;
-    if (id === 'home') {
-      panel.classList.remove('rp-hidden');
-    } else {
-      panel.classList.add('rp-hidden');
-    }
-  };
-
-  // Init on page load
-  document.addEventListener('DOMContentLoaded', function(){
-    var panel = document.getElementById('recruitPanel');
-    // Show only if home tab is active at load
-    var homeTab = document.getElementById('tab-home');
-    if (homeTab && homeTab.classList.contains('active')) {
-      panel.classList.remove('rp-hidden');
-    }
-    fetchAndLoad();
-    setInterval(fetchAndLoad, REFRESH_MS);
-  });
-})();
-</script>
-</body>
-</html>
