@@ -1,34 +1,52 @@
 // ============================================================
-// UPSC Sheet Restructurer — Auto-renames columns to match
-// UPPSC portal schema so switchExam('upsc') works out of box.
+// UPSC Sheet Restructurer — converts raw UPSC question data
+// into the exact UPPSC/BPSC portal schema so server.js works.
+//
+// Column order matches UPPSC/BPSC exactly:
+//   0=id  1=year  2=subject  3=subTopic  4=question
+//   5=optA  6=optB  7=optC  8=optD
+//   9=answer  10=answerText  11=explanation
+//   12=difficulty  13=qType  14=repeatsIn  15=paper
 //
 // HOW TO USE:
 //   1. Open your UPSC Google Sheet
-//      (https://docs.google.com/spreadsheets/d/1Taa98Ga3X5Z3kiiOCBqe0Crh759-jq5vTVlUCq3LQ14)
-//   2. Extensions → Apps Script
-//   3. Paste this entire file, click Save
-//   4. Run  restructureUpscSheet()
-//   5. Authorize when prompted → Done!
+//   2. Extensions → Apps Script → paste this → Save
+//   3. Run restructureUpscSheet()
+//   4. Check the new tab, then use it as the source tab name in server.js
 // ============================================================
 
 function restructureUpscSheet() {
   const ss    = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('All_Questions');
 
+  // ── Ask which tab to restructure ─────────────────────────────
+  const ui       = SpreadsheetApp.getUi();
+  const response = ui.prompt(
+    'Restructure UPSC Sheet',
+    'Enter the source tab name (e.g. All_Questions or All_Questions_HI):',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (response.getSelectedButton() !== ui.Button.OK) return;
+  const srcTabName = response.getResponseText().trim();
+  if (!srcTabName) { ui.alert('❌ No tab name entered.'); return; }
+
+  const sheet = ss.getSheetByName(srcTabName);
   if (!sheet) {
-    SpreadsheetApp.getUi().alert('❌ Sheet "All_Questions" not found!\nMake sure you\'re running this in the correct spreadsheet.');
+    ui.alert('❌ Tab "' + srcTabName + '" not found!\nAvailable tabs: ' +
+      ss.getSheets().map(function(s){ return s.getName(); }).join(', '));
     return;
   }
 
   const data    = sheet.getDataRange().getValues();
-  const headers = data[0].map(h => String(h).trim());
-  const numRows = data.length - 1; // exclude header
+  const headers = data[0].map(function(h){ return String(h).trim(); });
+  const numRows = data.length - 1;
 
-  // ── Find current column indices (flexible matching) ──────────
+  // ── Find columns flexibly ─────────────────────────────────────
   function findCol(candidates) {
-    for (const c of candidates) {
-      const i = headers.findIndex(h => h.toLowerCase().replace(/[\s_#]/g,'') === c.toLowerCase().replace(/[\s_#]/g,''));
-      if (i >= 0) return i;
+    for (var i = 0; i < candidates.length; i++) {
+      var idx = headers.findIndex(function(h) {
+        return h.toLowerCase().replace(/[\s_#]/g,'') === candidates[i].toLowerCase().replace(/[\s_#]/g,'');
+      });
+      if (idx >= 0) return idx;
     }
     return -1;
   }
@@ -36,127 +54,122 @@ function restructureUpscSheet() {
   const C = {
     year:  findCol(['year','yr']),
     paper: findCol(['paper','papertype']),
-    qno:   findCol(['q#','qno','qnum','questionno','sno','sr']),
+    qno:   findCol(['q#','qno','qnum','sno','sr','questionno']),
     subj:  findCol(['subject','sub']),
-    diff:  findCol(['difficulty','diff','level']),
+    sub2:  findCol(['subtopic','sub_topic','subtopic']),
     q:     findCol(['question','questiontext','q_text']),
-    optA:  findCol(['optiona','option a','opta']),
-    optB:  findCol(['optionb','option b','optb']),
-    optC:  findCol(['optionc','option c','optc']),
-    optD:  findCol(['optiond','option d','optd']),
+    optA:  findCol(['opta','option a','option_a','opt_a']),
+    optB:  findCol(['optb','option b','option_b','opt_b']),
+    optC:  findCol(['optc','option c','option_c','opt_c']),
+    optD:  findCol(['optd','option d','option_d','opt_d']),
     ans:   findCol(['answer','correct','correctanswer']),
+    ansT:  findCol(['answertext','answer_text']),
+    expl:  findCol(['explanation','explain']),
+    diff:  findCol(['difficulty','diff','level']),
+    qt:    findCol(['qtype','q_type','questiontype','type']),
+    rep:   findCol(['repeatsin','repeats_in']),
   };
 
-  // Validate essential columns
-  const missing = Object.entries(C).filter(([k,v]) => v < 0).map(([k]) => k);
+  const missing = Object.entries(C)
+    .filter(function(e){ return ['year','subj','q','optA','optB','optC','optD','ans'].includes(e[0]) && e[1] < 0; })
+    .map(function(e){ return e[0]; });
+
   if (missing.length > 0) {
-    SpreadsheetApp.getUi().alert('❌ Could not find columns: ' + missing.join(', ') +
-      '\n\nFound headers: ' + headers.join(' | '));
+    ui.alert('❌ Could not find essential columns: ' + missing.join(', ') +
+      '\n\nFound headers:\n' + headers.join(' | '));
     return;
   }
 
-  // ── Build new column order ────────────────────────────────────
-  // New schema: id | year | paper | subject | subTopic | question |
-  //             optA | optB | optC | optD | answer | answerText |
-  //             explanation | difficulty | qType | repeatsIn
-  const NEW_HEADERS = [
-    'id','year','paper','subject','subTopic',
-    'question','optA','optB','optC','optD',
-    'answer','answerText','explanation','difficulty','qType','repeatsIn'
-  ];
-
-  // ── Helper: normalize paper name ─────────────────────────────
-  function normalizePaper(raw) {
-    const s = String(raw).trim().toLowerCase();
-    if (s.includes('csat') || s.includes('gs2') || s.includes('gs ii') || s.includes('paper 2') || s.includes('paper ii')) return 'GS II';
-    return 'GS I'; // default
+  // ── Helpers ───────────────────────────────────────────────────
+  function g(row, k) {
+    return (C[k] >= 0 && C[k] < row.length) ? String(row[C[k]] || '').trim() : '';
   }
 
-  // ── Helper: normalize difficulty ─────────────────────────────
-  function normalizeDiff(raw) {
-    const s = String(raw).trim().toLowerCase();
+  function normPaper(raw) {
+    var s = String(raw).trim().toLowerCase();
+    if (s.includes('csat') || s.includes('gs2') || s.includes('gs ii') ||
+        s.includes('paper 2') || s.includes('paper ii')) return 'GS II';
+    return 'GS I';
+  }
+
+  function normDiff(raw) {
+    var s = String(raw).trim().toLowerCase();
     if (s === 'easy' || s === 'e') return 'Easy';
     if (s === 'hard' || s === 'h' || s === 'difficult') return 'Hard';
     return 'Medium';
   }
 
-  // ── Helper: get answerText from option letter ─────────────────
   function getAnswerText(row, ansLetter) {
-    const map = { A: C.optA, B: C.optB, C: C.optC, D: C.optD };
-    const col = map[String(ansLetter).trim().toUpperCase()];
-    return (col !== undefined && col >= 0) ? String(row[col] || '').trim() : '';
+    var map = { A: C.optA, B: C.optB, C: C.optC, D: C.optD };
+    var col = map[ansLetter.toUpperCase()];
+    return (col !== undefined && col >= 0 && col < row.length) ? String(row[col] || '').trim() : '';
   }
 
-  // ── Helper: zero-pad number ───────────────────────────────────
   function pad(n, len) { return String(n).padStart(len, '0'); }
 
-  // ── Build new data array ──────────────────────────────────────
-  const newData = [NEW_HEADERS];
-  let idCounter = {};
+  // ── Target column order (matches UPPSC/BPSC server.js exactly) ──
+  const NEW_HEADERS = [
+    'id', 'year', 'subject', 'subTopic', 'question',
+    'optA', 'optB', 'optC', 'optD',
+    'answer', 'answerText', 'explanation',
+    'difficulty', 'qType', 'repeatsIn', 'paper'
+  ];
 
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
+  // ── Build output rows ─────────────────────────────────────────
+  const newData  = [NEW_HEADERS];
+  var idCounter  = {};
 
-    // Skip completely empty rows
-    if (row.every(cell => String(cell).trim() === '')) continue;
+  for (var i = 1; i < data.length; i++) {
+    var row  = data[i];
+    if (row.every(function(c){ return String(c).trim() === ''; })) continue;
 
-    const year   = String(row[C.year]  || '').trim();
-    const paper  = normalizePaper(row[C.paper]);
-    const qno    = String(row[C.qno]   || '').trim();
-    const subj   = String(row[C.subj]  || '').trim();
-    const diff   = normalizeDiff(row[C.diff]);
-    const q      = String(row[C.q]     || '').trim();
-    const optA   = String(row[C.optA]  || '').trim();
-    const optB   = String(row[C.optB]  || '').trim();
-    const optC   = String(row[C.optC]  || '').trim();
-    const optD   = String(row[C.optD]  || '').trim();
-    const ans    = String(row[C.ans]   || '').trim().toUpperCase();
+    var yr    = g(row, 'year');   if (!yr) continue;
+    var paper = normPaper(g(row, 'paper'));
+    var subj  = g(row, 'subj')   || 'General Studies';
+    var sub2  = g(row, 'sub2');
+    var q     = g(row, 'q');
+    var optA  = g(row, 'optA');
+    var optB  = g(row, 'optB');
+    var optC  = g(row, 'optC');
+    var optD  = g(row, 'optD');
+    var ans   = g(row, 'ans').toUpperCase();
+    var ansT  = g(row, 'ansT')   || getAnswerText(row, ans);
+    var expl  = g(row, 'expl');
+    var diff  = normDiff(g(row, 'diff'));
+    var qt    = g(row, 'qt');
+    var rep   = g(row, 'rep');
 
-    // Auto-generate unique ID: UPSC_2023_GS1_001
-    const paperCode = paper === 'GS II' ? 'GS2' : 'GS1';
-    const idKey = year + '_' + paperCode;
+    // Auto-generate ID
+    var pCode = paper === 'GS II' ? 'GS2' : 'GS1';
+    var idKey = yr + '_' + pCode;
     idCounter[idKey] = (idCounter[idKey] || 0) + 1;
-    const id = 'UPSC_' + (year || 'UNK') + '_' + paperCode + '_' + pad(idCounter[idKey], 3);
+    var id = 'UPSC_' + yr + '_' + pCode + '_' + pad(idCounter[idKey], 3);
 
-    // Auto-populate answerText from correct option
-    const answerText = getAnswerText(row, ans);
-
-    newData.push([
-      id, year, paper, subj, '',      // id,year,paper,subject,subTopic
-      q, optA, optB, optC, optD,      // question,optA,optB,optC,optD
-      ans, answerText, '', diff, '', '' // answer,answerText,explanation,difficulty,qType,repeatsIn
-    ]);
+    // Order: id,year,subject,subTopic,question,optA,optB,optC,optD,answer,answerText,explanation,difficulty,qType,repeatsIn,paper
+    newData.push([id, yr, subj, sub2, q, optA, optB, optC, optD, ans, ansT, expl, diff, qt, rep, paper]);
   }
 
-  // ── Write to a NEW tab (safe — original untouched) ───────────
-  const newSheetName = 'All_Questions_v2';
-  let newSheet = ss.getSheetByName(newSheetName);
-  if (newSheet) ss.deleteSheet(newSheet); // replace if re-running
-  newSheet = ss.insertSheet(newSheetName);
+  // ── Write to output tab ───────────────────────────────────────
+  var outTabName = srcTabName + '_v2';
+  if (srcTabName.endsWith('_v2')) outTabName = srcTabName; // overwrite if re-running
 
-  newSheet.getRange(1, 1, newData.length, NEW_HEADERS.length).setValues(newData);
+  var outSheet = ss.getSheetByName(outTabName);
+  if (outSheet) ss.deleteSheet(outSheet);
+  outSheet = ss.insertSheet(outTabName);
 
-  // Style header row
-  const headerRange = newSheet.getRange(1, 1, 1, NEW_HEADERS.length);
-  headerRange.setBackground('#1e3a8a');
-  headerRange.setFontColor('#ffffff');
-  headerRange.setFontWeight('bold');
+  outSheet.getRange(1, 1, newData.length, NEW_HEADERS.length).setValues(newData);
 
-  // Freeze header
-  newSheet.setFrozenRows(1);
+  // Style
+  var hr = outSheet.getRange(1, 1, 1, NEW_HEADERS.length);
+  hr.setBackground('#1e3a8a'); hr.setFontColor('#ffffff'); hr.setFontWeight('bold');
+  outSheet.setFrozenRows(1);
+  outSheet.autoResizeColumns(1, NEW_HEADERS.length);
 
-  // Auto-resize columns
-  newSheet.autoResizeColumns(1, NEW_HEADERS.length);
-
-  const msg = `✅ Done!\n\n` +
-    `• New tab created: "${newSheetName}"\n` +
-    `• ${newData.length - 1} questions restructured\n` +
-    `• Original "All_Questions" tab untouched\n\n` +
-    `Next steps:\n` +
-    `1. Check the new tab looks correct\n` +
-    `2. Fill in "explanation" and "qType" columns if you have that data\n` +
-    `3. Share the sheet URL with Claude to wire it into the portal`;
-
-  SpreadsheetApp.getUi().alert(msg);
-  Logger.log('Restructure complete. Rows written: ' + (newData.length - 1));
+  ui.alert(
+    '✅ Done! Created tab: "' + outTabName + '"\n\n' +
+    (newData.length - 1) + ' rows structured in correct column order:\n' +
+    'id | year | subject | subTopic | question | optA-D |\n' +
+    'answer | answerText | explanation | difficulty | qType | repeatsIn | paper\n\n' +
+    'Original tab untouched.'
+  );
 }

@@ -41,6 +41,13 @@ let _bpscCacheHi = null, _bpscCacheHiTime = 0;
 // ── UPPSC HINDI CACHE ─────────────────────────────────────────
 let _uppscCacheHi = null, _uppscCacheHiTime = 0;
 
+// ── UPSC SHEET CONFIG ─────────────────────────────────────────
+const UPSC_SHEET_ID = '1Taa98Ga3X5Z3kiiOCBqe0Crh759-jq5vTVlUCq3LQ14';
+const UPSC_TAB_EN   = 'All_Questions_v2';   // English tab
+const UPSC_TAB_HI   = 'All_Questions_HI';   // Hindi tab (create when ready)
+let _upscCacheEn = null, _upscCacheEnTime = 0;
+let _upscCacheHi = null, _upscCacheHiTime = 0;
+
 // Fetch and parse Google Sheets public gviz endpoint (no API key needed)
 // Tries multiple tab name variants in case of casing mismatch
 const SHEET_TAB_VARIANTS = ['QUESTION_BANK', 'Question_Bank', 'question_bank', 'Sheet1'];
@@ -390,7 +397,9 @@ app.post('/api/saveAttempt', authMiddleware, async (req, res) => {
 app.get('/api/myStats', authMiddleware, async (req, res) => {
   try {
     const exam = req.query.exam || 'uppsc';
-    const examCond = exam === 'bpsc' ? "AND q_id LIKE 'BPSC_%'" : "AND q_id NOT LIKE 'BPSC_%'";
+    const examCond = exam === 'bpsc' ? "AND q_id LIKE 'BPSC_%'"
+                   : exam === 'upsc' ? "AND q_id LIKE 'UPSC_%'"
+                   : "AND q_id NOT LIKE 'BPSC_%' AND q_id NOT LIKE 'UPSC_%'";
     const { rows } = await pool.query(
       `SELECT q_id, subject, year, result, time_taken, attempted_at
        FROM progress WHERE user_id = $1 ${examCond} ORDER BY attempted_at ASC`,
@@ -436,7 +445,9 @@ app.get('/api/myStats', authMiddleware, async (req, res) => {
     // Daily history (all rows, not deduplicated — for heatmap + question list)
     let qMap = {};
     try {
-      const qs = exam === 'bpsc' ? await loadBpscQuestions('en') : await loadQuestions();
+      const qs = exam === 'bpsc' ? await loadBpscQuestions('en')
+               : exam === 'upsc' ? await loadUpscQuestions('en')
+               : await loadQuestions();
       qs.forEach(q => { qMap[String(q.id)] = { question: q.question, subject: q.subject, year: q.year }; });
     } catch(_) {}
     const dailyMap = {};
@@ -525,7 +536,9 @@ app.get('/api/mockHistory', authMiddleware, async (req, res) => {
 app.get('/api/attemptCounts', authMiddleware, async (req, res) => {
   try {
     const exam = req.query.exam || 'uppsc';
-    const examCond = exam === 'bpsc' ? "AND q_id LIKE 'BPSC_%'" : "AND q_id NOT LIKE 'BPSC_%'";
+    const examCond = exam === 'bpsc' ? "AND q_id LIKE 'BPSC_%'"
+                   : exam === 'upsc' ? "AND q_id LIKE 'UPSC_%'"
+                   : "AND q_id NOT LIKE 'BPSC_%' AND q_id NOT LIKE 'UPSC_%'";
     const { rows } = await pool.query(
       `SELECT q_id, COUNT(*) AS attempts
        FROM progress
@@ -547,7 +560,9 @@ app.get('/api/trackProgress', authMiddleware, async (req, res) => {
   try {
     const uid = req.user.id;
     const exam = req.query.exam || 'uppsc';
-    const examCond = exam === 'bpsc' ? "AND q_id LIKE 'BPSC_%'" : "AND q_id NOT LIKE 'BPSC_%'";
+    const examCond = exam === 'bpsc' ? "AND q_id LIKE 'BPSC_%'"
+                   : exam === 'upsc' ? "AND q_id LIKE 'UPSC_%'"
+                   : "AND q_id NOT LIKE 'BPSC_%' AND q_id NOT LIKE 'UPSC_%'";
 
     // All raw attempts + user info
     const [progRows, userRow, mockRows] = await Promise.all([
@@ -965,12 +980,26 @@ async function loadBpscQuestions(lang) {
   }
 }
 
+async function loadUpscQuestions(lang) {
+  if (lang === 'hi') {
+    if (_upscCacheHi && (Date.now() - _upscCacheHiTime) < CACHE_TTL) return _upscCacheHi;
+    const qs = computeRepeatsIn(await fetchTabFromSheet(UPSC_SHEET_ID, UPSC_TAB_HI));
+    _upscCacheHi = qs; _upscCacheHiTime = Date.now(); return qs;
+  } else {
+    if (_upscCacheEn && (Date.now() - _upscCacheEnTime) < CACHE_TTL) return _upscCacheEn;
+    const qs = computeRepeatsIn(await fetchTabFromSheet(UPSC_SHEET_ID, UPSC_TAB_EN));
+    _upscCacheEn = qs; _upscCacheEnTime = Date.now(); return qs;
+  }
+}
+
 // ── API: analytics ───────────────────────────────────────────
 app.get('/api/analytics', async (req, res) => {
   try {
     const exam = req.query.exam || 'uppsc';
     const lang = req.query.lang || 'en';
-    const questions = exam === 'bpsc' ? await loadBpscQuestions(lang) : await loadUPPSCQuestions(lang);
+    const questions = exam === 'bpsc' ? await loadBpscQuestions(lang)
+                    : exam === 'upsc' ? await loadUpscQuestions(lang)
+                    : await loadUPPSCQuestions(lang);
 
     const yearSubject = {}, subjectCounts = {}, yearCounts = {};
     questions.forEach(q => {
@@ -995,7 +1024,9 @@ app.post('/api/getQuestions', async (req, res) => {
     const filters = req.body || {};
     const exam = filters.exam || 'uppsc';
     const lang = filters.lang || 'en';
-    let rows = exam === 'bpsc' ? await loadBpscQuestions(lang) : await loadUPPSCQuestions(lang);
+    let rows = exam === 'bpsc' ? await loadBpscQuestions(lang)
+             : exam === 'upsc' ? await loadUpscQuestions(lang)
+             : await loadUPPSCQuestions(lang);
 
     if (filters.subject    && filters.subject    !== 'all') rows = rows.filter(r => r.subject    === filters.subject);
     if (filters.year       && filters.year       !== 'all') rows = rows.filter(r => String(r.year) === String(filters.year));

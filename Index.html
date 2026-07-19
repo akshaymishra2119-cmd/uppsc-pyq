@@ -73,9 +73,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .nav-btn.nav-pyq:hover{color:#78350f;background:#FEF3C7;}
 .nav-btn.nav-pyq.active{color:#92400e;border-bottom-color:#EF9F27;background:#FEF3C7;font-weight:700;}
 .nav-pyq-badge{font-size:10px;background:#EF9F27;color:#fff;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:2px;vertical-align:middle;}
-.nav-btn.nav-upsc{color:#1e3a8a;background:#eff6ff;}
-.nav-btn.nav-upsc:hover{color:#1d4ed8;background:#dbeafe;}
-.nav-btn.nav-upsc.active{color:#1e3a8a;border-bottom-color:#3b82f6;background:#dbeafe;font-weight:700;}
 .nav-btn.nav-mock{color:#7f1d1d;background:#fff1f2;}
 .nav-btn.nav-mock:hover{color:#991b1b;background:#ffe4e6;}
 .nav-btn.nav-mock.active{color:#7f1d1d;border-bottom-color:#ef4444;background:#ffe4e6;font-weight:700;}
@@ -1596,17 +1593,9 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn nav-account" id="accountNavBtn" onclick="showTab('account',this)" style="display:none;">
     <i class="ti ti-user-circle" aria-hidden="true"></i> My Account
   </button>
-  <button class="nav-btn nav-pyq" onclick="showTab('pyq',this)">
-    <i class="ti ti-books" aria-hidden="true"></i> PYQ Practice
-    <span class="nav-pyq-badge">TOP</span>
-  </button>
   <button class="nav-btn nav-pyq" onclick="showTab('pyq-analytics',this)">
     <i class="ti ti-calendar-stats" aria-hidden="true"></i> PYQ Analytics
     <span class="nav-pyq-badge">NEW</span>
-  </button>
-  <button class="nav-btn nav-upsc" id="upscNavBtn" onclick="showTab('upsc',this)">
-    <i class="ti ti-file-certificate" aria-hidden="true"></i> UPSC CSE
-    <span style="font-size:10px;background:#3b82f6;color:#fff;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:2px;vertical-align:middle;">NEW</span>
   </button>
   <button class="nav-btn nav-mock" onclick="showTab('mock',this)">
     <i class="ti ti-award" aria-hidden="true"></i> Mock Test
@@ -1670,7 +1659,7 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <div class="sb-eb sb-active" id="sb-uppsc" onclick="switchExam('uppsc')">UPPSC</div>
   <div class="sb-eb" id="sb-bpsc" onclick="switchExam('bpsc')">BPSC</div>
   <div class="sb-eb sb-soon" title="Coming soon">MPPSC</div>
-  <div class="sb-eb" id="sb-upsc" onclick="showTab('upsc', document.getElementById('upscNavBtn'))">UPSC</div>
+  <div class="sb-eb" id="sb-upsc" onclick="switchExam('upsc')">UPSC</div>
 
   <div class="sb-div" style="margin:12px 0;"></div>
 
@@ -2506,58 +2495,6 @@ mark.srch-hi{background:#fde68a;color:#1a1a1a;border-radius:3px;padding:0 2px;}
 </div><!-- /pyq-shell -->
 </div><!-- /tab-pyq -->
 
-<!-- ══ UPSC CSE PRELIMS TAB ════════════════════════════════════ -->
-<div class="tab" id="tab-upsc">
-<div class="today-banner" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:#fff;margin-bottom:14px;">
-  <i class="ti ti-file-certificate" style="font-size:22px;color:#bfdbfe;"></i>
-  <div>
-    <div style="font-weight:700;font-size:13px;">UPSC CSE Prelims PYQ</div>
-    <div style="font-size:12px;color:rgba(255,255,255,0.75);">Previous Year Questions — General Studies Paper I &amp; II</div>
-  </div>
-</div>
-
-<!-- Loading state -->
-<div id="upscLoading" style="text-align:center;padding:40px;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:10px;">
-  <i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:20px;"></i> Loading UPSC questions…
-</div>
-
-<!-- Filters (hidden until data loaded) -->
-<div id="upscFilters" style="display:none;">
-
-  <!-- Year tabs -->
-  <div style="margin-bottom:10px;">
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Year</div>
-    <div id="upscYearTabs" style="display:flex;gap:6px;overflow-x:auto;padding:0 0 6px;scrollbar-width:none;"></div>
-  </div>
-
-  <!-- Paper tabs (GS1 / CSAT) -->
-  <div style="margin-bottom:10px;">
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Paper</div>
-    <div id="upscPaperTabs" style="display:flex;gap:6px;flex-wrap:wrap;padding:0 0 6px;"></div>
-  </div>
-
-  <!-- Subject tabs -->
-  <div style="margin-bottom:12px;">
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Subject</div>
-    <div id="upscSubjTabs" style="display:flex;gap:6px;overflow-x:auto;padding:0 0 8px;scrollbar-width:none;"></div>
-  </div>
-
-</div>
-
-<!-- Result count -->
-<div id="upscCount" style="font-size:13px;color:var(--text2);margin-bottom:8px;display:none;"></div>
-
-<!-- Questions container -->
-<div id="upscContainer"></div>
-
-<!-- Load more -->
-<div id="upscLoadMore" style="display:none;text-align:center;padding:16px 0 8px;">
-  <button onclick="upscShowMore()" style="padding:9px 28px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg2);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);">
-    Show more <span id="upscMoreCount"></span>
-  </button>
-</div>
-
-</div><!-- /tab-upsc -->
 
 <!-- ══ MOCK TEST SETUP MODAL ═════════════════════════════════ -->
 <div id="mockModal" class="mock-overlay" style="display:none;" onclick="if(event.target===this)closeMockModal()">
@@ -13362,263 +13299,146 @@ function toggleSidebar(){
 
 <script>
 (function(){
-  /* ── UPSC CSE Prelims Questions ── */
-  var UPSC_SHEET = '1Taa98Ga3X5Z3kiiOCBqe0Crh759-jq5vTVlUCq3LQ14';
-  var UPSC_GID   = '1711722175';   // All_Questions_v2 tab
-  var upscAll      = [];
-  var upscFiltered = [];
-  var upscLimit    = 30;
-  var upscYear     = 'all';
-  var upscPaper    = 'all';
-  var upscSubj     = 'all';
-  var upscAnswers  = {};   // id -> chosen letter
+  /* ══ UPSC + Exam Navigation Enhancements ══════════════════════════════ */
 
-  function upscCsvUrl(){
-    return 'https://docs.google.com/spreadsheets/d/' + UPSC_SHEET +
-           '/export?format=csv&gid=' + UPSC_GID;
-  }
-
-  /* Robust CSV parser (handles quoted commas & newlines) */
-  function parseCSV(text){
-    var rows = [], cur = [], cell = '', inQ = false;
-    for(var i = 0; i < text.length; i++){
-      var c = text[i];
-      if(c === '"'){
-        if(inQ && text[i+1] === '"'){ cell += '"'; i++; }
-        else inQ = !inQ;
-      } else if(c === ',' && !inQ){ cur.push(cell); cell = ''; }
-      else if((c === '\n' || c === '\r') && !inQ){
-        cur.push(cell); cell = '';
-        if(cur.some(function(s){ return s.trim(); })) rows.push(cur);
-        cur = [];
-        if(c === '\r' && text[i+1] === '\n') i++;
-      } else { cell += c; }
-    }
-    if(cell || cur.length){ cur.push(cell); if(cur.some(function(s){return s.trim();})) rows.push(cur); }
-    return rows;
-  }
-
-  function colIdx(hdr, names){
-    for(var i=0;i<names.length;i++){
-      var idx = hdr.indexOf(names[i].toLowerCase());
-      if(idx>=0) return idx;
-    }
-    return -1;
-  }
-
-  function loadUpscQuestions(){
-    fetch(upscCsvUrl())
-      .then(function(r){ return r.text(); })
-      .then(function(text){
-        var rows = parseCSV(text);
-        if(!rows.length){ showUpscError('No data in sheet.'); return; }
-
-        /* Map headers — new sheet uses lowercase exact names */
-        var hdr = rows[0].map(function(h){ return h.trim().toLowerCase(); });
-        var C = {
-          id:   colIdx(hdr,['id']),
-          year: colIdx(hdr,['year']),
-          paper:colIdx(hdr,['paper']),
-          subj: colIdx(hdr,['subject']),
-          sub2: colIdx(hdr,['subtopic','sub_topic']),
-          q:    colIdx(hdr,['question']),
-          optA: colIdx(hdr,['opta','opt_a','option a','option_a']),
-          optB: colIdx(hdr,['optb','opt_b','option b','option_b']),
-          optC: colIdx(hdr,['optc','opt_c','option c','option_c']),
-          optD: colIdx(hdr,['optd','opt_d','option d','option_d']),
-          ans:  colIdx(hdr,['answer']),
-          ansT: colIdx(hdr,['answertext','answer_text']),
-          expl: colIdx(hdr,['explanation']),
-          diff: colIdx(hdr,['difficulty']),
-          qt:   colIdx(hdr,['qtype','q_type','questiontype']),
-          rep:  colIdx(hdr,['repeatsin','repeats_in']),
-        };
-
-        function g(row,k){ return (C[k]>=0 && C[k]<row.length) ? row[C[k]].trim() : ''; }
-
-        upscAll = [];
-        for(var i=1;i<rows.length;i++){
-          var r = rows[i];
-          var yr = g(r,'year'); if(!yr) continue;
-          upscAll.push({
-            id:   g(r,'id') || ('u'+i),
-            year: yr,
-            paper:g(r,'paper') || 'GS I',
-            subj: g(r,'subj') || 'General Studies',
-            sub2: g(r,'sub2'),
-            q:    g(r,'q'),
-            optA: g(r,'optA'),
-            optB: g(r,'optB'),
-            optC: g(r,'optC'),
-            optD: g(r,'optD'),
-            ans:  g(r,'ans').toUpperCase(),
-            ansT: g(r,'ansT'),
-            expl: g(r,'expl'),
-            diff: g(r,'diff') || 'Medium',
-            qt:   g(r,'qt'),
-            rep:  g(r,'rep'),
-          });
-        }
-
-        buildUpscUI();
-        upscApply();
-        document.getElementById('upscLoading').style.display  = 'none';
-        document.getElementById('upscFilters').style.display  = 'block';
-        document.getElementById('upscCount').style.display    = 'block';
-      })
-      .catch(function(e){
-        showUpscError('Failed to load. Check sheet is publicly accessible.');
-        console.error('UPSC load',e);
-      });
-  }
-
-  function showUpscError(msg){
-    var el = document.getElementById('upscLoading');
-    if(el) el.innerHTML = '<div style="color:var(--red);padding:20px;"><i class="ti ti-alert-circle"></i> '+msg+'</div>';
-  }
-
-  function buildUpscUI(){
-    /* Year buttons */
-    var years = [...new Set(upscAll.map(function(q){return q.year;}))].filter(Boolean).sort();
-    var yt = document.getElementById('upscYearTabs');
-    if(yt) yt.innerHTML =
-      btn('all','All Years','yr','upscSetYear(\'all\',this)','active') +
-      years.map(function(y){ return btn(y,y,'yr','upscSetYear(\''+y+'\',this)'); }).join('');
-
-    /* Paper buttons */
-    var papers = [...new Set(upscAll.map(function(q){return q.paper;}))].filter(Boolean).sort();
-    var pt = document.getElementById('upscPaperTabs');
-    if(pt) pt.innerHTML =
-      btn('all','All Papers','paper','upscSetPaper(\'all\',this)','active') +
-      papers.map(function(p){ return btn(p,p,'paper','upscSetPaper(\''+esc(p)+'\',this)'); }).join('');
-
-    /* Subject buttons */
-    var subjs = [...new Set(upscAll.map(function(q){return q.subj;}))].filter(Boolean).sort();
-    var st = document.getElementById('upscSubjTabs');
-    if(st) st.innerHTML =
-      btn('all','All Subjects','subj','upscSetSubj(\'all\',this)','active') +
-      subjs.map(function(s){ return btn(s,s,'subj','upscSetSubj(\''+s.replace(/'/g,"\\'").replace(/"/g,'&quot;')+'\',this)'); }).join('');
-  }
-
-  function btn(val,label,attr,onclick,activeClass){
-    return '<button class="pyq-subj-btn'+(activeClass?' '+activeClass:'')+'" data-'+attr+'="'+esc(val)+'" onclick="'+onclick+'">'+esc(label)+'</button>';
-  }
-
-  function upscApply(){
-    upscFiltered = upscAll.filter(function(q){
-      if(upscYear  !== 'all' && q.year  !== upscYear)  return false;
-      if(upscPaper !== 'all' && q.paper !== upscPaper) return false;
-      if(upscSubj  !== 'all' && q.subj  !== upscSubj)  return false;
-      return true;
+  // ── 1. setActiveExam — clears all sidebar exam active states, sets one ──
+  function setActiveExam(exam) {
+    ['uppsc','bpsc','upsc'].forEach(function(e) {
+      var el = document.getElementById('sb-' + e);
+      if (el) el.classList.toggle('sb-active', e === exam);
     });
-    upscLimit = 30;
-    upscRender();
+    // Update mobile hint bar
+    var hintExam = document.getElementById('sbhExam');
+    if (hintExam) hintExam.textContent = exam.toUpperCase();
   }
 
-  function upscRender(){
-    var el = document.getElementById('upscContainer');
-    var ce = document.getElementById('upscCount');
-    var lm = document.getElementById('upscLoadMore');
-    var mc = document.getElementById('upscMoreCount');
-    if(!el) return;
+  // ── 2. Rebuild subject tabs dynamically from loaded questions ──────────
+  function rebuildSubjectTabs(questions) {
+    var tabsEl = document.getElementById('pyqSubjTabs');
+    if (!tabsEl) return;
 
-    if(!upscFiltered.length){
-      el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);">No questions match these filters.</div>';
-      if(ce) ce.textContent = '';
-      if(lm) lm.style.display = 'none';
-      return;
-    }
+    var subjects = [];
+    var seen = {};
+    questions.forEach(function(q) {
+      var s = q.subject || '';
+      if (s && !seen[s]) { seen[s] = true; subjects.push(s); }
+    });
+    subjects.sort();
 
-    var shown = Math.min(upscFiltered.length, upscLimit);
-    if(ce) ce.textContent = 'Showing ' + shown + ' of ' + upscFiltered.length + ' questions';
+    var total = questions.length;
+    tabsEl.innerHTML =
+      '<button class="pyq-subj-btn active" id="pyq-subj-all" onclick="selectPyqSubject('all',this)">' +
+        'All <span class="pyq-subj-count" id="pyq-cnt-all">' + total + '</span>' +
+      '</button>' +
+      subjects.map(function(s) {
+        var cnt = questions.filter(function(q){ return q.subject === s; }).length;
+        var sid = s.replace(/\s+/g,'_');
+        return '<button class="pyq-subj-btn" id="pyq-subj-' + sid + '" onclick="selectPyqSubject('' +
+          s.replace(/'/g,"\'") + '',this)">' +
+          s + ' <span class="pyq-subj-count" id="pyq-cnt-' + sid + '">' + cnt + '</span>' +
+        '</button>';
+      }).join('');
 
-    el.innerHTML = upscFiltered.slice(0, upscLimit).map(buildCard).join('');
-
-    if(upscFiltered.length > upscLimit){
-      if(lm) lm.style.display = 'block';
-      if(mc) mc.textContent = '(' + (upscFiltered.length - upscLimit) + ' remaining)';
-    } else {
-      if(lm) lm.style.display = 'none';
+    // Also update the hidden <select> for JS compatibility
+    var fSubj = document.getElementById('f-subject');
+    if (fSubj) {
+      fSubj.innerHTML = '<option value="all">All subjects</option>' +
+        subjects.map(function(s){ return '<option>' + s + '</option>'; }).join('');
     }
   }
 
-  function buildCard(q){
-    var diffCls = q.diff==='Easy' ? 'badge-teal' : q.diff==='Hard' ? 'badge-red' : 'badge-amber';
-    var chosen  = upscAnswers[q.id];
-    var revealed = chosen !== undefined;
+  // ── 3. Paper filter row — only shown for UPSC ─────────────────────────
+  function buildPaperFilter(questions) {
+    var existing = document.getElementById('upscPaperFilter');
+    if (existing) existing.remove();
 
-    var opts = ['A','B','C','D'].map(function(L,i){
-      var txt = [q.optA,q.optB,q.optC,q.optD][i];
-      if(!txt) return '';
-      var cls = 'opt';
-      if(revealed){
-        if(L === q.ans)                          cls += ' reveal';
-        if(chosen === L && L !== q.ans)          cls += ' wrong';
-        if(chosen === L && L === q.ans)          cls += ' correct';
+    var papers = [...new Set(questions.map(function(q){ return q.paper || ''; }).filter(Boolean))].sort();
+    if (!papers.length) return;
+
+    var wrap = document.createElement('div');
+    wrap.id = 'upscPaperFilter';
+    wrap.style.cssText = 'margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;';
+    wrap.innerHTML =
+      '<button class="pyq-subj-btn active" data-paper="all" onclick="upscSetPaper('all',this)">All Papers</button>' +
+      papers.map(function(p) {
+        return '<button class="pyq-subj-btn" data-paper="' + p + '" onclick="upscSetPaper('' + p + '',this)">' + p + '</button>';
+      }).join('');
+
+    var subjTabs = document.getElementById('pyqSubjTabs');
+    if (subjTabs) subjTabs.parentNode.insertBefore(wrap, subjTabs);
+  }
+
+  // Paper filter state
+  var _upscPaperFilter = 'all';
+  window.upscSetPaper = function(paper, btn) {
+    _upscPaperFilter = paper;
+    document.querySelectorAll('#upscPaperFilter .pyq-subj-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.paper === paper);
+    });
+    if (typeof applyFilters === 'function') applyFilters();
+  };
+
+  // ── 4. Wrap switchExam to add navigation + active state ───────────────
+  var _origSwitchExam = window.switchExam;
+  window.switchExam = function(exam) {
+    // Remove paper filter if switching away from UPSC
+    if (exam !== 'upsc') {
+      var pf = document.getElementById('upscPaperFilter');
+      if (pf) pf.remove();
+      _upscPaperFilter = 'all';
+    }
+
+    // Update sidebar active state
+    setActiveExam(exam);
+
+    // Navigate to PYQ tab
+    var pyqBtn = document.querySelector('.nav-btn.nav-pyq') || null;
+    if (typeof showTab === 'function') showTab('pyq', pyqBtn);
+
+    // Call original switchExam
+    if (_origSwitchExam) _origSwitchExam(exam);
+  };
+
+  // ── 5. After loadQuestions fires, rebuild subject tabs ─────────────────
+  var _origLoadQuestions = window.loadQuestions;
+  window.loadQuestions = function() {
+    var _exam = window._currentExam || 'uppsc';
+    var _origThen = Promise.prototype.then; // not overriding — just hooking via MutationObserver
+
+    // Patch: after data loads into allQuestions, rebuild tabs
+    var interval = setInterval(function() {
+      if (typeof allQuestions !== 'undefined' && allQuestions.length > 0) {
+        clearInterval(interval);
+        rebuildSubjectTabs(allQuestions);
+        if (_exam === 'upsc') {
+          buildPaperFilter(allQuestions);
+          // Hook applyFilters to also filter by paper
+          var _origApply = window.applyFilters;
+          window.applyFilters = function() {
+            if (_origApply) _origApply();
+            // Additional paper filter
+            if (_upscPaperFilter !== 'all' && typeof filteredQ !== 'undefined') {
+              filteredQ = filteredQ.filter(function(q) {
+                return (q.paper || '') === _upscPaperFilter;
+              });
+              if (typeof renderQuestions === 'function') renderQuestions();
+            }
+          };
+        } else {
+          // Restore applyFilters for non-UPSC (remove paper filter hook)
+          if (window._baseApplyFilters) window.applyFilters = window._baseApplyFilters;
+        }
       }
-      return '<button class="'+cls+'" '+(revealed?'disabled ':'')+
-        'onclick="upscAttempt(\''+q.id+'\',\''+L+'\')">'
-        +'<strong>'+L+'.</strong> '+esc(txt)+'</button>';
-    }).join('');
+    }, 200);
 
-    var expl = revealed
-      ? '<div class="explanation"><strong>Correct: '+q.ans+'</strong>'+
-          (q.ansT ? '. '+esc(q.ansT) : '')+
-          (q.expl ? '<br><br>'+esc(q.expl) : '')+'</div>'
-      : '';
-
-    return '<div class="card" style="margin-bottom:10px;">'
-      + '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;">'
-        + '<span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">'+esc(q.paper)+'</span>'
-        + '<span style="background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">'+esc(q.year)+'</span>'
-        + (q.q!=='' ? '<span class="badge '+diffCls+'">'+esc(q.diff)+'</span>' : '')
-        + (q.subj ? '<span style="background:#f9fafb;color:var(--text2);padding:2px 8px;border-radius:10px;font-size:10px;">'+esc(q.subj)+'</span>' : '')
-        + (q.qt   ? '<span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:10px;font-size:10px;">'+esc(q.qt)+'</span>' : '')
-      + '</div>'
-      + '<p style="font-size:14px;font-weight:600;color:var(--text1);line-height:1.6;margin-bottom:10px;">'+esc(q.q)+'</p>'
-      + '<div class="opts">'+opts+'</div>'
-      + expl
-      + '</div>';
-  }
-
-  function esc(s){
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  /* Public functions called from HTML onclick */
-  window.upscAttempt = function(id, chosen){
-    upscAnswers[id] = chosen;
-    upscRender();
-  };
-  window.upscShowMore = function(){
-    upscLimit += 30;
-    upscRender();
-  };
-  window.upscSetYear  = function(v,btn){
-    upscYear  = v;
-    document.querySelectorAll('#upscYearTabs .pyq-subj-btn').forEach(function(b){ b.classList.toggle('active',b.dataset.yr===v); });
-    upscApply();
-  };
-  window.upscSetPaper = function(v,btn){
-    upscPaper = v;
-    document.querySelectorAll('#upscPaperTabs .pyq-subj-btn').forEach(function(b){ b.classList.toggle('active',b.dataset.paper===v); });
-    upscApply();
-  };
-  window.upscSetSubj  = function(v,btn){
-    upscSubj  = v;
-    document.querySelectorAll('#upscSubjTabs .pyq-subj-btn').forEach(function(b){ b.classList.toggle('active',b.dataset.subj===v); });
-    upscApply();
+    if (_origLoadQuestions) _origLoadQuestions();
   };
 
-  /* Load once when tab is first opened */
-  var _upscLoaded = false;
-  var _prevShowTab = window.showTab;
-  window.showTab = function(id, btn){
-    if(_prevShowTab) _prevShowTab(id, btn);
-    var sb = document.getElementById('sb-upsc');
-    if(sb) sb.classList.toggle('sb-active', id==='upsc');
-    if(id === 'upsc' && !_upscLoaded){ _upscLoaded = true; loadUpscQuestions(); }
-  };
+  // ── 6. Set UPPSC as active on page load ────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    setActiveExam(window._currentExam || 'uppsc');
+  });
+
 })();
 </script>
 </body>
