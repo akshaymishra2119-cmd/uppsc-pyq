@@ -13189,11 +13189,15 @@ function toggleSidebar(){
     }).filter(function(r){ return (r.status||'').toLowerCase()==='active'; });
   }
 
-  function buildItems(rows, type){
-    if(!rows.length) return '<div class="rp-empty">No active listings</div>';
-    var nameKey = type==='govt' ? 'exam' : 'company';
-    var subKey  = type==='govt' ? 'org'  : 'role';
-    var html = rows.map(function(r){
+
+  function startTicker(wrapId, tickId, rows, type){
+    var ticker=document.getElementById(tickId);
+    var wrap=document.getElementById(wrapId);
+    if(!ticker||!wrap) return;
+    // Build single copy first to measure
+    var single = rows.map(function(r){
+      var nameKey = type==='govt' ? 'exam' : 'company';
+      var subKey  = type==='govt' ? 'org'  : 'role';
       var name = r[nameKey]||r['exam']||r['company']||'—';
       var sub  = r[subKey] ||r['org'] ||r['role'] ||'';
       var dl   = r['deadline']||'';
@@ -13204,17 +13208,19 @@ function toggleSidebar(){
         (dl  ? '<div class="rp-deadline '+type+'">'+dl+'</div>' : '')+
         '</div>';
     }).join('');
-    return html+html; // duplicate for seamless loop
-  }
-
-  function startTicker(wrapId, tickId, rows, type){
-    var ticker=document.getElementById(tickId);
-    var wrap=document.getElementById(wrapId);
-    if(!ticker||!wrap) return;
-    ticker.innerHTML=buildItems(rows,type);
-    if(rows.length<2){ ticker.style.animation='none'; return; }
-    var dur=Math.max(8, ticker.scrollHeight/2/40);
-    ticker.style.animation='rpScroll '+dur+'s linear infinite';
+    if(!single){ ticker.innerHTML='<div class="rp-empty">No active listings</div>'; return; }
+    ticker.innerHTML = single;
+    ticker.style.animation = 'none';
+    // Only scroll+duplicate if content taller than container
+    setTimeout(function(){
+      var contentH = ticker.scrollHeight;
+      var wrapH    = wrap.clientHeight;
+      if(contentH > wrapH && rows.length > 1){
+        ticker.innerHTML = single + single;
+        var dur = Math.max(8, contentH / 40);
+        ticker.style.animation = 'rpScroll '+dur+'s linear infinite';
+      }
+    }, 100);
   }
 
   function fetchAndLoad(){
