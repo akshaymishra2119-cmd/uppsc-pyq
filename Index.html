@@ -13115,7 +13115,7 @@ function toggleSidebar(){
 #recruitPanel {
   position: fixed;
   right: 0;
-  top: 52px;
+  top: 120px; /* overridden by JS below */
   width: 196px;
   bottom: 0;
   background: var(--surface, #1e2235);
@@ -13233,12 +13233,25 @@ function toggleSidebar(){
     if(p) p.classList.toggle('rp-hidden', id!=='home');
   };
 
+  function positionPanel(){
+    var nav = document.querySelector('.nav');
+    var p   = document.getElementById('recruitPanel');
+    if(nav && p){
+      var rect = nav.getBoundingClientRect();
+      p.style.top = (rect.bottom) + 'px';
+    }
+  }
+
   document.addEventListener('DOMContentLoaded',function(){
     var p=document.getElementById('recruitPanel');
     var home=document.getElementById('tab-home');
     if(p && home && home.classList.contains('active')) p.classList.remove('rp-hidden');
     fetchAndLoad();
     setInterval(fetchAndLoad, 30*60*1000);
+    // Position after fonts/layout settle
+    positionPanel();
+    setTimeout(positionPanel, 300);
+    window.addEventListener('resize', positionPanel);
   });
 })();
 </script>
