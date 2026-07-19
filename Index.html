@@ -13108,5 +13108,175 @@ function toggleSidebar(){
   };
 })();
 </script>
+
+<!-- ══ RE
+<!-- ══ RECRUITMENT PANEL ══════════════════════════════════════════ -->
+<style>
+#recruitPanel {
+  position: fixed;
+  right: 0;
+  top: 52px;
+  width: 196px;
+  bottom: 0;
+  background: var(--surface, #1e2235);
+  border-left: 1px solid var(--border, rgba(255,255,255,0.08));
+  display: flex;
+  flex-direction: column;
+  z-index: 80;
+  overflow: hidden;
+}
+#recruitPanel.rp-hidden { display: none !important; }
+.rp-section { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+.rp-section + .rp-section { border-top:1px solid var(--border,rgba(255,255,255,0.08)); }
+.rp-header { padding:8px 10px 6px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; display:flex; align-items:center; gap:5px; flex-shrink:0; }
+.rp-header.govt { color:#f97316; background:rgba(249,115,22,0.08); }
+.rp-header.priv { color:#60a5fa; background:rgba(96,165,250,0.08); }
+.rp-scroll-wrap { flex:1; overflow:hidden; position:relative; }
+.rp-ticker { position:absolute; width:100%; will-change:transform; }
+@keyframes rpScroll { 0%{transform:translateY(0)} 100%{transform:translateY(-50%)} }
+.rp-item { padding:8px 10px; border-bottom:1px solid var(--border,rgba(255,255,255,0.05)); cursor:pointer; transition:background .15s; }
+.rp-item:hover { background:rgba(255,255,255,0.05); }
+.rp-item-name { font-size:11.5px; font-weight:600; color:var(--text1,#e2e8f0); line-height:1.3; margin-bottom:3px; }
+.rp-item-sub  { font-size:10px; color:var(--text3,#64748b); line-height:1.3; }
+.rp-deadline  { display:inline-block; font-size:9.5px; font-weight:700; padding:1px 5px; border-radius:4px; margin-top:3px; }
+.rp-deadline.govt { background:rgba(249,115,22,0.15); color:#f97316; }
+.rp-deadline.priv { background:rgba(96,165,250,0.15); color:#60a5fa; }
+.rp-empty { font-size:11px; color:var(--text3,#64748b); padding:16px 10px; text-align:center; }
+@media(max-width:900px){ #recruitPanel{ display:none !important; } }
+</style>
+
+<div id="recruitPanel" class="rp-hidden">
+  <div class="rp-section">
+    <div class="rp-header govt">&#127963; Govt Notifications</div>
+    <div class="rp-scroll-wrap" id="rpGovtWrap">
+      <div class="rp-ticker" id="rpGovtTicker"><div class="rp-empty">Loading&#8230;</div></div>
+    </div>
+  </div>
+  <div class="rp-section">
+    <div class="rp-header priv">&#127970; Private Jobs</div>
+    <div class="rp-scroll-wrap" id="rpPrivWrap">
+      <div class="rp-ticker" id="rpPrivTicker"><div class="rp-empty">Loading&#8230;</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var SHEET_ID = '1Hv7AbraWG7_qg4O73Hi8fRhykOd2cN2Nj1Re8f5VgXs';
+  var GOVT_GID = '0';
+  var PRIV_GID = '1485955211';
+
+  function csvUrl(gid){
+    return 'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=csv&gid='+gid;
+  }
+
+  function parseCSV(text){
+    var lines = text.trim().split('\n');
+    if(lines.length < 2) return [];
+    var headers = lines[0].split(',').map(function(h){ return h.trim().replace(/^"|"$/g,'').toLowerCase(); });
+    return lines.slice(1).map(function(line){
+      var cols=[],cur='',inQ=false;
+      for(var i=0;i<line.length;i++){
+        var c=line[i];
+        if(c==='"'){inQ=!inQ;}
+        else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
+        else{cur+=c;}
+      }
+      cols.push(cur.trim());
+      var obj={};
+      headers.forEach(function(h,i){ obj[h]=(cols[i]||'').replace(/^"|"$/g,'').trim(); });
+      return obj;
+    }).filter(function(r){ return (r.status||'').toLowerCase()==='active'; });
+  }
+
+  function buildItems(rows, type){
+    if(!rows.length) return '<div class="rp-empty">No active listings</div>';
+    var nameKey = type==='govt' ? 'exam' : 'company';
+    var subKey  = type==='govt' ? 'org'  : 'role';
+    var html = rows.map(function(r){
+      var name = r[nameKey]||r['exam']||r['company']||'—';
+      var sub  = r[subKey] ||r['org'] ||r['role'] ||'';
+      var dl   = r['deadline']||'';
+      var link = r['link']||'#';
+      return '<div class="rp-item" onclick="window.open(\''+link.replace(/'/g,"\\'")+"','_blank')\">"+
+        '<div class="rp-item-name">'+name+'</div>'+
+        (sub ? '<div class="rp-item-sub">'+sub+'</div>' : '')+
+        (dl  ? '<div class="rp-deadline '+type+'">'+dl+'</div>' : '')+
+        '</div>';
+    }).join('');
+    return html+html; // duplicate for seamless loop
+  }
+
+  function startTicker(wrapId, tickId, rows, type){
+    var ticker=document.getElementById(tickId);
+    var wrap=document.getElementById(wrapId);
+    if(!ticker||!wrap) return;
+    ticker.innerHTML=buildItems(rows,type);
+    if(rows.length<2){ ticker.style.animation='none'; return; }
+    var dur=Math.max(8, ticker.scrollHeight/2/40);
+    ticker.style.animation='rpScroll '+dur+'s linear infinite';
+  }
+
+  function fetchAndLoad(){
+    fetch(csvUrl(GOVT_GID)).then(function(r){return r.text();})
+      .then(function(t){ startTicker('rpGovtWrap','rpGovtTicker',parseCSV(t),'govt'); })
+      .catch(function(){ var el=document.getElementById('rpGovtTicker'); if(el) el.innerHTML='<div class="rp-empty">Unavailable</div>'; });
+    fetch(csvUrl(PRIV_GID)).then(function(r){return r.text();})
+      .then(function(t){ startTicker('rpPrivWrap','rpPrivTicker',parseCSV(t),'priv'); })
+      .catch(function(){ var el=document.getElementById('rpPrivTicker'); if(el) el.innerHTML='<div class="rp-empty">Unavailable</div>'; });
+  }
+
+  var _origShowTab = window.showTab;
+  window.showTab = function(id,btn){
+    if(_origShowTab) _origShowTab(id,btn);
+    var p=document.getElementById('recruitPanel');
+    if(p) p.classList.toggle('rp-hidden', id!=='home');
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var p=document.getElementById('recruitPanel');
+    var home=document.getElementById('tab-home');
+    if(p && home && home.classList.contains('active')) p.classList.remove('rp-hidden');
+    fetchAndLoad();
+    setInterval(fetchAndLoad, 30*60*1000);
+  });
+})();
+</script>
+</body>
+-empty">Unavailable</div>'; });
+
+    // Private
+    fetch(csvUrl(PRIV_GID))
+      .then(function(r){ return r.text(); })
+      .then(function(t){ startTicker('rpPrivWrap','rpPrivTicker', parseCSV(t), 'priv'); })
+      .catch(function(){ document.getElementById('rpPrivTicker').innerHTML = '<div class="rp-empty">Unavailable</div>'; });
+  }
+
+  // Show/hide panel based on active tab
+  var _origShowTab = window.showTab;
+  window.showTab = function(id, btn) {
+    if (_origShowTab) _origShowTab(id, btn);
+    var panel = document.getElementById('recruitPanel');
+    if (!panel) return;
+    if (id === 'home') {
+      panel.classList.remove('rp-hidden');
+    } else {
+      panel.classList.add('rp-hidden');
+    }
+  };
+
+  // Init on page load
+  document.addEventListener('DOMContentLoaded', function(){
+    var panel = document.getElementById('recruitPanel');
+    // Show only if home tab is active at load
+    var homeTab = document.getElementById('tab-home');
+    if (homeTab && homeTab.classList.contains('active')) {
+      panel.classList.remove('rp-hidden');
+    }
+    fetchAndLoad();
+    setInterval(fetchAndLoad, REFRESH_MS);
+  });
+})();
+</script>
 </body>
 </html>
