@@ -13189,20 +13189,18 @@ function toggleSidebar(){
     }).filter(function(r){ return (r.status||'').toLowerCase()==='active'; });
   }
 
-
   function startTicker(wrapId, tickId, rows, type){
     var ticker=document.getElementById(tickId);
     var wrap=document.getElementById(wrapId);
     if(!ticker||!wrap) return;
-    // Build single copy first to measure
+    var nameKey = type==='govt' ? 'exam' : 'company';
+    var subKey  = type==='govt' ? 'org'  : 'role';
     var single = rows.map(function(r){
-      var nameKey = type==='govt' ? 'exam' : 'company';
-      var subKey  = type==='govt' ? 'org'  : 'role';
-      var name = r[nameKey]||r['exam']||r['company']||'—';
+      var name = r[nameKey]||r['exam']||r['company']||'--';
       var sub  = r[subKey] ||r['org'] ||r['role'] ||'';
       var dl   = r['deadline']||'';
       var link = r['link']||'#';
-      return '<div class="rp-item" onclick="window.open(\''+link.replace(/'/g,"\\'")+"','_blank')\">"+
+      return '<div class="rp-item" onclick="window.open(\''+link.replace(/'/g,"\\'")+'\'\',\'_blank\'\')">'+
         '<div class="rp-item-name">'+name+'</div>'+
         (sub ? '<div class="rp-item-sub">'+sub+'</div>' : '')+
         (dl  ? '<div class="rp-deadline '+type+'">'+dl+'</div>' : '')+
@@ -13211,7 +13209,6 @@ function toggleSidebar(){
     if(!single){ ticker.innerHTML='<div class="rp-empty">No active listings</div>'; return; }
     ticker.innerHTML = single;
     ticker.style.animation = 'none';
-    // Only scroll+duplicate if content taller than container
     setTimeout(function(){
       var contentH = ticker.scrollHeight;
       var wrapH    = wrap.clientHeight;
@@ -13236,10 +13233,6 @@ function toggleSidebar(){
   window.showTab = function(id,btn){
     if(_origShowTab) _origShowTab(id,btn);
     var p=document.getElementById('recruitPanel');
-      var _origShowTab = window.showTab;
-  window.showTab = function(id,btn){
-    if(_origShowTab) _origShowTab(id,btn);
-    var p=document.getElementById('recruitPanel');
     if(p) p.classList.toggle('rp-hidden', id!=='home');
   };
 
@@ -13251,11 +13244,8 @@ function toggleSidebar(){
     var top = 52;
     if(nav){
       var nr = nav.getBoundingClientRect();
-      if(nr.bottom > 10){
-        top = nr.bottom;
-      } else if(topbar){
-        top = topbar.getBoundingClientRect().bottom;
-      }
+      if(nr.bottom > 10){ top = nr.bottom; }
+      else if(topbar){ top = topbar.getBoundingClientRect().bottom; }
     }
     p.style.top = top + 'px';
   }
