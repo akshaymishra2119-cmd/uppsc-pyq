@@ -1590,6 +1590,9 @@ mark.kw-danger{background:#FFE0B2;color:#B84500;border-radius:3px;
   <button class="nav-btn active" onclick="showTab('home',this)">
     <i class="ti ti-home" aria-hidden="true"></i> Home
   </button>
+  <button class="nav-btn nav-pyq" id="pyqNavBtn" onclick="showTab('pyq',this)">
+    <i class="ti ti-book-open" aria-hidden="true"></i> PYQ Practice
+  </button>
   <button class="nav-btn nav-account" id="accountNavBtn" onclick="showTab('account',this)" style="display:none;">
     <i class="ti ti-user-circle" aria-hidden="true"></i> My Account
   </button>
@@ -6273,7 +6276,7 @@ function switchExam(exam) {
     b.style.color       = on ? (exam==='uppsc'?'var(--amber)':'#3b82f6') : 'var(--text2)';
   });
   var lt = document.getElementById('examLangToggle');
-  if (lt) lt.style.display = exam === 'bpsc' ? 'flex' : 'none';
+  if (lt) lt.style.display = (exam === 'bpsc' || exam === 'uppsc') ? 'flex' : 'none';
   document.querySelectorAll('.lang-sw-btn').forEach(function(b) {
     var on = b.dataset.lang === 'en';
     b.style.borderColor = on ? '#3b82f6' : 'var(--border)';
@@ -13429,7 +13432,22 @@ window.switchExam = function(exam) {
   _upscPaper = 'all';
   _lastTabExam = null;
   setActiveExam(exam);
+  // Reset sidebar lang highlight to EN (switchExam always resets to EN)
+  var sbEn = document.getElementById('sb-en');
+  var sbHi = document.getElementById('sb-hi');
+  if (sbEn) { sbEn.classList.add('sb-active'); }
+  if (sbHi) { sbHi.classList.remove('sb-active'); }
   if (_baseSwitchExam) _baseSwitchExam(exam);
+};
+
+// Keep sidebar lang buttons in sync when switchLang is called
+var _baseSwitchLang = window.switchLang;
+window.switchLang = function(lang) {
+  var sbEn = document.getElementById('sb-en');
+  var sbHi = document.getElementById('sb-hi');
+  if (sbEn) sbEn.classList.toggle('sb-active', lang === 'en');
+  if (sbHi) sbHi.classList.toggle('sb-active', lang === 'hi');
+  if (_baseSwitchLang) _baseSwitchLang(lang);
 };
 
 // Smart nav: stay on Home if already there (home analytics update),
