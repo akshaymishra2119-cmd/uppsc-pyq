@@ -757,6 +757,36 @@ textarea{resize:vertical;min-height:70px;}
 .opt.mt-opt{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.5;}
 .opt.dimmed:disabled{opacity:0.4;}
 .opt.chosen{background:var(--blue-light);border-color:var(--blue);color:var(--blue-dark);}
+/* ── New vertical card layout ──────────────────────────────── */
+.q-card{padding:0!important;}
+.q-card-head{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 8px 14px;border-bottom:1px solid var(--border);background:var(--bg2);border-radius:var(--radius-lg) var(--radius-lg) 0 0;flex-wrap:wrap;gap:6px;}
+.q-card-head-l{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.q-card-head-r{display:flex;align-items:center;gap:8px;}
+.q-card-body{padding:14px;}
+.q-num-v{font-size:11px;font-weight:600;color:var(--text3);}
+.q-yr-pill{font-size:11px;padding:2px 7px;border-radius:20px;background:var(--bg3,var(--bg2));color:var(--text2);border:1px solid var(--border);}
+.q-rpt-pill{font-size:11px;padding:2px 9px;border-radius:20px;background:var(--red-light);color:var(--red-dark);font-weight:500;}
+.q-subtopic-hd{font-size:11px;color:var(--text3);}
+.q-bk-btn{position:static!important;background:none;border:none;cursor:pointer;color:var(--text3);padding:2px;line-height:1;font-size:16px;}
+.q-bk-btn:hover{color:#c9a84c;}
+.q-bk-btn.bookmarked i::before{color:#c9a84c;}
+.opts-v{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.q-opt-v{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);font-size:13px;text-align:left;cursor:pointer;width:100%;line-height:1;transition:border-color .12s;}
+.q-opt-v:hover:not(:disabled){border-color:var(--border2);background:var(--bg2);}
+.q-opt-v:disabled{cursor:default;}
+.q-opt-ltr{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;transition:all .12s;}
+.q-opt-txt{flex:1;line-height:1.45;color:var(--text);}
+.q-opt-v.correct{background:var(--teal-light);border-color:var(--teal);}
+.q-opt-v.correct .q-opt-ltr{background:var(--teal);border-color:var(--teal);color:#fff;}
+.q-opt-v.correct .q-opt-txt{color:var(--teal-dark);}
+.q-opt-v.wrong{background:var(--red-light);border-color:var(--red);}
+.q-opt-v.wrong .q-opt-ltr{background:var(--red);border-color:var(--red);color:#fff;}
+.q-opt-v.wrong .q-opt-txt{color:var(--red-dark);}
+.q-opt-v.reveal{background:var(--blue-light);border-color:var(--blue);}
+.q-opt-v.reveal .q-opt-ltr{background:var(--blue);border-color:var(--blue);color:#fff;}
+.q-opt-v.reveal .q-opt-txt{color:var(--blue-dark);}
+.q-act-row{display:flex;align-items:center;margin-top:4px;}
+
 .explanation{background:var(--bg2);border-radius:var(--radius);padding:10px 12px;
   font-size:12px;color:var(--text2);line-height:1.6;margin-top:4px;}
 .explanation strong{color:var(--text);}
@@ -6896,32 +6926,33 @@ function renderQuestions() {
 }
 
 function _buildQCardHTML(q, idx) {
-    const ans      = answers[q.id];
-    const shown    = ans !== undefined;
-    const diffCls  = q.difficulty==="Easy" ? "badge-teal" : q.difficulty==="Medium" ? "badge-amber" : "badge-red";
+    const ans       = answers[q.id];
+    const shown     = ans !== undefined;
+    const diffCls   = q.difficulty==="Easy" ? "badge-teal" : q.difficulty==="Medium" ? "badge-amber" : "badge-red";
     const repeatsIn = (q.repeatsIn||"");
-    const isHighPri = repeatsIn.split(",").filter(Boolean).length >= 2;
-    const repeatFlag = repeatsIn.includes(",")
-      ? `<span class="badge ${isHighPri?'badge-red hp-badge':'badge-amber'}">
-          ${isHighPri?'<i class="ti ti-star-filled"></i> HIGH PRIORITY':'<i class="ti ti-repeat"></i>'}
-          ${repeatsIn}
-         </span>` : "";
+    const repeatYrs = repeatsIn.split(",").filter(Boolean);
+    const repeatPill = repeatYrs.length >= 1
+      ? `<span class="q-rpt-pill"><i class="ti ti-repeat" style="font-size:10px" aria-hidden="true"></i> Repeats ${repeatYrs.length}\xd7</span>`
+      : "";
     const isBk = pyqBookmarks.has(String(q.id));
 
     const isMatchQ = q.qType === 'Match';
     const matchBlock = isMatchQ ? buildMatchUI(q, shown, q.answer, answers[q.id+"_chosen"],
       letter => `onclick="attemptQ('${q.id}','${letter}','${q.answer}',${idx})"`) : '';
+
     const opts = isMatchQ ? '' : ["A","B","C","D"].map((letter,i) => {
       const rawOpt = [q.optA,q.optB,q.optC,q.optD][i];
-      const text = highlightSearch(rawOpt||'', searchQuery);
-      let cls = "opt";
+      if (!rawOpt) return '';
+      const text = highlightSearch(rawOpt, searchQuery);
+      let cls = "q-opt-v";
       if (shown) {
         if (letter === q.answer) cls += " reveal";
         if (ans === "correct" && letter === q.answer) cls += " correct";
         if (ans === "wrong" && answers[q.id+"_chosen"] === letter) cls += " wrong";
       }
       return `<button class="${cls}" ${shown?"disabled":""} onclick="attemptQ('${q.id}','${letter}','${q.answer}',${idx})">
-        <strong>${letter}.</strong> ${text}
+        <span class="q-opt-ltr">${letter}</span>
+        <span class="q-opt-txt">${text}</span>
       </button>`;
     }).join("");
 
@@ -6931,11 +6962,10 @@ function _buildQCardHTML(q, idx) {
         <strong>Explanation:</strong> ${q.explanation || "No explanation available."}
       </div>` : "";
 
-    const skipBtn = !shown ? `<button class="btn btn-sm" style="margin-top:8px;" onclick="skipQ('${q.id}',${idx})">
-      <i class="ti ti-forward-skip"></i> Skip
-    </button>` : "";
+    const skipBtn = !shown
+      ? `<button class="btn btn-sm" onclick="skipQ('${q.id}',${idx})"><i class="ti ti-forward-skip"></i> Skip</button>`
+      : "";
 
-    // Confidence UI
     const conf = sessionConfidence[q.id];
     const confUI = !shown ? `
       <div class="conf-row" id="conf-${q.id}">
@@ -6948,31 +6978,36 @@ function _buildQCardHTML(q, idx) {
         You marked: <span class="conf-tag-val" data-c="${conf}">${
           conf==='sure'?'✓ Sure':conf==='5050'?'~ 50-50':'? Guess'}</span>
         ${answers[q.id]==='wrong'&&conf==='sure'?'<span class="conf-danger"> ⚠ Overconfident!</span>':
-          answers[q.id]==='correct'&&conf==='guess'?'<span class="conf-lucky"> 🍀 Lucky guess!</span>':''}
+          answers[q.id]==='correct'&&conf==='guess'?'<span class="conf-lucky"> \U0001f340 Lucky guess!</span>':''}
       </div>` : '';
 
     const locked = isLocked(q);
-    return `<div class="q-card${locked?' q-locked':''}" id="qcard-${q.id}" style="margin-bottom:12px;">
+    return `<div class="q-card${locked?' q-locked':''}" id="qcard-${q.id}">
       ${locked ? lockOverlayHTML() : ''}
-      <button class="q-bk-btn ${isBk?"bookmarked":""}" data-bk="${q.id}" onclick="toggleQBookmark('${q.id}')" title="${isBk?"Remove bookmark":"Bookmark this question"}">
-        <i class="ti ti-bookmark${isBk?"-filled":""}"></i>
-      </button>
-      <div class="q-meta">
-        <span class="q-num">Q${idx+1}.</span>
-        ${subjectBadge(q.subject)}
-        <span class="badge ${diffCls}">${q.difficulty}</span>
-        <span class="badge" style="background:var(--bg3);color:var(--text2);">${q.year}</span>
-        ${repeatFlag}
-        <span style="margin-left:auto;font-size:11px;color:var(--text3);margin-right:28px;">${q.subTopic||""}</span>
+      <div class="q-card-head">
+        <div class="q-card-head-l">
+          <span class="q-num-v">Q${idx+1}</span>
+          ${subjectBadge(q.subject)}
+          <span class="q-yr-pill">${q.year}</span>
+          <span class="badge ${diffCls}">${q.difficulty||''}</span>
+          ${repeatPill}
+        </div>
+        <div class="q-card-head-r">
+          ${q.subTopic ? `<span class="q-subtopic-hd">${q.subTopic}</span>` : ''}
+          <button class="q-bk-btn ${isBk?"bookmarked":""}" data-bk="${q.id}" onclick="toggleQBookmark('${q.id}')" title="${isBk?"Remove bookmark":"Bookmark"}">
+            <i class="ti ti-bookmark${isBk?"-filled":""}"></i>
+          </button>
+        </div>
       </div>
-      ${confUI}
-      <div class="q-text">${highlightSearch(highlightDangerWords(formatQText(q.question)), searchQuery)}</div>
-      ${isMatchQ ? matchBlock : `<div class="opts">${opts}</div>`}
-      ${explanation}
-      ${skipBtn}
+      <div class="q-card-body">
+        <div class="q-text">${highlightSearch(highlightDangerWords(formatQText(q.question)), searchQuery)}</div>
+        ${confUI}
+        ${isMatchQ ? matchBlock : `<div class="opts-v">${opts}</div>`}
+        ${explanation}
+        ${skipBtn ? `<div class="q-act-row">${skipBtn}</div>` : ''}
+      </div>
     </div>`;
 }
-
 
 function loadMoreQs() {
   var s = document.getElementById('_qSentinel');
