@@ -13351,10 +13351,9 @@ function setActiveExam(exam) {
 }
 
 var _lastTabExam = null;
+var _lastTabYear = null;
 function rebuildSubjectTabs(qs, exam) {
   if (!qs || !qs.length) return;
-  if (exam === _lastTabExam) return;
-  _lastTabExam = exam;
 
   var tabsEl = document.getElementById('pyqSubjTabs');
   if (!tabsEl) return;
@@ -13423,7 +13422,19 @@ window.renderQuestions = function() {
   if (_origRender) _origRender();
   var exam = window._currentExam || 'uppsc';
   if (typeof allQuestions !== 'undefined' && allQuestions.length > 0) {
-    rebuildSubjectTabs(allQuestions, exam);
+    // Get current year filter (don't use filteredQ — subject may already be applied)
+    var yearEl = document.getElementById('f-year');
+    var yr = yearEl ? yearEl.value : 'all';
+    // Only rebuild if exam or year changed
+    if (exam !== _lastTabExam || yr !== _lastTabYear) {
+      _lastTabExam = exam;
+      _lastTabYear = yr;
+      // Pass year-filtered (not subject-filtered) questions so counts are correct per subject
+      var baseQ = (yr === 'all')
+        ? allQuestions
+        : allQuestions.filter(function(q){ return String(q.year) === yr; });
+      rebuildSubjectTabs(baseQ, exam);
+    }
   }
 };
 
@@ -13431,6 +13442,7 @@ var _baseSwitchExam = window.switchExam;
 window.switchExam = function(exam) {
   _upscPaper = 'all';
   _lastTabExam = null;
+  _lastTabYear = null;
   setActiveExam(exam);
   // Reset sidebar lang highlight to EN when switching exams
   var sbEn = document.getElementById('sb-en');
