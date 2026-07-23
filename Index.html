@@ -6276,7 +6276,7 @@ function switchExam(exam) {
     b.style.color       = on ? (exam==='uppsc'?'var(--amber)':'#3b82f6') : 'var(--text2)';
   });
   var lt = document.getElementById('examLangToggle');
-  if (lt) lt.style.display = (exam === 'bpsc' || exam === 'uppsc') ? 'flex' : 'none';
+  if (lt) lt.style.display = 'flex'; // all exams now have Hindi support
   document.querySelectorAll('.lang-sw-btn').forEach(function(b) {
     var on = b.dataset.lang === 'en';
     b.style.borderColor = on ? '#3b82f6' : 'var(--border)';
@@ -7112,7 +7112,7 @@ function buildShareCard(q, idx) {
       <div class="pyq-scard-brand">
         <div class="pyq-scard-logo">📚</div>
         <div>
-          <div class="pyq-scard-brandname">UPPSC PYQ</div>
+          <div class="pyq-scard-brandname">${(window._currentExam||'uppsc').toUpperCase()} PYQ</div>
           <div class="pyq-scard-brandtag">Ghatna Chakra Portal</div>
         </div>
       </div>
@@ -13432,15 +13432,14 @@ window.switchExam = function(exam) {
   _upscPaper = 'all';
   _lastTabExam = null;
   setActiveExam(exam);
-  // Reset sidebar lang highlight to EN (switchExam always resets to EN)
+  // Reset sidebar lang highlight to EN when switching exams
   var sbEn = document.getElementById('sb-en');
   var sbHi = document.getElementById('sb-hi');
-  if (sbEn) { sbEn.classList.add('sb-active'); }
-  if (sbHi) { sbHi.classList.remove('sb-active'); }
+  if (sbEn) sbEn.classList.add('sb-active');
+  if (sbHi) sbHi.classList.remove('sb-active');
   if (_baseSwitchExam) _baseSwitchExam(exam);
 };
 
-// Keep sidebar lang buttons in sync when switchLang is called
 var _baseSwitchLang = window.switchLang;
 window.switchLang = function(lang) {
   var sbEn = document.getElementById('sb-en');
@@ -13450,8 +13449,6 @@ window.switchLang = function(lang) {
   if (_baseSwitchLang) _baseSwitchLang(lang);
 };
 
-// Smart nav: stay on Home if already there (home analytics update),
-// go to PYQ from any other tab.
 window.switchExamNav = function(exam) {
   var active = document.querySelector('.tab.active');
   var onHome = active && active.id === 'tab-home';
@@ -13462,7 +13459,7 @@ window.switchExamNav = function(exam) {
 document.addEventListener('DOMContentLoaded', function() {
   setActiveExam(window._currentExam || 'uppsc');
 });
-
 })();
 </script>
 </body>
+</html>
